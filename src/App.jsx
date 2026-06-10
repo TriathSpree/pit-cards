@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-
+import { useUser, SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react'
 // ── AIRTABLE via API Routes Vercel (proxy serveur, token sécurisé) ───────────
 
 async function storageGetPlayer(name) {
@@ -136,7 +136,7 @@ function playSound(type,on){if(!on)return;try{const ctx=new(window.AudioContext|
 
 
 // ── HOME PAGE ──────────────────────────────────────────────────────────────────
-function HomePage({dark,setDark,onPlay,progress,soundOn,setSoundOn}){
+function HomePage({dark,setDark,onPlay,progress,soundOn,setSoundOn,userButton}){
   const [tab,setTab]=useState("scores");
   const [nom,setNom]=useState(progress.playerName||"");
   const [leaderboard,setLeaderboard]=useState([]);
@@ -187,7 +187,7 @@ function HomePage({dark,setDark,onPlay,progress,soundOn,setSoundOn}){
         </div>
         <div style={{display:"flex",gap:"8px",alignItems:"center"}}>
           {progress.objPts>0&&<div style={{background:dark?"rgba(212,172,13,0.15)":"rgba(212,172,13,0.1)",border:"2px solid "+th.gold,borderRadius:"20px",padding:"4px 12px",fontSize:"11px",fontWeight:"bold",color:th.gold}}>🏆 {progress.objPts} pts</div>}
-          <button onClick={()=>setSoundOn(v=>!v)} style={{background:dark?"rgba(255,255,255,0.1)":"rgba(139,0,0,0.1)",border:"2px solid "+th.border,borderRadius:"8px",padding:"6px 10px",cursor:"pointer",fontSize:"16px"}}>{soundOn?"🔊":"🔇"}</button>
+          {userButton&&<div style={{marginRight:"4px"}}>{userButton}</div>}
           <button onClick={()=>setDark(v=>!v)} style={{background:dark?"rgba(255,255,255,0.1)":"rgba(139,0,0,0.1)",border:"2px solid "+th.border,borderRadius:"8px",padding:"6px 10px",cursor:"pointer",fontSize:"16px"}}>{dark?"☀️":"🌙"}</button>
         </div>
       </div>
@@ -569,26 +569,26 @@ function GamePage({dark,setDark,onBack,progress,setProgress,soundOn,setSoundOn})
 
 // ── APP ────────────────────────────────────────────────────────────────────────
 export default function App(){
+  const { user, isLoaded } = useUser();
   const [screen,setScreen]=useState("home");
   const [dark,setDark]=useState(false);
   const [progress,setProgress]=useState({...INIT_PROGRESS});
-useEffect(()=>{
-  if(progress.playerName && progress.manchesPlayed>0){
-    storageSavePlayer(progress.playerName, progress);
-  }
-},[progress.objPts, progress.manchesPlayed]);
   const [soundOn,setSoundOn]=useState(true);
   const [gameProgress,setGameProgress]=useState(null);
-
+// Charge la progression Clerk user au login
+  useEffect(()=>{
+    if(isLoaded && user && !gameProgress){
+      const name = user.firstName || user.username || user.emailAddresses[0]?.emailAddress?.split("@")[0] || "Joueur";
+      storageGetPlayer(name).then(saved=>{
+        const p = saved ? {...INIT_PROGRESS,...saved,playerName:name} : {...INIT_PROGRESS,playerName:name};
+        setProgress(p);
+      });
+    }
+  },[isLoaded, user]);
   function goToGame(name){
-    const n=(name||"").trim()||"Joueur";
+    const n = user ? (user.firstName || user.username || user.emailAddresses[0]?.emailAddress?.split("@")[0] || "Joueur") : (name||"").trim()||"Joueur";
     const apply=(saved)=>{
       const p=saved?{...INIT_PROGRESS,...saved,playerName:n}:{...INIT_PROGRESS,playerName:n};
-      // Récupère le recId mis en cache si dispo
-      try {
-        const rid = localStorage.getItem("pc_rid:" + n.toLowerCase().trim());
-        if (rid && !p._recId) p._recId = rid;
-      } catch {}
       setProgress(p);setGameProgress(p);setScreen("game");
     };
     storageGetPlayer(n).then(saved=>apply(saved)).catch(()=>apply(null));
@@ -603,5 +603,20 @@ useEffect(()=>{
   if(screen==="game"&&gameProgress){
     return <GamePage dark={dark} setDark={setDark} onBack={()=>setScreen("home")} progress={gameProgress} setProgress={handleSetProgress} soundOn={soundOn} setSoundOn={setSoundOn}/>;
   }
-  return <HomePage dark={dark} setDark={setDark} onPlay={goToGame} progress={progress} soundOn={soundOn} setSoundOn={setSoundOn}/>;
+ if (!isLoaded) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",fontFamily:"Georgia,serif",fontSize:"18px"}}>⏳ Chargement...</div>;
+
+  if (!user) return (
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100vh",background:"linear-gradient(135deg,#fdf6e3,#fae8c0)",fontFamily:"Georgia,serif"}}>
+      <div style={{fontSize:"64px",marginBottom:"16px"}}>🏁</div>
+      <h1 style={{fontSize:"32px",fontWeight:"bold",color:"#8B0000",letterSpacing:"4px",marginBottom:"8px"}}>PIT CARDS</h1>
+      <p style={{color:"#5d4037",marginBottom:"24px"}}>Le jeu de cartes de course</p>
+      <SignInButton mode="modal">
+        <button style={{background:"linear-gradient(135deg,#8B0000,#c0392b)",color:"#fff",border:"none",borderRadius:"12px",padding:"14px 36px",cursor:"pointer",fontWeight:"bold",fontSize:"16px",fontFamily:"Georgia,serif",letterSpacing:"2px",textTransform:"uppercase",boxShadow:"0 4px 16px rgba(139,0,0,0.4)"}}>
+          🚗 Se connecter
+        </button>
+      </SignInButton>
+    </div>
+  );
+
+  return <HomePage dark={dark} setDark={setDark} onPlay={goToGame} progress={progress} soundOn={soundOn} setSoundOn={setSoundOn} userButton={<UserButton/>}/>;
 }
