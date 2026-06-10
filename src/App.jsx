@@ -586,11 +586,12 @@ export default function App(){
     }
   },[isLoaded, user]);
   function goToGame(name){
-    const n = user ? (user.firstName || user.username || user.emailAddresses[0]?.emailAddress?.split("@")[0] || "Joueur") : (name||"").trim()||"Joueur";
+    const n = user ? (user.username || user.firstName || user.emailAddresses[0]?.emailAddress?.split("@")[0] || "Joueur") : (name||"").trim()||"Joueur";
     const apply=(saved)=>{
       const p=saved?{...INIT_PROGRESS,...saved,playerName:n}:{...INIT_PROGRESS,playerName:n};
       setProgress(p);setGameProgress(p);setScreen("game");
     };
+   
     storageGetPlayer(n).then(saved=>apply(saved)).catch(()=>apply(null));
   }
 
