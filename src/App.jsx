@@ -1,36 +1,28 @@
 import { useState, useEffect } from "react";
 
-// ── AIRTABLE (appels directs — fonctionne hors sandbox Claude) ───────────────
-const AT_TOKEN = import.meta.env.VITE_AIRTABLE_TOKEN;
-const AT_BASE  = "appYhe9XzxdEP88CD";
-const AT_TABLE = "Joueurs";
-const AT_URL   = `https://api.airtable.com/v0/${AT_BASE}/${AT_TABLE}`;
+// ── AIRTABLE via API Routes Vercel (proxy serveur, token sécurisé) ───────────
 
 async function storageGetPlayer(name) {
-  if (!name || !AT_TOKEN) return null;
+  if (!name) return null;
   try {
-    const filter = encodeURIComponent(`{nom}="${name}"`);
-    const r = await fetch(`${AT_URL}?filterByFormula=${filter}&maxRecords=1`, {
-      headers: { Authorization: `Bearer ${AT_TOKEN}` }
-    });
+    const r = await fetch(`/api/getPlayer?name=${encodeURIComponent(name)}`);
     if (!r.ok) return null;
     const d = await r.json();
-    const rec = d.records && d.records[0];
-    if (!rec) return null;
-    const f = rec.fields;
+    if (!d.found) return null;
+    const f = d.fields;
     return {
       playerName: name,
       objPts: f.objPts||0, manchesPlayed: f.manchesPlayed||0, wins: f.wins||0,
       totalKm: f.totalKm||0, bestMancheScore: f.bestMancheScore||0,
       unlocked: JSON.parse(f.unlocked||"[]"),
       triedDifficulties: JSON.parse(f.triedDifficulties||"[]"),
-      winStreak: f.winStreak||0, _recId: rec.id
+      winStreak: f.winStreak||0, _recId: d.id
     };
   } catch { return null; }
 }
 
 async function storageSavePlayer(name, progress) {
-  if (!name || !AT_TOKEN) return;
+  if (!name) return;
   const fields = {
     nom: name, objPts: progress.objPts||0, manchesPlayed: progress.manchesPlayed||0,
     wins: progress.wins||0, totalKm: progress.totalKm||0, bestMancheScore: progress.bestMancheScore||0,
@@ -39,32 +31,21 @@ async function storageSavePlayer(name, progress) {
     winStreak: progress.winStreak||0, updatedAt: new Date().toISOString()
   };
   try {
-    if (progress._recId) {
-      await fetch(`${AT_URL}/${progress._recId}`, {
-        method: "PATCH",
-        headers: { Authorization: `Bearer ${AT_TOKEN}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ fields })
-      });
-    } else {
-      const r = await fetch(AT_URL, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${AT_TOKEN}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ fields })
-      });
-      const d = await r.json();
-      if (d.id) progress._recId = d.id;
-    }
-  } catch(e) { console.warn("Airtable save error:", e); }
+    const r = await fetch("/api/savePlayer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ fields, recId: progress._recId||null })
+    });
+    const d = await r.json();
+    if (d.id && !progress._recId) progress._recId = d.id;
+  } catch(e) { console.warn("save error:", e); }
 }
 
 async function sharedSaveScore(name, progress) { await storageSavePlayer(name, progress); }
 
 async function sharedGetLeaderboard() {
-  if (!AT_TOKEN) return [];
   try {
-    const r = await fetch(`${AT_URL}?sort[0][field]=objPts&sort[0][direction]=desc&maxRecords=20`, {
-      headers: { Authorization: `Bearer ${AT_TOKEN}` }
-    });
+    const r = await fetch("/api/leaderboard");
     if (!r.ok) return [];
     const d = await r.json();
     return (d.records||[]).map(rec => ({
