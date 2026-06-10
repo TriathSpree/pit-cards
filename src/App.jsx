@@ -572,6 +572,11 @@ export default function App(){
   const [screen,setScreen]=useState("home");
   const [dark,setDark]=useState(false);
   const [progress,setProgress]=useState({...INIT_PROGRESS});
+useEffect(()=>{
+  if(progress.playerName && progress.manchesPlayed>0){
+    storageSavePlayer(progress.playerName, progress);
+  }
+},[progress.objPts, progress.manchesPlayed]);
   const [soundOn,setSoundOn]=useState(true);
   const [gameProgress,setGameProgress]=useState(null);
 
