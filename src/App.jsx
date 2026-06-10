@@ -594,7 +594,7 @@ useEffect(()=>{
     storageGetPlayer(n).then(saved=>apply(saved)).catch(()=>apply(null));
   }
 
-  function handleSetProgress(p){ console.log("SAVE", p.playerName, p.objPts);
+ function handleSetProgress(p){
     setGameProgress(p);setProgress(p);
     storageSavePlayer(p.playerName, p);
     sharedSaveScore(p.playerName, p);
