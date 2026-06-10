@@ -589,7 +589,7 @@ export default function App(){
     storageGetPlayer(n).then(saved=>apply(saved)).catch(()=>apply(null));
   }
 
-  function handleSetProgress(p){
+  function handleSetProgress(p){ console.log("SAVE", p.playerName, p.objPts);
     setGameProgress(p);setProgress(p);
     storageSavePlayer(p.playerName, p);
     sharedSaveScore(p.playerName, p);
