@@ -822,19 +822,18 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
             </div>
           </div>
 
-          {/* SCORES — LIGNES DE COURSE */}
+          {/* KM — COURSE EN COURS */}
           <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"10px",padding:"8px"}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:"6px"}}>
-              <div style={{fontSize:"10px",fontWeight:"bold",color:th.sub,textTransform:"uppercase"}}>Scores — Objectif : {SCORE_CIBLE} pts</div>
-              <div style={{fontSize:"10px",color:th.sub}}>{SCORE_CIBLE-Math.max(0,...Object.values(totalScores).concat([0]))} restants</div>
+              <div style={{fontSize:"10px",fontWeight:"bold",color:th.sub,textTransform:"uppercase"}}>Course C.{manche} — km parcourus</div>
+              <div style={{fontSize:"10px",color:th.sub}}>1000 km</div>
             </div>
             <div style={{display:"flex",flexDirection:"column",gap:"5px"}}>
-              {[...players].sort((a,b)=>(totalScores[b.name]||0)-(totalScores[a.name]||0)).map((p,rank)=>{
+              {[...players].sort((a,b)=>b.km-a.km).map((p,rank)=>{
                 const colorMap={};
                 players.forEach((pl,i)=>{colorMap[pl.name]=["#8B0000","#1a5276","#1e8449","#7d6608"][i%4];});
                 const c=colorMap[p.name];
-                const s=totalScores[p.name]||0;
-                const pct=s/SCORE_CIBLE*100;
+                const pct=p.km/1000*100;
                 const rankLabel=rank===0?"🥇":rank===1?"🥈":rank===2?"🥉":"4️⃣";
                 return(
                   <div key={p.name} style={{display:"flex",alignItems:"center",gap:"8px"}}>
@@ -845,11 +844,11 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
                     <div style={{flex:1,position:"relative",height:"14px",background:th.barBg,borderRadius:"7px",overflow:"hidden"}}>
                       <div style={{height:"100%",width:pct+"%",background:c,borderRadius:"7px",transition:"width 0.5s",minWidth:pct>0?"4px":"0"}}/>
                       {[200,400,600,800].map(v=>(
-                        <div key={v} style={{position:"absolute",top:0,bottom:0,left:(v/SCORE_CIBLE*100)+"%",width:"1px",background:dark?"rgba(255,255,255,0.2)":"rgba(0,0,0,0.15)",zIndex:1}}/>
+                        <div key={v} style={{position:"absolute",top:0,bottom:0,left:(v/1000*100)+"%",width:"1px",background:dark?"rgba(255,255,255,0.2)":"rgba(0,0,0,0.15)",zIndex:1}}/>
                       ))}
                       <div style={{position:"absolute",right:"4px",top:"0",bottom:"0",display:"flex",alignItems:"center",fontSize:"8px",opacity:0.5}}>🏁</div>
                     </div>
-                    <div style={{width:"38px",fontSize:"11px",fontWeight:"bold",color:c,textAlign:"right"}}>{s}</div>
+                    <div style={{width:"42px",fontSize:"11px",fontWeight:"bold",color:c,textAlign:"right"}}>{p.km} km</div>
                   </div>
                 );
               })}
