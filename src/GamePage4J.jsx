@@ -9,7 +9,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.31";
+const VERSION="1.5.32";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -783,7 +783,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
                 <div style={{marginTop:"8px",flexShrink:0}}>
                   <div style={{fontSize:"11px",color:"#e67e22",marginBottom:"6px"}}>Choisir la cible :</div>
                   <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
-                    {validPlays.filter(p=>p.cardId===selectedId&&p.action==="attaque").map(p=>(
+                    {[...new Map(validPlays.filter(p=>p.cardId===selectedId&&p.action==="attaque").map(p=>[p.targetIdx,p])).values()].map(p=>(
                       <button key={p.targetIdx} onClick={()=>{setTargetIdx(p.targetIdx);}} style={{...th.btn("#c0392b"),fontSize:"11px",padding:"5px 10px"}}>
                         {players[p.targetIdx]?.emoji} {players[p.targetIdx]?.name}
                       </button>
