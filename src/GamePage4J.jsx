@@ -678,12 +678,12 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
 
       {players&&(
         <>
-          {/* LAYOUT HORAIRE : HG→HD→BD→BG + centre pioche/défausse span 2 rows */}
+          {/* LAYOUT : col1=joueurs 0+3, col2=pioche+défausse, col3=joueurs 1+2 */}
           <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gridTemplateRows:"1fr 1fr",gap:"8px",marginBottom:"8px",alignItems:"stretch"}}>
-            {/* Haut gauche — joueur 0 */}
-            <div style={{display:"flex"}}>{renderPlayerCard(players[0],0,0===turnIdx)}</div>
-            {/* Centre — pioche + défausse sur toute la hauteur */}
-            <div style={{gridRow:"1 / span 2",display:"flex",flexDirection:"column",gap:"8px",alignItems:"center",justifyContent:"space-between"}}>
+            <div style={{gridColumn:1,gridRow:1,display:"flex"}}>{renderPlayerCard(players[0],0,0===turnIdx)}</div>
+            <div style={{gridColumn:1,gridRow:2,display:"flex"}}>{renderPlayerCard(players[3],3,3===turnIdx)}</div>
+            {/* Centre col2 span 2 rows — pioche + défausse */}
+            <div style={{gridColumn:2,gridRow:"1 / span 2",display:"flex",flexDirection:"column",gap:"8px",alignItems:"center",justifyContent:"space-between"}}>
               <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"8px",padding:"5px 8px",textAlign:"center",minWidth:"64px",flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
                 <div style={{fontSize:"20px"}}>🂠</div>
                 <div style={{fontSize:"13px",fontWeight:"bold",color:th.text}}>{deck.length}</div>
@@ -699,12 +699,8 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
                 <div style={{fontSize:"8px",color:th.sub}}>défausse</div>
               </div>
             </div>
-            {/* Haut droite — joueur 1 */}
-            <div style={{display:"flex"}}>{renderPlayerCard(players[1],1,1===turnIdx)}</div>
-            {/* Bas gauche — joueur 3 */}
-            <div style={{display:"flex"}}>{renderPlayerCard(players[3],3,3===turnIdx)}</div>
-            {/* Bas droite — joueur 2 */}
-            <div style={{display:"flex"}}>{renderPlayerCard(players[2],2,2===turnIdx)}</div>
+            <div style={{gridColumn:3,gridRow:1,display:"flex"}}>{renderPlayerCard(players[1],1,1===turnIdx)}</div>
+            <div style={{gridColumn:3,gridRow:2,display:"flex"}}>{renderPlayerCard(players[2],2,2===turnIdx)}</div>
           </div>
 
           {/* MAIN + LOG + SCORES — grille alignée sur la grille joueurs */}
