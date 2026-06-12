@@ -678,19 +678,19 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
 
       {players&&(
         <>
-          {/* LAYOUT HORAIRE : HG→HD→BD→BG + centre pioche/main */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gridTemplateRows:"auto auto",gap:"8px",marginBottom:"8px"}}>
+          {/* LAYOUT HORAIRE : HG→HD→BD→BG + centre pioche/défausse span 2 rows */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gridTemplateRows:"1fr 1fr",gap:"8px",marginBottom:"8px",alignItems:"stretch"}}>
             {/* Haut gauche — joueur 0 */}
-            <div>{renderPlayerCard(players[0],0,0===turnIdx)}</div>
-            {/* Centre haut — pioche uniquement (défausse dans la zone MAIN) */}
-            <div style={{display:"flex",flexDirection:"column",gap:"6px",alignItems:"center",justifyContent:"center"}}>
-              <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"8px",padding:"5px 8px",textAlign:"center",minWidth:"64px"}}>
+            <div style={{display:"flex"}}>{renderPlayerCard(players[0],0,0===turnIdx)}</div>
+            {/* Centre — pioche + défausse sur toute la hauteur */}
+            <div style={{gridRow:"1 / span 2",display:"flex",flexDirection:"column",gap:"8px",alignItems:"center",justifyContent:"space-between"}}>
+              <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"8px",padding:"5px 8px",textAlign:"center",minWidth:"64px",flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
                 <div style={{fontSize:"20px"}}>🂠</div>
                 <div style={{fontSize:"13px",fontWeight:"bold",color:th.text}}>{deck.length}</div>
                 <div style={{fontSize:"8px",color:th.sub}}>pioche</div>
                 {mustDraw&&<button onClick={handleDraw} style={{...th.btn("#1a5276"),marginTop:"4px",padding:"3px 5px",fontSize:"9px"}}>PIOCHER</button>}
               </div>
-              <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"8px",padding:"5px 8px",textAlign:"center",minWidth:"64px",display:"flex",flexDirection:"column",justifyContent:"center"}}>
+              <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"8px",padding:"5px 8px",textAlign:"center",minWidth:"64px",flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
                 {discard.length>0
                   ?<><div style={{fontSize:"18px"}}>{cEmoji(discard[discard.length-1])}</div>
                     <div style={{fontSize:"7px",fontWeight:"bold",color:cColor(discard[discard.length-1],dark),lineHeight:1.2}}>{getCard(discard[discard.length-1])?.label}</div></>
@@ -700,13 +700,11 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
               </div>
             </div>
             {/* Haut droite — joueur 1 */}
-            <div>{renderPlayerCard(players[1],1,1===turnIdx)}</div>
+            <div style={{display:"flex"}}>{renderPlayerCard(players[1],1,1===turnIdx)}</div>
             {/* Bas gauche — joueur 3 */}
-            <div>{renderPlayerCard(players[3],3,3===turnIdx)}</div>
-            {/* Centre bas — vide */}
-            <div/>
+            <div style={{display:"flex"}}>{renderPlayerCard(players[3],3,3===turnIdx)}</div>
             {/* Bas droite — joueur 2 */}
-            <div>{renderPlayerCard(players[2],2,2===turnIdx)}</div>
+            <div style={{display:"flex"}}>{renderPlayerCard(players[2],2,2===turnIdx)}</div>
           </div>
 
           {/* MAIN + LOG */}
