@@ -648,21 +648,34 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
             </div>
           </div>
 
-          {/* SCORES */}
+          {/* SCORES — LIGNES DE COURSE */}
           <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"10px",padding:"8px"}}>
-            <div style={{fontSize:"10px",fontWeight:"bold",color:th.sub,marginBottom:"6px",textTransform:"uppercase"}}>Scores — Objectif : {SCORE_CIBLE} pts</div>
-            <div style={{display:"flex",gap:"8px"}}>
-              {players.map((p,i)=>{
+            <div style={{display:"flex",justifyContent:"space-between",marginBottom:"6px"}}>
+              <div style={{fontSize:"10px",fontWeight:"bold",color:th.sub,textTransform:"uppercase"}}>Scores — Objectif : {SCORE_CIBLE} pts</div>
+              <div style={{fontSize:"10px",color:th.sub}}>{SCORE_CIBLE-Math.max(0,...Object.values(totalScores))} restants</div>
+            </div>
+            <div style={{display:"flex",flexDirection:"column",gap:"5px"}}>
+              {[...players].sort((a,b)=>(totalScores[b.name]||0)-(totalScores[a.name]||0)).map((p,rank)=>{
                 const colors=["#8B0000","#1a5276","#1e8449","#7d6608"];
-                const c=colors[i%4];
+                const origIdx=players.findIndex(x=>x.name===p.name);
+                const c=colors[origIdx%4];
                 const s=totalScores[p.name]||0;
+                const pct=s/SCORE_CIBLE*100;
                 return(
-                  <div key={p.name} style={{flex:1}}>
-                    <div style={{display:"flex",justifyContent:"space-between",fontSize:"10px",fontWeight:"bold",color:c,marginBottom:"2px"}}>
-                      <span>{p.emoji} {p.name}</span><span>{s}</span>
+                  <div key={p.name} style={{display:"flex",alignItems:"center",gap:"8px"}}>
+                    <div style={{width:"16px",fontSize:"11px",textAlign:"center"}}>
+                      {rank===0?"🥇":rank===1?"🥈":rank===2?"🥉":"4️⃣"}
                     </div>
-                    <div style={{height:"6px",background:th.barBg,borderRadius:"3px",overflow:"hidden"}}>
-                      <div style={{height:"100%",width:(s/SCORE_CIBLE*100)+"%",background:c,transition:"width 0.5s"}}/>
+                    <div style={{width:"80px",fontSize:"10px",fontWeight:"bold",color:c,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>
+                      {p.emoji} {p.name}
+                    </div>
+                    <div style={{flex:1,position:"relative",height:"14px",background:th.barBg,borderRadius:"7px",overflow:"hidden"}}>
+                      <div style={{height:"100%",width:pct+"%",background:c,borderRadius:"7px",transition:"width 0.5s",minWidth:pct>0?"4px":"0"}}/>
+                      {/* Petit drapeau à l'arrivée */}
+                      <div style={{position:"absolute",right:"4px",top:"0",bottom:"0",display:"flex",alignItems:"center",fontSize:"8px",opacity:0.5}}>🏁</div>
+                    </div>
+                    <div style={{width:"38px",fontSize:"11px",fontWeight:"bold",color:c,textAlign:"right"}}>
+                      {s}
                     </div>
                   </div>
                 );
