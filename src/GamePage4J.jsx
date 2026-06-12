@@ -23,7 +23,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.36";
+const VERSION="1.5.37";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -336,7 +336,6 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     const scores={};
     playerOrder.forEach(p=>{scores[p.name]=0;});
     if(Object.keys(totalScores).length===0)setTotalScores(scores);
-    aiRunningRef.current=false;
     setTimeout(()=>{
       setDrawn(false);
       setPhase(playerOrder[0].isHuman ? "play" : "ai_turn");
@@ -512,12 +511,12 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
   const deckRef=useRef(deck);
   const discardRef=useRef(discard);
   const turnIdxRef=useRef(turnIdx);
-  const aiRunningRef=useRef(false); // guard anti double-exécution
+  const phaseRef=useRef(phase);
   useEffect(()=>{playersRef.current=players;},[players]);
   useEffect(()=>{deckRef.current=deck;},[deck]);
   useEffect(()=>{discardRef.current=discard;},[discard]);
-  useEffect(()=>{turnIdxRef.current=turnIdx;aiRunningRef.current=false;},[turnIdx]);
-  useEffect(()=>{aiRunningRef.current=false;},[turnCount]);
+  useEffect(()=>{turnIdxRef.current=turnIdx;},[turnIdx]);
+  useEffect(()=>{phaseRef.current=phase;},[phase]);
   // Pulse clignotant quand c'est le tour humain
   useEffect(()=>{
     if(!isHumanTurn||!mustDraw)return;
@@ -539,11 +538,10 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
 
   useEffect(()=>{
     if(!players||phase!=="ai_turn")return;
-    if(aiRunningRef.current)return; // déjà en cours
-    aiRunningRef.current=true;
     const delay=difficulty==="hardcore"?600:1500;
     const t=setTimeout(()=>{
-      aiRunningRef.current=false;
+      // Vérifie qu'on est encore en ai_turn (protection contre state stale)
+      if(phaseRef.current!=="ai_turn")return;
       let ps=JSON.parse(JSON.stringify(playersRef.current));
       let d=[...deckRef.current];
       let disc=[...discardRef.current];
@@ -561,7 +559,6 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
         ps=applyPlay(ps,idx,play.cardId,play.action,play.targetIdx);
         setAnimCard({id:play.cardId,from:"ai"});
         setTimeout(()=>setAnimCard(null),600);
-        // CF possible après attaque IA
         if(play.action==="attaque"){
           const bo=botteFor(play.cardId);
           if(bo&&ps[play.targetIdx]&&ps[play.targetIdx].hand.includes(bo.id)&&!ps[play.targetIdx].bottes.includes(bo.id)){
@@ -589,7 +586,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
         nextTurn(ps,idx,d,disc);
       }
     },delay);
-    return()=>{clearTimeout(t);aiRunningRef.current=false;};
+    return()=>clearTimeout(t);
   },[phase,turnIdx]);
 
   function handleDraw(){
@@ -676,7 +673,6 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     const newOrder=[...players.slice(winnerIdx),...players.slice(0,winnerIdx)];
     const ps=newOrder.map(p=>mkPlayer(p.name,p.isHuman,d.splice(0,6)));
     newOrder.forEach((p,i)=>{ps[i].emoji=p.emoji;});
-    aiRunningRef.current=false; // reset guard IA
     setPlayers(ps);setDeck(d);setDiscard([]);
     setTurnIdx(0);setTurnCount(c=>c+1);setDrawn(false);
     setSelected(null);setMancheOver(null);setManche(m=>m+1);
