@@ -70,7 +70,7 @@ const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const TOTAL_QTY={accident:3,panne:3,crevaison:3,feu_rouge:5,limite:4,reparations:6,essence:6,roue_secours:6,feu_vert:14,fin_limite:6,as_volant:1,citerne:1,increvable:1,prioritaire:1,b25:10,b50:10,b75:10,b100:12,b200:4};
 const SCORE_CIBLE=5000;
-const VERSION="1.5.29";
+const VERSION="1.5.30";
 const GAME_NAME="Pit Cards";
 
 const OBJECTIFS=[
@@ -235,32 +235,63 @@ function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,user
             {modes.map(m=>(
               <div key={m.id} onClick={m.active?()=>setSelectedMode(m.id):undefined} style={{background:selectedMode===m.id?(dark?"rgba(139,0,0,0.2)":"rgba(139,0,0,0.08)"):th.cardBg,border:selectedMode===m.id?"3px solid "+(dark?"#e07070":"#8B0000"):"2px solid "+th.border,borderRadius:"12px",padding:"16px",textAlign:"center",opacity:m.active?1:0.45,position:"relative",cursor:m.active?"pointer":"not-allowed",transition:"all 0.2s"}}>
                 {!m.active&&<div style={{position:"absolute",top:"8px",right:"8px",background:dark?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.08)",borderRadius:"6px",padding:"2px 6px",fontSize:"8px",fontWeight:"bold",color:th.subtext}}>BIENTÔT</div>}
-                {m.id==="4j"
-                  ?<div style={{marginBottom:"6px",lineHeight:0}}><svg viewBox="0 0 680 180" style={{width:"100%",maxHeight:"80px"}} role="img"><title>Course de voitures</title>
-                    <rect x="0" y="0" width="680" height="108" fill="#87CEEB"/>
-                    <ellipse cx="100" cy="30" rx="40" ry="18" fill="white" opacity="0.9"/>
-                    <ellipse cx="130" cy="25" rx="30" ry="15" fill="white" opacity="0.9"/>
-                    <ellipse cx="460" cy="38" rx="50" ry="20" fill="white" opacity="0.8"/>
-                    <ellipse cx="500" cy="32" rx="35" ry="16" fill="white" opacity="0.8"/>
-                    <rect x="0" y="52" width="680" height="50" fill="#c8a96a"/>
-                    <rect x="0" y="52" width="680" height="5" fill="#b8935a"/>
-                    <g fill="#8B0000" opacity="0.7"><rect x="20" y="61" width="14" height="10" rx="2"/><rect x="60" y="61" width="14" height="10" rx="2"/><rect x="100" y="61" width="14" height="10" rx="2"/><rect x="140" y="61" width="14" height="10" rx="2"/><rect x="180" y="61" width="14" height="10" rx="2"/><rect x="220" y="61" width="14" height="10" rx="2"/><rect x="260" y="61" width="14" height="10" rx="2"/><rect x="300" y="61" width="14" height="10" rx="2"/><rect x="340" y="61" width="14" height="10" rx="2"/><rect x="380" y="61" width="14" height="10" rx="2"/><rect x="420" y="61" width="14" height="10" rx="2"/><rect x="460" y="61" width="14" height="10" rx="2"/><rect x="500" y="61" width="14" height="10" rx="2"/><rect x="540" y="61" width="14" height="10" rx="2"/><rect x="580" y="61" width="14" height="10" rx="2"/><rect x="620" y="61" width="14" height="10" rx="2"/><rect x="660" y="61" width="14" height="10" rx="2"/></g>
-                    <rect x="0" y="100" width="680" height="70" fill="#555"/>
+                {m.id==="solo"
+                  ?<div style={{marginBottom:"6px",lineHeight:0}}><svg viewBox="0 0 680 180" style={{width:"100%",maxHeight:"80px"}} role="img"><title>Solo vs Victor</title>
+                    <rect x="0" y="0" width="680" height="100" fill="#e8f4fd"/>
+                    <circle cx="580" cy="35" r="28" fill="#FFE066" opacity="0.9"/>
+                    <circle cx="580" cy="35" r="22" fill="#FFD700"/>
+                    <ellipse cx="150" cy="95" rx="200" ry="40" fill="#a8d5a2" opacity="0.7"/>
+                    <ellipse cx="520" cy="98" rx="220" ry="35" fill="#b8e0b0" opacity="0.6"/>
+                    <rect x="0" y="55" width="680" height="35" fill="#e8d5b0"/>
+                    <rect x="0" y="55" width="680" height="4" fill="#c8a870"/>
+                    <g><rect x="0" y="59" width="20" height="12" fill="#e63946"/><rect x="20" y="59" width="20" height="12" fill="white"/><rect x="40" y="59" width="20" height="12" fill="#e63946"/><rect x="60" y="59" width="20" height="12" fill="white"/><rect x="80" y="59" width="20" height="12" fill="#e63946"/><rect x="100" y="59" width="20" height="12" fill="white"/><rect x="120" y="59" width="20" height="12" fill="#e63946"/><rect x="140" y="59" width="20" height="12" fill="white"/><rect x="160" y="59" width="20" height="12" fill="#e63946"/><rect x="180" y="59" width="20" height="12" fill="white"/><rect x="200" y="59" width="20" height="12" fill="#e63946"/><rect x="220" y="59" width="20" height="12" fill="white"/><rect x="240" y="59" width="20" height="12" fill="#e63946"/><rect x="260" y="59" width="20" height="12" fill="white"/><rect x="280" y="59" width="20" height="12" fill="#e63946"/><rect x="300" y="59" width="20" height="12" fill="white"/><rect x="320" y="59" width="20" height="12" fill="#e63946"/><rect x="340" y="59" width="20" height="12" fill="white"/><rect x="360" y="59" width="20" height="12" fill="#e63946"/><rect x="380" y="59" width="20" height="12" fill="white"/><rect x="400" y="59" width="20" height="12" fill="#e63946"/><rect x="420" y="59" width="20" height="12" fill="white"/><rect x="440" y="59" width="20" height="12" fill="#e63946"/><rect x="460" y="59" width="20" height="12" fill="white"/><rect x="480" y="59" width="20" height="12" fill="#e63946"/><rect x="500" y="59" width="20" height="12" fill="white"/><rect x="520" y="59" width="20" height="12" fill="#e63946"/><rect x="540" y="59" width="20" height="12" fill="white"/><rect x="560" y="59" width="20" height="12" fill="#e63946"/><rect x="580" y="59" width="20" height="12" fill="white"/><rect x="600" y="59" width="20" height="12" fill="#e63946"/><rect x="620" y="59" width="20" height="12" fill="white"/><rect x="640" y="59" width="20" height="12" fill="#e63946"/><rect x="660" y="59" width="20" height="12" fill="white"/></g>
+                    <rect x="0" y="100" width="680" height="70" fill="#6b6b6b"/>
                     <rect x="0" y="100" width="680" height="4" fill="#888"/>
-                    <line x1="0" y1="135" x2="680" y2="135" stroke="white" strokeWidth="2" strokeDasharray="30,20" opacity="0.4"/>
+                    <line x1="0" y1="135" x2="680" y2="135" stroke="#FFD700" strokeWidth="2" strokeDasharray="28,18" opacity="0.7"/>
                     <rect x="0" y="166" width="680" height="4" fill="#888"/>
-                    <rect x="0" y="170" width="680" height="10" fill="#4a4a2a"/>
-                    <g fill="black" opacity="0.5"><rect x="620" y="100" width="10" height="9"/><rect x="630" y="109" width="10" height="9"/><rect x="620" y="118" width="10" height="9"/><rect x="630" y="127" width="10" height="9"/><rect x="620" y="136" width="10" height="9"/><rect x="630" y="145" width="10" height="9"/><rect x="620" y="154" width="10" height="9"/><rect x="630" y="163" width="10" height="9"/></g>
-                    <g fill="white" opacity="0.5"><rect x="630" y="100" width="10" height="9"/><rect x="620" y="109" width="10" height="9"/><rect x="630" y="118" width="10" height="9"/><rect x="620" y="127" width="10" height="9"/><rect x="630" y="136" width="10" height="9"/><rect x="620" y="145" width="10" height="9"/><rect x="630" y="154" width="10" height="9"/><rect x="620" y="163" width="10" height="9"/></g>
-                    <line x1="640" y1="60" x2="640" y2="103" stroke="#333" strokeWidth="2.5"/>
-                    <rect x="640" y="60" width="28" height="18" fill="white"/>
-                    <rect x="640" y="60" width="9" height="9" fill="black"/><rect x="649" y="69" width="9" height="9" fill="black"/><rect x="658" y="60" width="10" height="9" fill="black"/>
-                    <g transform="translate(540,0) scale(-1,1) translate(-540,0)"><text x="540" y="130" fontSize="34" textAnchor="middle">🏎️</text></g>
-                    <ellipse cx="580" cy="122" rx="10" ry="5" fill="#bbb" opacity="0.35"/>
-                    <g transform="translate(370,0) scale(-1,1) translate(-370,0)"><text x="370" y="143" fontSize="30" textAnchor="middle">🚗</text></g>
-                    <ellipse cx="400" cy="136" rx="9" ry="4" fill="#bbb" opacity="0.3"/>
-                    <g transform="translate(200,0) scale(-1,1) translate(-200,0)"><text x="200" y="155" fontSize="27" textAnchor="middle">🚕</text></g>
-                    <ellipse cx="228" cy="149" rx="8" ry="4" fill="#bbb" opacity="0.25"/>
+                    <rect x="0" y="170" width="680" height="10" fill="#5a5a2a"/>
+                    <g fill="black" opacity="0.55"><rect x="604" y="100" width="10" height="9"/><rect x="614" y="109" width="10" height="9"/><rect x="604" y="118" width="10" height="9"/><rect x="614" y="127" width="10" height="9"/><rect x="604" y="136" width="10" height="9"/><rect x="614" y="145" width="10" height="9"/><rect x="604" y="154" width="10" height="9"/><rect x="614" y="163" width="10" height="9"/></g>
+                    <g fill="white" opacity="0.55"><rect x="614" y="100" width="10" height="9"/><rect x="604" y="109" width="10" height="9"/><rect x="614" y="118" width="10" height="9"/><rect x="604" y="127" width="10" height="9"/><rect x="614" y="136" width="10" height="9"/><rect x="604" y="145" width="10" height="9"/><rect x="614" y="154" width="10" height="9"/><rect x="604" y="163" width="10" height="9"/></g>
+                    <line x1="624" y1="62" x2="624" y2="103" stroke="#333" strokeWidth="2.5"/>
+                    <rect x="624" y="62" width="28" height="18" fill="white"/>
+                    <rect x="624" y="62" width="9" height="9" fill="black"/><rect x="633" y="71" width="9" height="9" fill="black"/><rect x="642" y="62" width="10" height="9" fill="black"/>
+                    <g transform="translate(460,0) scale(-1,1) translate(-460,0)"><text x="460" y="128" fontSize="36" textAnchor="middle">🏎️</text></g>
+                    <ellipse cx="498" cy="119" rx="12" ry="5" fill="#ccc" opacity="0.4"/>
+                    <ellipse cx="514" cy="117" rx="8" ry="3" fill="#ccc" opacity="0.2"/>
+                    <g transform="translate(280,0) scale(-1,1) translate(-280,0)"><text x="280" y="160" fontSize="36" textAnchor="middle">🚗</text></g>
+                    <ellipse cx="316" cy="152" rx="11" ry="5" fill="#ccc" opacity="0.35"/>
+                    <rect x="316" y="118" width="46" height="22" rx="6" fill="#FFD700"/>
+                    <text x="339" y="133" textAnchor="middle" fontFamily="Georgia,serif" fontSize="15" fill="#8B0000" fontWeight="bold">VS</text>
+                  </svg></div>
+                  :m.id==="4j"
+                  ?<div style={{marginBottom:"6px",lineHeight:0}}><svg viewBox="0 0 680 180" style={{width:"100%",maxHeight:"80px"}} role="img"><title>Course 4 voitures</title>
+                    <rect x="0" y="0" width="680" height="100" fill="#e8f4fd"/>
+                    <circle cx="580" cy="35" r="28" fill="#FFE066" opacity="0.9"/>
+                    <circle cx="580" cy="35" r="22" fill="#FFD700"/>
+                    <ellipse cx="150" cy="95" rx="200" ry="40" fill="#a8d5a2" opacity="0.7"/>
+                    <ellipse cx="520" cy="98" rx="220" ry="35" fill="#b8e0b0" opacity="0.6"/>
+                    <rect x="0" y="55" width="680" height="35" fill="#e8d5b0"/>
+                    <rect x="0" y="55" width="680" height="4" fill="#c8a870"/>
+                    <g><rect x="0" y="59" width="20" height="12" fill="#e63946"/><rect x="20" y="59" width="20" height="12" fill="white"/><rect x="40" y="59" width="20" height="12" fill="#e63946"/><rect x="60" y="59" width="20" height="12" fill="white"/><rect x="80" y="59" width="20" height="12" fill="#e63946"/><rect x="100" y="59" width="20" height="12" fill="white"/><rect x="120" y="59" width="20" height="12" fill="#e63946"/><rect x="140" y="59" width="20" height="12" fill="white"/><rect x="160" y="59" width="20" height="12" fill="#e63946"/><rect x="180" y="59" width="20" height="12" fill="white"/><rect x="200" y="59" width="20" height="12" fill="#e63946"/><rect x="220" y="59" width="20" height="12" fill="white"/><rect x="240" y="59" width="20" height="12" fill="#e63946"/><rect x="260" y="59" width="20" height="12" fill="white"/><rect x="280" y="59" width="20" height="12" fill="#e63946"/><rect x="300" y="59" width="20" height="12" fill="white"/><rect x="320" y="59" width="20" height="12" fill="#e63946"/><rect x="340" y="59" width="20" height="12" fill="white"/><rect x="360" y="59" width="20" height="12" fill="#e63946"/><rect x="380" y="59" width="20" height="12" fill="white"/><rect x="400" y="59" width="20" height="12" fill="#e63946"/><rect x="420" y="59" width="20" height="12" fill="white"/><rect x="440" y="59" width="20" height="12" fill="#e63946"/><rect x="460" y="59" width="20" height="12" fill="white"/><rect x="480" y="59" width="20" height="12" fill="#e63946"/><rect x="500" y="59" width="20" height="12" fill="white"/><rect x="520" y="59" width="20" height="12" fill="#e63946"/><rect x="540" y="59" width="20" height="12" fill="white"/><rect x="560" y="59" width="20" height="12" fill="#e63946"/><rect x="580" y="59" width="20" height="12" fill="white"/><rect x="600" y="59" width="20" height="12" fill="#e63946"/><rect x="620" y="59" width="20" height="12" fill="white"/><rect x="640" y="59" width="20" height="12" fill="#e63946"/><rect x="660" y="59" width="20" height="12" fill="white"/></g>
+                    <rect x="0" y="100" width="680" height="70" fill="#6b6b6b"/>
+                    <rect x="0" y="100" width="680" height="4" fill="#888"/>
+                    <line x1="0" y1="128" x2="680" y2="128" stroke="#FFD700" strokeWidth="1.5" strokeDasharray="25,18" opacity="0.5"/>
+                    <line x1="0" y1="152" x2="680" y2="152" stroke="#FFD700" strokeWidth="1.5" strokeDasharray="25,18" opacity="0.5"/>
+                    <rect x="0" y="166" width="680" height="4" fill="#888"/>
+                    <rect x="0" y="170" width="680" height="10" fill="#5a5a2a"/>
+                    <g fill="black" opacity="0.55"><rect x="604" y="100" width="10" height="9"/><rect x="614" y="109" width="10" height="9"/><rect x="604" y="118" width="10" height="9"/><rect x="614" y="127" width="10" height="9"/><rect x="604" y="136" width="10" height="9"/><rect x="614" y="145" width="10" height="9"/><rect x="604" y="154" width="10" height="9"/><rect x="614" y="163" width="10" height="9"/></g>
+                    <g fill="white" opacity="0.55"><rect x="614" y="100" width="10" height="9"/><rect x="604" y="109" width="10" height="9"/><rect x="614" y="118" width="10" height="9"/><rect x="604" y="127" width="10" height="9"/><rect x="614" y="136" width="10" height="9"/><rect x="604" y="145" width="10" height="9"/><rect x="614" y="154" width="10" height="9"/><rect x="604" y="163" width="10" height="9"/></g>
+                    <line x1="624" y1="62" x2="624" y2="103" stroke="#333" strokeWidth="2.5"/>
+                    <rect x="624" y="62" width="28" height="18" fill="white"/>
+                    <rect x="624" y="62" width="9" height="9" fill="black"/><rect x="633" y="71" width="9" height="9" fill="black"/><rect x="642" y="62" width="10" height="9" fill="black"/>
+                    <g transform="translate(540,0) scale(-1,1) translate(-540,0)"><text x="540" y="122" fontSize="30" textAnchor="middle">🏎️</text></g>
+                    <ellipse cx="574" cy="114" rx="9" ry="4" fill="#ccc" opacity="0.35"/>
+                    <g transform="translate(400,0) scale(-1,1) translate(-400,0)"><text x="400" y="134" fontSize="27" textAnchor="middle">🚗</text></g>
+                    <ellipse cx="430" cy="127" rx="8" ry="4" fill="#ccc" opacity="0.3"/>
+                    <g transform="translate(260,0) scale(-1,1) translate(-260,0)"><text x="260" y="148" fontSize="25" textAnchor="middle">🚙</text></g>
+                    <ellipse cx="288" cy="141" rx="7" ry="3" fill="#ccc" opacity="0.25"/>
+                    <g transform="translate(120,0) scale(-1,1) translate(-120,0)"><text x="120" y="160" fontSize="23" textAnchor="middle">🚕</text></g>
+                    <ellipse cx="146" cy="154" rx="6" ry="3" fill="#ccc" opacity="0.2"/>
                   </svg></div>
                   :<div style={{fontSize:"28px",marginBottom:"6px"}}>{m.emoji}</div>
                 }
