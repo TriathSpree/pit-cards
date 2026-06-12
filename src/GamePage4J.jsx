@@ -707,10 +707,10 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
             <div style={{display:"flex"}}>{renderPlayerCard(players[2],2,2===turnIdx)}</div>
           </div>
 
-          {/* MAIN + LOG */}
-          <div style={{display:"flex",gap:"8px",marginBottom:"8px"}}>
-            {/* MAIN */}
-            <div style={{flex:1,background:dark?"rgba(10,20,40,0.6)":"rgba(26,82,118,0.05)",border:"2px dashed "+th.border,borderRadius:"10px",padding:"8px"}}>
+          {/* MAIN + LOG + SCORES — grille alignée sur la grille joueurs */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:"8px",marginBottom:"8px"}}>
+            {/* MAIN — même largeur que Raquel (1fr gauche) */}
+            <div style={{background:dark?"rgba(10,20,40,0.6)":"rgba(26,82,118,0.05)",border:"2px dashed "+th.border,borderRadius:"10px",padding:"8px"}}>
               <div style={{fontSize:"11px",fontWeight:"bold",marginBottom:"6px",color:th.sub}}>
                 {discardMode?"🗑️ DÉFAUSSER":"MAIN"} ({players[humanIdx]?.hand?.length||0})
                 {targetIdx===-1&&<span style={{color:"#e67e22",marginLeft:"8px"}}>— Choisissez une cible</span>}
@@ -771,40 +771,43 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
               </div>
             </div>
 
-            {/* LOG */}
-            <div style={{width:"200px",background:dark?"rgba(20,30,50,0.8)":"rgba(255,255,255,0.6)",border:"2px solid "+th.border,borderRadius:"10px",padding:"8px",maxHeight:"280px",overflowY:"auto",flexShrink:0}}>
-              <div style={{fontSize:"10px",fontWeight:"bold",marginBottom:"4px",color:th.sub,textTransform:"uppercase"}}>Journal</div>
-              {log.map((l,i)=>(
-                <div key={i} style={{fontSize:"10px",padding:"2px 4px",borderBottom:"1px solid "+th.border,color:th.text,opacity:1-i*0.04}}>{l.text}</div>
-              ))}
-            </div>
+            {/* Colonne centrale — même largeur auto que la colonne pioche/défausse */}
+            <div style={{width:"80px"}}/>
 
-            {/* SCORES panneau latéral */}
-            <div style={{width:"160px",background:dark?"rgba(20,30,50,0.8)":"rgba(255,255,255,0.6)",border:"2px solid "+th.border,borderRadius:"10px",padding:"8px",flexShrink:0,display:"flex",flexDirection:"column",gap:"4px"}}>
-              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"4px"}}>
-                <div style={{fontSize:"10px",fontWeight:"bold",color:th.sub,textTransform:"uppercase"}}>Scores <span style={{opacity:0.5,fontWeight:"normal"}}>ⓘ</span></div>
-                <div style={{fontSize:"9px",color:th.sub}}>But : {SCORE_CIBLE} pts</div>
+            {/* Journal + Scores — même largeur que Salomé (1fr droite) */}
+            <div style={{display:"flex",gap:"8px"}}>
+              {/* LOG */}
+              <div style={{flex:1,background:dark?"rgba(20,30,50,0.8)":"rgba(255,255,255,0.6)",border:"2px solid "+th.border,borderRadius:"10px",padding:"8px",overflowY:"auto",maxHeight:"280px"}}>
+                <div style={{fontSize:"10px",fontWeight:"bold",marginBottom:"4px",color:th.sub,textTransform:"uppercase"}}>Journal</div>
+                {log.map((l,i)=>(
+                  <div key={i} style={{fontSize:"10px",padding:"2px 4px",borderBottom:"1px solid "+th.border,color:th.text,opacity:1-i*0.04}}>{l.text}</div>
+                ))}
               </div>
-              {players.map((p,i)=>{
-                const colors=["#8B0000","#1a5276","#1e8449","#7d6608"];
-                const c=colors[i%4];
-                const s=totalScores[p.name]||0;
-                return(
-                  <div key={p.name}>
-                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"2px"}}>
-                      <div style={{fontSize:"10px",fontWeight:"bold",color:c,display:"flex",alignItems:"center",gap:"3px"}}>
-                        {p.emoji} {p.name}
+              {/* SCORES */}
+              <div style={{flex:1,background:dark?"rgba(20,30,50,0.8)":"rgba(255,255,255,0.6)",border:"2px solid "+th.border,borderRadius:"10px",padding:"8px",display:"flex",flexDirection:"column",gap:"4px"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"4px"}}>
+                  <div style={{fontSize:"10px",fontWeight:"bold",color:th.sub,textTransform:"uppercase"}}>Scores</div>
+                  <div style={{fontSize:"9px",color:th.sub}}>But : {SCORE_CIBLE} pts</div>
+                </div>
+                {players.map((p,i)=>{
+                  const colors=["#8B0000","#1a5276","#1e8449","#7d6608"];
+                  const c=colors[i%4];
+                  const s=totalScores[p.name]||0;
+                  return(
+                    <div key={p.name}>
+                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"2px"}}>
+                        <div style={{fontSize:"10px",fontWeight:"bold",color:c}}>{p.emoji} {p.name}</div>
+                        <div style={{fontSize:"11px",fontWeight:"bold",color:c}}>{s}</div>
                       </div>
-                      <div style={{fontSize:"11px",fontWeight:"bold",color:c}}>{s}</div>
+                      <div style={{height:"6px",background:th.barBg,borderRadius:"3px",overflow:"hidden",marginBottom:"4px"}}>
+                        <div style={{height:"100%",width:(s/SCORE_CIBLE*100)+"%",background:c,borderRadius:"3px",transition:"width 0.5s",minWidth:s>0?"3px":"0"}}/>
+                      </div>
                     </div>
-                    <div style={{height:"6px",background:th.barBg,borderRadius:"3px",overflow:"hidden",marginBottom:"6px"}}>
-                      <div style={{height:"100%",width:(s/SCORE_CIBLE*100)+"%",background:c,borderRadius:"3px",transition:"width 0.5s",minWidth:s>0?"3px":"0"}}/>
-                    </div>
-                  </div>
-                );
-              })}
-              <div style={{borderTop:"1px solid "+th.border,paddingTop:"4px",textAlign:"center"}}>
-                <div style={{fontSize:"9px",color:th.sub}}>{SCORE_CIBLE-Math.max(0,...Object.values(totalScores).concat([0]))} restants</div>
+                  );
+                })}
+                <div style={{borderTop:"1px solid "+th.border,paddingTop:"4px",textAlign:"center"}}>
+                  <div style={{fontSize:"9px",color:th.sub}}>{SCORE_CIBLE-Math.max(0,...Object.values(totalScores).concat([0]))} restants</div>
+                </div>
               </div>
             </div>
           </div>
