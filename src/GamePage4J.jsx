@@ -2,8 +2,8 @@ import { useState, useEffect, useRef } from "react";
 
 // ── CONSTANTES (partagées) ────────────────────────────────────────────────────
 const BORNES=[{id:"b25",type:"borne",km:25,label:"25 km"},{id:"b50",type:"borne",km:50,label:"50 km"},{id:"b75",type:"borne",km:75,label:"75 km"},{id:"b100",type:"borne",km:100,label:"100 km"},{id:"b200",type:"borne",km:200,label:"200 km"}];
-const ATTAQUES=[{id:"accident",type:"attaque",label:"Collision"},{id:"panne",type:"attaque",label:"Manque de carburant"},{id:"crevaison",type:"attaque",label:"Pneus usés"},{id:"feu_rouge",type:"attaque",label:"🚩 Drapeau rouge"},{id:"limite",type:"attaque",label:"🟡 Drapeau jaune"}];
-const PARADES=[{id:"reparations",type:"parade",label:"Arrêt au stand",attaque:"accident"},{id:"essence",type:"parade",label:"Ravitaillement",attaque:"panne"},{id:"roue_secours",type:"parade",label:"Pneus neufs",attaque:"crevaison"},{id:"feu_vert",type:"parade",label:"🟢 Drapeau vert",attaque:"feu_rouge"},{id:"fin_limite",type:"parade",label:"Vitesse libre",attaque:"limite"}];
+const ATTAQUES=[{id:"accident",type:"attaque",label:"Collision"},{id:"panne",type:"attaque",label:"Manque de carburant"},{id:"crevaison",type:"attaque",label:"Pneus usés"},{id:"feu_rouge",type:"attaque",label:"Drapeau rouge"},{id:"limite",type:"attaque",label:"Drapeau jaune"}];
+const PARADES=[{id:"reparations",type:"parade",label:"Arrêt au stand",attaque:"accident"},{id:"essence",type:"parade",label:"Ravitaillement",attaque:"panne"},{id:"roue_secours",type:"parade",label:"Pneus neufs",attaque:"crevaison"},{id:"feu_vert",type:"parade",label:"Drapeau vert",attaque:"feu_rouge"},{id:"fin_limite",type:"parade",label:"Vitesse libre",attaque:"limite"}];
 const BOTTES=[{id:"as_volant",type:"botte",label:"Pole Position",counters:"accident"},{id:"citerne",type:"botte",label:"Réserve carburant",counters:"panne"},{id:"increvable",type:"botte",label:"Pneus Kevlar",counters:"crevaison"},{id:"prioritaire",type:"botte",label:"Safety Car",counters:["feu_rouge","limite"]}];
 const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
@@ -479,6 +479,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
   const deckRef=useRef(deck);
   const discardRef=useRef(discard);
   const turnIdxRef=useRef(turnIdx);
+  const aiRunningRef=useRef(false); // guard anti double-exécution
   useEffect(()=>{playersRef.current=players;},[players]);
   useEffect(()=>{deckRef.current=deck;},[deck]);
   useEffect(()=>{discardRef.current=discard;},[discard]);
@@ -486,8 +487,11 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
 
   useEffect(()=>{
     if(!players||phase!=="ai_turn")return;
+    if(aiRunningRef.current)return; // déjà en cours
+    aiRunningRef.current=true;
     const delay=difficulty==="hardcore"?600:1500;
     const t=setTimeout(()=>{
+      aiRunningRef.current=false;
       let ps=JSON.parse(JSON.stringify(playersRef.current));
       let d=[...deckRef.current];
       let disc=[...discardRef.current];
@@ -533,7 +537,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
         nextTurn(ps,idx,d,disc);
       }
     },delay);
-    return()=>clearTimeout(t);
+    return()=>{clearTimeout(t);aiRunningRef.current=false;};
   },[phase,turnIdx]);
 
   function handleDraw(){
