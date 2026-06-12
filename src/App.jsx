@@ -451,8 +451,8 @@ function GamePage({dark,setDark,onBack,progress,setProgress,soundOn,setSoundOn})
     const newWins=w==="player"?progress.wins+1:progress.wins;
     const newStreak=w==="player"?winStreak+1:0;
     setWinStreak(newStreak);
-    const newHcu=hardcoreUnlocked||(w==="player"&&(difficulty==="hard"||difficulty==="hardcore"));
-    if(newHcu&&!hardcoreUnlocked)setHardcoreUnlocked(true);
+    // Hardcore se débloque en gagnant une partie complète (5000 pts)
+    // Vérifié dans gameOver, pas ici
     const newTotalKm=(progress.totalKm||0)+s.player.km;
     const newBestManche=Math.max(progress.bestMancheScore||0,ps);
     const triedDiffs=new Set([...(progress.triedDifficulties||[]),difficulty]);
@@ -460,7 +460,7 @@ function GamePage({dark,setDark,onBack,progress,setProgress,soundOn,setSoundOn})
     setProgress(p=>({...p,manchesPlayed:newManchesPlayed,wins:newWins,totalKm:newTotalKm,bestMancheScore:newBestManche,winStreak:newStreak,triedDifficulties:[...triedDiffs]}));
     checkObjectifs({winner:w,playerState:{...s.player,startedLastMancheAtZero:lastMancheZero},aiState:s.ai,diff:difficulty,wins:newWins,manchesPlayed:newManchesPlayed,cfCount:mancheCFCount,streak:newStreak,mancheCount:manche,discardCount,attackCount,attackTypes,nbBottes200:partieNb200});
     setLastMancheZero(s.player.km===0);
-    if(nt.player>=SCORE_CIBLE||nt.ai>=SCORE_CIBLE){const winner=nt.player>=nt.ai?"player":"ai";setGameOver({winner,total:nt});setTimeout(()=>snd(winner==="player"?"win":"lose"),300);}
+    if(nt.player>=SCORE_CIBLE||nt.ai>=SCORE_CIBLE){const winner=nt.player>=nt.ai?"player":"ai";const newHcu=!hardcoreUnlocked&&winner==="player";if(newHcu)setHardcoreUnlocked(true);setGameOver({winner,total:nt,newHardcore:newHcu});setTimeout(()=>snd(winner==="player"?"win":"lose"),300);}
     return true;
   }
 
