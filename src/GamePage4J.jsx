@@ -9,7 +9,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.21";
+const VERSION="1.5.22";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -747,7 +747,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
               </div>
               <div style={{display:"flex",gap:"4px",flexWrap:"wrap",overflow:"hidden"}}>
                 {players[humanIdx]?.hand?.map(id=>{
-                  const valid=!discardMode&&drawn&&validCardIds.includes(id);
+                  const valid=discardMode||(!discardMode&&drawn&&validCardIds.includes(id));
                   const c=getCard(id);
                   return(
                     <div key={id} onClick={()=>handleCardClick(id)} style={{
