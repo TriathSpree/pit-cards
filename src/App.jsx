@@ -70,7 +70,7 @@ const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const TOTAL_QTY={accident:3,panne:3,crevaison:3,feu_rouge:5,limite:4,reparations:6,essence:6,roue_secours:6,feu_vert:14,fin_limite:6,as_volant:1,citerne:1,increvable:1,prioritaire:1,b25:10,b50:10,b75:10,b100:12,b200:4};
 const SCORE_CIBLE=5000;
-const VERSION="1.5.38";
+const VERSION="1.5.39";
 const GAME_NAME="Pit Cards";
 
 const OBJECTIFS=[
@@ -686,7 +686,16 @@ function PseudoModal({dark, onSave, canClose, unlockedIds, currentAvatar}){
   const [draft,setDraft]=useState("");
   const [err,setErr]=useState("");
   const [avatar,setAvatar]=useState(currentAvatar||"🧑");
+  const [tooltip,setTooltip]=useState(null); // {emoji, label, desc, unlocked}
   const th={bg:dark?"#1e2a3a":"#fdf6e3",border:dark?"#4a6fa5":"#8B0000",text:dark?"#e8e0d0":"#2c1810",sub:dark?"#a89880":"#5d4037"};
+
+  // Trouve la description de l'objectif requis
+  const objDesc=(unlockId)=>{
+    if(!unlockId)return"Disponible dès le début";
+    const obj=OBJECTIFS?.find?.(o=>o.id===unlockId);
+    return obj?obj.desc:`Objectif : ${unlockId}`;
+  };
+
   function save(){
     const p=draft.trim();
     if(p.length<2){setErr("Minimum 2 caractères.");return;}
@@ -708,6 +717,18 @@ function PseudoModal({dark, onSave, canClose, unlockedIds, currentAvatar}){
         />
         {err&&<div style={{fontSize:"11px",color:"#c0392b",marginBottom:"8px"}}>{err}</div>}
 
+        {/* Tooltip */}
+        {tooltip&&(
+          <div style={{background:dark?"#1e2a3a":"#2c1810",color:"#fff",borderRadius:"10px",padding:"8px 12px",marginBottom:"10px",fontSize:"11px",lineHeight:1.5,border:"1px solid "+(dark?"#4a6fa5":"#8B0000")}}>
+            <div style={{fontWeight:"bold",fontSize:"13px",marginBottom:"2px"}}>{tooltip.emoji} {tooltip.label}</div>
+            {tooltip.unlocked
+              ?<div style={{color:"#27ae60"}}>✅ Débloqué</div>
+              :<><div style={{color:"#e67e22",fontSize:"10px"}}>🔒 Verrouillé</div>
+                <div style={{color:"rgba(255,255,255,0.8)",fontSize:"10px",marginTop:"2px"}}>{objDesc(tooltip.unlock)}</div></>
+            }
+          </div>
+        )}
+
         {/* Sélection avatar */}
         <div style={{marginBottom:"14px"}}>
           <div style={{fontSize:"11px",fontWeight:"bold",color:th.sub,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"8px"}}>Avatar</div>
@@ -718,7 +739,9 @@ function PseudoModal({dark, onSave, canClose, unlockedIds, currentAvatar}){
               return(
                 <div key={a.emoji}
                   onClick={()=>{if(unlocked)setAvatar(a.emoji);}}
-                  title={unlocked?a.label:`🔒 ${a.label}`}
+                  onMouseEnter={()=>setTooltip({...a,unlocked})}
+                  onMouseLeave={()=>setTooltip(null)}
+                  onTouchStart={()=>setTooltip(prev=>prev?.emoji===a.emoji?null:{...a,unlocked})}
                   style={{
                     background:selected?(dark?"rgba(139,0,0,0.4)":"rgba(139,0,0,0.15)"):(dark?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.04)"),
                     border:selected?"2px solid #8B0000":"2px solid transparent",
