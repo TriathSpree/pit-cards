@@ -202,7 +202,7 @@ function HomePage({dark,setDark,onPlay,progress,soundOn,setSoundOn,userButton,ps
           <h1 style={{fontSize:"clamp(22px,5vw,32px)",fontWeight:"bold",color:th.title,letterSpacing:"4px",textTransform:"uppercase",margin:"0 0 6px 0"}}>{GAME_NAME}</h1>
           <p style={{fontSize:"13px",color:th.subtext,margin:"0 0 16px 0"}}>Le jeu de cartes de course — Soyez le premier à parcourir 1000 km !</p>
           <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:"10px"}}>
-            {pseudo&&<div style={{fontSize:"16px",fontWeight:"bold",color:th.title,marginBottom:"4px"}}>👤 {pseudo}</div>}
+            {pseudo&&<button onClick={onChangePseudo} style={{fontSize:"16px",fontWeight:"bold",color:th.title,marginBottom:"4px",background:"none",border:"none",cursor:"pointer",textDecoration:"underline",fontFamily:"Georgia,serif"}}>👤 {pseudo} ✏️</button>}
             <button onClick={onPlay} style={{background:"linear-gradient(135deg,#8B0000,#c0392b)",color:"#fff",border:"none",borderRadius:"12px",padding:"14px 40px",cursor:"pointer",fontWeight:"bold",letterSpacing:"2px",fontFamily:"Georgia,serif",fontSize:"16px",textTransform:"uppercase",boxShadow:"0 4px 16px rgba(139,0,0,0.4)"}}>▶️ Jouer !</button>
             <div style={{fontSize:"9px",color:th.subtext,opacity:0.7}}>☁️ Progression & classement synchronisés automatiquement</div>
           </div>
