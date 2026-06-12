@@ -9,7 +9,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.23";
+const VERSION="1.5.24";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -264,8 +264,9 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
   const [players,setPlayers]=useState(null); // array de joueurs dans l'ordre du tour
   const [deck,setDeck]=useState([]);
   const [discard,setDiscard]=useState([]);
-  const [turnIdx,setTurnIdx]=useState(0); // index dans players[] du joueur actuel
-  const [phase,setPhase]=useState("init"); // init | play | ai_turn | coup_fourre | end
+  const [turnIdx,setTurnIdx]=useState(0);
+  const [turnCount,setTurnCount]=useState(0); // incrémenté à chaque nextTurn, garantit drawn:false
+  const [phase,setPhase]=useState("init");
   const [drawn,setDrawn]=useState(false);
   const [selected,setSelected]=useState(null);
   const [discardMode,setDiscardMode]=useState(false);
@@ -377,6 +378,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
       next=(currentTurnIdx+1)%ps.length;
     }
     setTurnIdx(next);
+    setTurnCount(c=>c+1);
     setDrawn(false); // toujours false pour le prochain joueur
     setSelected(null);
     setDiscardMode(false);
@@ -489,6 +491,11 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
   useEffect(()=>{deckRef.current=deck;},[deck]);
   useEffect(()=>{discardRef.current=discard;},[discard]);
   useEffect(()=>{turnIdxRef.current=turnIdx;},[turnIdx]);
+
+  // turnCount change à chaque nextTurn — garantit drawn:false même si turnIdx inchangé
+  useEffect(()=>{
+    if(turnCount>0&&!cfBonusTurn.current) setDrawn(false);
+  },[turnCount]);
 
   useEffect(()=>{
     if(!players||phase!=="ai_turn")return;
