@@ -23,7 +23,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.35";
+const VERSION="1.5.36";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -516,6 +516,8 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
   useEffect(()=>{playersRef.current=players;},[players]);
   useEffect(()=>{deckRef.current=deck;},[deck]);
   useEffect(()=>{discardRef.current=discard;},[discard]);
+  useEffect(()=>{turnIdxRef.current=turnIdx;aiRunningRef.current=false;},[turnIdx]);
+  useEffect(()=>{aiRunningRef.current=false;},[turnCount]);
   // Pulse clignotant quand c'est le tour humain
   useEffect(()=>{
     if(!isHumanTurn||!mustDraw)return;
@@ -823,7 +825,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
                   {discardMode?"🗑️ DÉFAUSSER":"MAIN"} ({players[humanIdx]?.hand?.length||0})
                   {targetIdx===-1&&<span style={{color:"#e67e22",marginLeft:"8px"}}>— Choisissez une cible</span>}
                 </div>
-                <div style={{display:"flex",gap:"4px",flexWrap:"wrap"}}>
+                <div style={{display:"grid",gridTemplateColumns:"repeat(6,1fr)",gap:"4px"}}>
                   {players[humanIdx]?.hand?.map((id,cardIdx)=>{
                     const valid=discardMode||(!discardMode&&drawn&&validCardIds.includes(id));
                     const c=getCard(id);
@@ -832,16 +834,16 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
                         background:valid?cColor(id,dark):dark?"#3a3a4a":"#9e9e9e",
                         color:"#fff",border:selected===`${id}:${cardIdx}`?"3px solid #FFD700":"2px solid rgba(255,255,255,0.2)",
                         borderRadius:"8px",padding:"4px 2px",cursor:valid?"pointer":"not-allowed",
-                        width:"calc(14% - 4px)",minWidth:"52px",maxWidth:"72px",height:"72px",
+                        aspectRatio:"3/4",
                         display:"flex",flexDirection:"column",alignItems:"center",
                         justifyContent:"center",textAlign:"center",opacity:valid?1:0.45,
                         transform:selected===`${id}:${cardIdx}`?"translateY(-4px)":"none",transition:"transform 0.15s",
                         boxShadow:selected===`${id}:${cardIdx}`?"0 4px 12px rgba(255,215,0,0.4)":"none",
-                        wordBreak:"break-word",lineHeight:1.2,flexShrink:0
+                        wordBreak:"break-word",lineHeight:1.2
                       }}>
-                        <div style={{fontSize:"14px",marginBottom:"1px"}}>{cEmoji(id)}</div>
-                        <div style={{fontSize:"8px",lineHeight:1.2}}>{c?.label}</div>
-                        {c?.km&&<div style={{fontSize:"11px",fontWeight:"bold"}}>{c.km}</div>}
+                        <div style={{fontSize:"clamp(12px,4vw,18px)",marginBottom:"1px"}}>{cEmoji(id)}</div>
+                        <div style={{fontSize:"clamp(7px,2vw,9px)",lineHeight:1.2}}>{c?.label}</div>
+                        {c?.km&&<div style={{fontSize:"clamp(9px,3vw,13px)",fontWeight:"bold"}}>{c.km}</div>}
                       </div>
                     );
                   })}
