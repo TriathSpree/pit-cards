@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useUser, SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
+import GamePage4J from "./GamePage4J.jsx";
 
 // ── AIRTABLE via API Routes Vercel ───────────────────────────────────────────
 
@@ -139,7 +140,7 @@ function playSound(type,on){if(!on)return;try{const ctx=new(window.AudioContext|
 
 
 // ── HOME PAGE ──────────────────────────────────────────────────────────────────
-function HomePage({dark,setDark,onPlay,progress,soundOn,setSoundOn,userButton,pseudo,onChangePseudo}){
+function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,userButton,pseudo,onChangePseudo}){
   const [tab,setTab]=useState("scores");
   const [nom,setNom]=useState(progress.playerName||"");
   const [leaderboard,setLeaderboard]=useState([]);
@@ -153,7 +154,7 @@ function HomePage({dark,setDark,onPlay,progress,soundOn,setSoundOn,userButton,ps
   };
   const modes=[
     {id:"solo",emoji:"🧍",label:"Solo vs Victor",desc:"1 joueur contre l'IA",active:true},
-    {id:"1v1",emoji:"👥",label:"1 vs 1 Local",desc:"Deux joueurs, un écran",active:false},
+    {id:"4j",emoji:"👥",label:"1 vs 3 IA",desc:"Toi contre Victor, Salomé & Raquel",active:true},
     {id:"online",emoji:"🌐",label:"En ligne",desc:"Joueurs du monde entier",active:false},
   ];
   const medals=["🥇","🥈","🥉","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟"];
@@ -213,7 +214,7 @@ function HomePage({dark,setDark,onPlay,progress,soundOn,setSoundOn,userButton,ps
         <div style={{marginBottom:"24px"}}>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:"10px"}}>
             {modes.map(m=>(
-              <div key={m.id} style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"12px",padding:"16px",textAlign:"center",opacity:m.active?1:0.55,position:"relative"}}>
+              <div key={m.id} onClick={m.active&&m.id!=="solo"?()=>onPlay4J&&onPlay4J():undefined} style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"12px",padding:"16px",textAlign:"center",opacity:m.active?1:0.55,position:"relative",cursor:m.active&&m.id!=="solo"?"pointer":"default"}}>
                 {!m.active&&<div style={{position:"absolute",top:"8px",right:"8px",background:dark?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.08)",borderRadius:"6px",padding:"2px 6px",fontSize:"8px",fontWeight:"bold",color:th.subtext}}>BIENTÔT</div>}
                 <div style={{fontSize:"28px",marginBottom:"6px"}}>{m.emoji}</div>
                 <div style={{fontSize:"12px",fontWeight:"bold",color:m.active?th.title:th.subtext,marginBottom:"3px"}}>{m.label}</div>
@@ -630,6 +631,11 @@ export default function App(){
     }).catch(()=>{setShowPseudoModal(true);setDataLoaded(true);});
   },[isLoaded,user]);
 
+  function goToGame4J(){
+    if(!pseudo){setShowPseudoModal(true);return;}
+    setScreen("game4j");
+  }
+
   function goToGame(){
     if(!pseudo){setShowPseudoModal(true);return;}
     storageGetPlayer(user.id).then(saved=>{
@@ -668,6 +674,10 @@ export default function App(){
     </div>
   );
 
+  if(screen==="game4j"){
+    return <GamePage4J dark={dark} setDark={setDark} onBack={()=>setScreen("home")} playerName={pseudo||"Joueur"} difficulty="normal" soundOn={soundOn} setSoundOn={setSoundOn} hardcoreUnlocked={progress.unlocked.includes("win_hard")}/>;
+  }
+
   if(screen==="game"&&gameProgress){
     return(
       <>
@@ -694,7 +704,7 @@ export default function App(){
   return(
     <>
       {showPseudoModal&&<PseudoModal dark={dark} onSave={savePseudo} canClose={!!pseudo}/>}
-      <HomePage dark={dark} setDark={setDark} onPlay={goToGame} progress={progress} soundOn={soundOn} setSoundOn={setSoundOn} userButton={<UserButton/>} pseudo={pseudo} onChangePseudo={()=>setShowPseudoModal(true)}/>
+      <HomePage dark={dark} setDark={setDark} onPlay={goToGame} onPlay4J={goToGame4J} progress={progress} soundOn={soundOn} setSoundOn={setSoundOn} userButton={<UserButton/>} pseudo={pseudo} onChangePseudo={()=>setShowPseudoModal(true)}/>
     </>
   );
 }
