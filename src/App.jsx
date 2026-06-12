@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
-import { useUser, SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/clerk-react'
-// ── AIRTABLE via API Routes Vercel (proxy serveur, token sécurisé) ───────────
 
-async function storageGetPlayer(name) {
-  if (!name) return null;
+// ── AIRTABLE via API Routes Vercel ───────────────────────────────────────────
+
+async function storageGetPlayer(clerkId) {
+  if (!clerkId) return null;
   try {
-    const r = await fetch(`/api/getPlayer?name=${encodeURIComponent(name)}`);
+    const r = await fetch(`/api/getPlayer?clerkId=${encodeURIComponent(clerkId)}`);
     if (!r.ok) return null;
     const d = await r.json();
     if (!d.found) return null;
     const f = d.fields;
     return {
-      playerName: name,
+      playerName: f.nom||"",
       objPts: f.objPts||0, manchesPlayed: f.manchesPlayed||0, wins: f.wins||0,
       totalKm: f.totalKm||0, bestMancheScore: f.bestMancheScore||0,
       unlocked: JSON.parse(f.unlocked||"[]"),
@@ -21,10 +21,12 @@ async function storageGetPlayer(name) {
   } catch { return null; }
 }
 
-async function storageSavePlayer(name, progress) {
-  if (!name) return;
+async function storageSavePlayer(clerkId, pseudo, progress) {
+  if (!clerkId) return;
   const fields = {
-    nom: name, objPts: progress.objPts||0, manchesPlayed: progress.manchesPlayed||0,
+    clerkId,
+    nom: pseudo||progress.playerName||"Joueur",
+    objPts: progress.objPts||0, manchesPlayed: progress.manchesPlayed||0,
     wins: progress.wins||0, totalKm: progress.totalKm||0, bestMancheScore: progress.bestMancheScore||0,
     unlocked: JSON.stringify(progress.unlocked||[]),
     triedDifficulties: JSON.stringify(progress.triedDifficulties||[]),
@@ -41,7 +43,7 @@ async function storageSavePlayer(name, progress) {
   } catch(e) { console.warn("save error:", e); }
 }
 
-async function sharedSaveScore(name, progress) { await storageSavePlayer(name, progress); }
+async function sharedSaveScore(clerkId, pseudo, progress) { await storageSavePlayer(clerkId, pseudo, progress); }
 
 async function sharedGetLeaderboard() {
   try {
@@ -136,7 +138,7 @@ function playSound(type,on){if(!on)return;try{const ctx=new(window.AudioContext|
 
 
 // ── HOME PAGE ──────────────────────────────────────────────────────────────────
-function HomePage({dark,setDark,onPlay,progress,soundOn,setSoundOn,userButton}){
+function HomePage({dark,setDark,onPlay,progress,soundOn,setSoundOn}){
   const [tab,setTab]=useState("scores");
   const [nom,setNom]=useState(progress.playerName||"");
   const [leaderboard,setLeaderboard]=useState([]);
@@ -187,7 +189,7 @@ function HomePage({dark,setDark,onPlay,progress,soundOn,setSoundOn,userButton}){
         </div>
         <div style={{display:"flex",gap:"8px",alignItems:"center"}}>
           {progress.objPts>0&&<div style={{background:dark?"rgba(212,172,13,0.15)":"rgba(212,172,13,0.1)",border:"2px solid "+th.gold,borderRadius:"20px",padding:"4px 12px",fontSize:"11px",fontWeight:"bold",color:th.gold}}>🏆 {progress.objPts} pts</div>}
-          {userButton&&<div style={{marginRight:"4px"}}>{userButton}</div>}
+          <button onClick={()=>setSoundOn(v=>!v)} style={{background:dark?"rgba(255,255,255,0.1)":"rgba(139,0,0,0.1)",border:"2px solid "+th.border,borderRadius:"8px",padding:"6px 10px",cursor:"pointer",fontSize:"16px"}}>{soundOn?"🔊":"🔇"}</button>
           <button onClick={()=>setDark(v=>!v)} style={{background:dark?"rgba(255,255,255,0.1)":"rgba(139,0,0,0.1)",border:"2px solid "+th.border,borderRadius:"8px",padding:"6px 10px",cursor:"pointer",fontSize:"16px"}}>{dark?"☀️":"🌙"}</button>
         </div>
       </div>
@@ -199,8 +201,8 @@ function HomePage({dark,setDark,onPlay,progress,soundOn,setSoundOn,userButton}){
           <h1 style={{fontSize:"clamp(22px,5vw,32px)",fontWeight:"bold",color:th.title,letterSpacing:"4px",textTransform:"uppercase",margin:"0 0 6px 0"}}>{GAME_NAME}</h1>
           <p style={{fontSize:"13px",color:th.subtext,margin:"0 0 16px 0"}}>Le jeu de cartes de course — Soyez le premier à parcourir 1000 km !</p>
           <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:"10px"}}>
-            <input type="text" maxLength={16} value={nom} onChange={e=>setNom(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")onPlay(nom.trim()||"Joueur");}} placeholder="Votre nom..." style={{padding:"10px 16px",borderRadius:"10px",border:"2px solid "+(dark?"#445566":"#a0856a"),fontFamily:"Georgia,serif",fontSize:"14px",textAlign:"center",background:dark?"#1e2a3a":"#fffef5",color:dark?"#e8e0d0":"#2c1810",outline:"none",width:"200px",boxSizing:"border-box"}}/>
-            <button onClick={()=>onPlay(nom.trim()||"Joueur")} style={{background:"linear-gradient(135deg,#8B0000,#c0392b)",color:"#fff",border:"none",borderRadius:"12px",padding:"12px 32px",cursor:"pointer",fontWeight:"bold",letterSpacing:"2px",fontFamily:"Georgia,serif",fontSize:"14px",textTransform:"uppercase",boxShadow:"0 4px 16px rgba(139,0,0,0.4)"}}>▶️ Jouer !</button>
+            {pseudo&&<div style={{fontSize:"16px",fontWeight:"bold",color:th.title,marginBottom:"4px"}}>👤 {pseudo}</div>}
+            <button onClick={onPlay} style={{background:"linear-gradient(135deg,#8B0000,#c0392b)",color:"#fff",border:"none",borderRadius:"12px",padding:"14px 40px",cursor:"pointer",fontWeight:"bold",letterSpacing:"2px",fontFamily:"Georgia,serif",fontSize:"16px",textTransform:"uppercase",boxShadow:"0 4px 16px rgba(139,0,0,0.4)"}}>▶️ Jouer !</button>
             <div style={{fontSize:"9px",color:th.subtext,opacity:0.7}}>☁️ Progression & classement synchronisés automatiquement</div>
           </div>
         </div>
@@ -568,6 +570,40 @@ function GamePage({dark,setDark,onBack,progress,setProgress,soundOn,setSoundOn})
 }
 
 // ── APP ────────────────────────────────────────────────────────────────────────
+// ── PSEUDO MODAL ─────────────────────────────────────────────────────────────
+function PseudoModal({dark, onSave, canClose}){
+  const [draft,setDraft]=useState("");
+  const [err,setErr]=useState("");
+  const th={bg:dark?"#1e2a3a":"#fdf6e3",border:dark?"#4a6fa5":"#8B0000",text:dark?"#e8e0d0":"#2c1810",sub:dark?"#a89880":"#5d4037"};
+  function save(){
+    const p=draft.trim();
+    if(p.length<2){setErr("Minimum 2 caractères.");return;}
+    if(p.length>16){setErr("Maximum 16 caractères.");return;}
+    onSave(p);
+  }
+  return(
+    <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.8)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:500}}>
+      <div style={{background:th.bg,border:"3px solid "+th.border,borderRadius:"20px",padding:"32px 28px",width:"min(340px,90vw)",fontFamily:"Georgia,serif",textAlign:"center"}}>
+        <div style={{fontSize:"48px",marginBottom:"12px"}}>🏎️</div>
+        <h2 style={{color:th.border,fontSize:"18px",marginBottom:"6px",letterSpacing:"2px"}}>CHOISIS TON PSEUDO</h2>
+        <p style={{fontSize:"11px",color:th.sub,marginBottom:"20px"}}>Il apparaîtra dans le classement global.<br/>Tu pourras le changer plus tard.</p>
+        <input
+          type="text" maxLength={16} value={draft} onChange={e=>{setDraft(e.target.value);setErr("");}}
+          onKeyDown={e=>{if(e.key==="Enter")save();}}
+          placeholder="Ton pseudo..."
+          style={{width:"100%",padding:"12px 16px",borderRadius:"10px",border:"2px solid "+(dark?"#445566":"#a0856a"),fontFamily:"Georgia,serif",fontSize:"16px",textAlign:"center",background:dark?"#1e2a3a":"#fffef5",color:th.text,outline:"none",boxSizing:"border-box",marginBottom:"8px"}}
+          autoFocus
+        />
+        {err&&<div style={{fontSize:"11px",color:"#c0392b",marginBottom:"8px"}}>{err}</div>}
+        <div style={{display:"flex",gap:"8px",justifyContent:"center"}}>
+          {canClose&&<button onClick={()=>onSave(null)} style={{background:"#7f8c8d",color:"#fff",border:"none",borderRadius:"10px",padding:"10px 20px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:"12px",fontWeight:"bold"}}>Annuler</button>}
+          <button onClick={save} style={{background:"linear-gradient(135deg,#8B0000,#c0392b)",color:"#fff",border:"none",borderRadius:"10px",padding:"10px 24px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:"12px",fontWeight:"bold",letterSpacing:"1px"}}>✅ Valider</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function App(){
   const { user, isLoaded } = useUser();
   const [screen,setScreen]=useState("home");
@@ -575,38 +611,49 @@ export default function App(){
   const [progress,setProgress]=useState({...INIT_PROGRESS});
   const [soundOn,setSoundOn]=useState(true);
   const [gameProgress,setGameProgress]=useState(null);
-// Charge la progression Clerk user au login
+  const [pseudo,setPseudo]=useState("");
+  const [showPseudoModal,setShowPseudoModal]=useState(false);
+  const [dataLoaded,setDataLoaded]=useState(false);
+
   useEffect(()=>{
-    if(isLoaded && user && !gameProgress){
-      const name = user.firstName || user.username || user.emailAddresses[0]?.emailAddress?.split("@")[0] || "Joueur";
-      storageGetPlayer(name).then(saved=>{
-        const p = saved ? {...INIT_PROGRESS,...saved,playerName:name} : {...INIT_PROGRESS,playerName:name};
-        setProgress(p);
-      });
-    }
-  },[isLoaded, user]);
-  function goToGame(name){
-    const n = user ? (user.username || user.firstName || user.emailAddresses[0]?.emailAddress?.split("@")[0] || "Joueur") : (name||"").trim()||"Joueur";
-    const apply=(saved)=>{
-      const p=saved?{...INIT_PROGRESS,...saved,playerName:n}:{...INIT_PROGRESS,playerName:n};
+    if(!isLoaded||!user)return;
+    storageGetPlayer(user.id).then(saved=>{
+      if(saved&&saved.playerName){
+        setPseudo(saved.playerName);
+        setProgress({...INIT_PROGRESS,...saved});
+      } else {
+        setShowPseudoModal(true);
+      }
+      setDataLoaded(true);
+    }).catch(()=>{setShowPseudoModal(true);setDataLoaded(true);});
+  },[isLoaded,user]);
+
+  function goToGame(){
+    if(!pseudo){setShowPseudoModal(true);return;}
+    storageGetPlayer(user.id).then(saved=>{
+      const p=saved?{...INIT_PROGRESS,...saved,playerName:pseudo}:{...INIT_PROGRESS,playerName:pseudo};
       setProgress(p);setGameProgress(p);setScreen("game");
-    };
-   
-    storageGetPlayer(n).then(saved=>apply(saved)).catch(()=>apply(null));
+    }).catch(()=>{
+      const p={...INIT_PROGRESS,playerName:pseudo};
+      setProgress(p);setGameProgress(p);setScreen("game");
+    });
   }
 
- function handleSetProgress(p){
+  function handleSetProgress(p){
     setGameProgress(p);setProgress(p);
-    storageSavePlayer(p.playerName, p);
-    sharedSaveScore(p.playerName, p);
+    if(user)storageSavePlayer(user.id,pseudo,p);
   }
 
-  if(screen==="game"&&gameProgress){
-    return <GamePage dark={dark} setDark={setDark} onBack={()=>setScreen("home")} progress={gameProgress} setProgress={handleSetProgress} soundOn={soundOn} setSoundOn={setSoundOn}/>;
+  function savePseudo(newPseudo){
+    if(!newPseudo){setShowPseudoModal(false);return;}
+    setPseudo(newPseudo);
+    setShowPseudoModal(false);
+    if(user)storageSavePlayer(user.id,newPseudo,{...progress,playerName:newPseudo});
   }
- if (!isLoaded) return <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",fontFamily:"Georgia,serif",fontSize:"18px"}}>⏳ Chargement...</div>;
 
-  if (!user) return (
+  if(!isLoaded)return <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",fontFamily:"Georgia,serif",fontSize:"18px",background:"#fdf6e3"}}>⏳ Chargement...</div>;
+
+  if(!user)return(
     <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100vh",background:"linear-gradient(135deg,#fdf6e3,#fae8c0)",fontFamily:"Georgia,serif"}}>
       <div style={{fontSize:"64px",marginBottom:"16px"}}>🏁</div>
       <h1 style={{fontSize:"32px",fontWeight:"bold",color:"#8B0000",letterSpacing:"4px",marginBottom:"8px"}}>PIT CARDS</h1>
@@ -619,5 +666,19 @@ export default function App(){
     </div>
   );
 
-  return <HomePage dark={dark} setDark={setDark} onPlay={goToGame} progress={progress} soundOn={soundOn} setSoundOn={setSoundOn} userButton={<UserButton/>}/>;
+  if(screen==="game"&&gameProgress){
+    return(
+      <>
+        {showPseudoModal&&<PseudoModal dark={dark} onSave={savePseudo} canClose={true}/>}
+        <GamePage dark={dark} setDark={setDark} onBack={()=>setScreen("home")} progress={gameProgress} setProgress={handleSetProgress} soundOn={soundOn} setSoundOn={setSoundOn}/>
+      </>
+    );
+  }
+
+  return(
+    <>
+      {showPseudoModal&&<PseudoModal dark={dark} onSave={savePseudo} canClose={!!pseudo}/>}
+      <HomePage dark={dark} setDark={setDark} onPlay={goToGame} progress={progress} soundOn={soundOn} setSoundOn={setSoundOn} userButton={<UserButton/>} pseudo={pseudo} onChangePseudo={()=>setShowPseudoModal(true)}/>
+    </>
+  );
 }
