@@ -721,14 +721,14 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
           </div>
 
           {/* MAIN + LOG + SCORES — grille alignée sur la grille joueurs */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:"8px",marginBottom:"8px"}}>
-            {/* MAIN — même largeur que Raquel (1fr gauche) */}
-            <div style={{background:dark?"rgba(10,20,40,0.6)":"rgba(26,82,118,0.05)",border:"2px dashed "+th.border,borderRadius:"10px",padding:"8px"}}>
-              <div style={{fontSize:"11px",fontWeight:"bold",marginBottom:"6px",color:th.sub}}>
+          <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:"8px",marginBottom:"8px",alignItems:"stretch"}}>
+            {/* MAIN — même largeur que col gauche */}
+            <div style={{background:dark?"rgba(10,20,40,0.6)":"rgba(26,82,118,0.05)",border:"2px dashed "+th.border,borderRadius:"10px",padding:"8px",overflow:"hidden",display:"flex",flexDirection:"column"}}>
+              <div style={{fontSize:"11px",fontWeight:"bold",marginBottom:"6px",color:th.sub,flexShrink:0}}>
                 {discardMode?"🗑️ DÉFAUSSER":"MAIN"} ({players[humanIdx]?.hand?.length||0})
                 {targetIdx===-1&&<span style={{color:"#e67e22",marginLeft:"8px"}}>— Choisissez une cible</span>}
               </div>
-              <div style={{display:"flex",gap:"4px",flexWrap:"wrap"}}>
+              <div style={{display:"flex",gap:"4px",flexWrap:"wrap",overflow:"hidden"}}>
                 {players[humanIdx]?.hand?.map(id=>{
                   const valid=!discardMode&&drawn&&validCardIds.includes(id);
                   const c=getCard(id);
@@ -754,7 +754,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
 
               {/* Sélection de cible pour attaque */}
               {targetIdx===-1&&selected&&(
-                <div style={{marginTop:"8px"}}>
+                <div style={{marginTop:"8px",flexShrink:0}}>
                   <div style={{fontSize:"11px",color:"#e67e22",marginBottom:"6px"}}>Choisir la cible :</div>
                   <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
                     {validPlays.filter(p=>p.cardId===selected&&p.action==="attaque").map(p=>(
@@ -768,7 +768,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
               )}
 
               {/* Actions */}
-              <div style={{display:"flex",gap:"8px",marginTop:"8px",alignItems:"center",flexWrap:"wrap"}}>
+              <div style={{display:"flex",gap:"8px",marginTop:"8px",alignItems:"center",flexWrap:"wrap",flexShrink:0}}>
                 {drawn&&!discardMode&&selected&&(targetIdx===null||targetIdx>=0)&&validCardIds.includes(selected)&&targetIdx!==-1&&(
                   <button onClick={handlePlay} style={th.btn("#27ae60")}>✅ Jouer</button>
                 )}
@@ -787,19 +787,19 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
             {/* Colonne centrale — même largeur auto que la colonne pioche/défausse */}
             <div style={{width:"80px"}}/>
 
-            {/* Journal + Scores — même largeur que Salomé (1fr droite) */}
+            {/* Journal + Scores du Championnat — même largeur que col droite */}
             <div style={{display:"flex",gap:"8px"}}>
               {/* LOG */}
-              <div style={{flex:1,background:dark?"rgba(20,30,50,0.8)":"rgba(255,255,255,0.6)",border:"2px solid "+th.border,borderRadius:"10px",padding:"8px",overflowY:"auto",maxHeight:"280px"}}>
+              <div style={{flex:1,background:dark?"rgba(20,30,50,0.8)":"rgba(255,255,255,0.6)",border:"2px solid "+th.border,borderRadius:"10px",padding:"8px",overflowY:"auto",maxHeight:"220px"}}>
                 <div style={{fontSize:"10px",fontWeight:"bold",marginBottom:"4px",color:th.sub,textTransform:"uppercase"}}>Journal</div>
                 {log.map((l,i)=>(
                   <div key={i} style={{fontSize:"10px",padding:"2px 4px",borderBottom:"1px solid "+th.border,color:th.text,opacity:1-i*0.04}}>{l.text}</div>
                 ))}
               </div>
-              {/* SCORES */}
+              {/* SCORES DU CHAMPIONNAT */}
               <div style={{flex:1,background:dark?"rgba(20,30,50,0.8)":"rgba(255,255,255,0.6)",border:"2px solid "+th.border,borderRadius:"10px",padding:"8px",display:"flex",flexDirection:"column",gap:"4px"}}>
                 <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"4px"}}>
-                  <div style={{fontSize:"10px",fontWeight:"bold",color:th.sub,textTransform:"uppercase"}}>Scores</div>
+                  <div style={{fontSize:"10px",fontWeight:"bold",color:th.sub,textTransform:"uppercase"}}>Scores du Championnat</div>
                   <div style={{fontSize:"9px",color:th.sub}}>But : {SCORE_CIBLE} pts</div>
                 </div>
                 {players.map((p,i)=>{
