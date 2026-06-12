@@ -139,7 +139,7 @@ function playSound(type,on){if(!on)return;try{const ctx=new(window.AudioContext|
 
 
 // ── HOME PAGE ──────────────────────────────────────────────────────────────────
-function HomePage({dark,setDark,onPlay,progress,soundOn,setSoundOn}){
+function HomePage({dark,setDark,onPlay,progress,soundOn,setSoundOn,userButton,pseudo,onChangePseudo}){
   const [tab,setTab]=useState("scores");
   const [nom,setNom]=useState(progress.playerName||"");
   const [leaderboard,setLeaderboard]=useState([]);
