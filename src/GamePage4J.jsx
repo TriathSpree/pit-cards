@@ -793,7 +793,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
               <div style={{flex:1,background:dark?"rgba(20,30,50,0.8)":"rgba(255,255,255,0.6)",border:"2px solid "+th.border,borderRadius:"10px",padding:"8px",overflowY:"auto",maxHeight:"220px"}}>
                 <div style={{fontSize:"10px",fontWeight:"bold",marginBottom:"4px",color:th.sub,textTransform:"uppercase"}}>Journal</div>
                 {log.map((l,i)=>(
-                  <div key={i} style={{fontSize:"10px",padding:"2px 4px",borderBottom:"1px solid "+th.border,color:th.text,opacity:1-i*0.04}}>{l.text}</div>
+                  <div key={i} style={{fontSize:"10px",padding:"2px 4px",borderBottom:"1px solid "+th.border,color:th.text}}>{l.text}</div>
                 ))}
               </div>
               {/* SCORES DU CHAMPIONNAT */}
