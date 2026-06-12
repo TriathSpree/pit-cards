@@ -366,7 +366,6 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
   function nextTurn(ps,currentTurnIdx,currentDeck,currentDiscard){
     let next;
     if(cfBonusTurn.current&&nextAfterCFRef.current!==null){
-      // Après un tour bonus CF, on reprend depuis le joueur prévu
       next=nextAfterCFRef.current;
       cfBonusTurn.current=false;
       nextAfterCFRef.current=null;
@@ -374,7 +373,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
       next=(currentTurnIdx+1)%ps.length;
     }
     setTurnIdx(next);
-    setDrawn(false);
+    setDrawn(false); // toujours false pour le prochain joueur
     setSelected(null);
     setDiscardMode(false);
     setTargetIdx(null);
@@ -414,17 +413,15 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
       // On mémorise que le prochain après le CF doit être attackerIdx+1
       const nextAfterCF=(attackerIdx+1)%ps.length;
       if(ps[defenderIdx].isHuman){
+        nextAfterCFRef.current=nextAfterCF;
+        cfBonusTurn.current=true;
         setTurnIdx(defenderIdx);
         setPhase("play");
-        setDrawn(true); // carte bonus déjà piochée
-        // Après ce tour, nextTurn reprendra depuis defenderIdx mais on veut attackerIdx+1
-        // On stocke le "vrai next" dans un ref
-        nextAfterCFRef.current=nextAfterCF;
-        cfBonusTurn.current=true;
+        setDrawn(true); // carte bonus déjà piochée — pas de pioche supplémentaire
       }else{
-        setTurnIdx(defenderIdx);
         nextAfterCFRef.current=nextAfterCF;
         cfBonusTurn.current=true;
+        setTurnIdx(defenderIdx);
         setPhase("ai_turn");
       }
     }else{
