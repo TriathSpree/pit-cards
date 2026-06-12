@@ -364,7 +364,15 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
   }
 
   function nextTurn(ps,currentTurnIdx,currentDeck,currentDiscard){
-    const next=(currentTurnIdx+1)%ps.length;
+    let next;
+    if(cfBonusTurn.current&&nextAfterCFRef.current!==null){
+      // Après un tour bonus CF, on reprend depuis le joueur prévu
+      next=nextAfterCFRef.current;
+      cfBonusTurn.current=false;
+      nextAfterCFRef.current=null;
+    }else{
+      next=(currentTurnIdx+1)%ps.length;
+    }
     setTurnIdx(next);
     setDrawn(false);
     setSelected(null);
@@ -402,11 +410,22 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
       ps[defenderIdx]=def;
       setPlayers(ps);setDeck(d);setDiscard(disc);
       setCoupFourreData(null);
-      // Le défenseur rejoue
+      // Le défenseur joue un tour bonus, PUIS l'ordre reprend depuis attackerIdx+1
+      // On mémorise que le prochain après le CF doit être attackerIdx+1
+      const nextAfterCF=(attackerIdx+1)%ps.length;
       if(ps[defenderIdx].isHuman){
-        setTurnIdx(defenderIdx);setPhase("play");setDrawn(true); // déjà pioché (carte bonus)
+        setTurnIdx(defenderIdx);
+        setPhase("play");
+        setDrawn(true); // carte bonus déjà piochée
+        // Après ce tour, nextTurn reprendra depuis defenderIdx mais on veut attackerIdx+1
+        // On stocke le "vrai next" dans un ref
+        nextAfterCFRef.current=nextAfterCF;
+        cfBonusTurn.current=true;
       }else{
-        setTurnIdx(defenderIdx);setPhase("ai_turn");
+        setTurnIdx(defenderIdx);
+        nextAfterCFRef.current=nextAfterCF;
+        cfBonusTurn.current=true;
+        setPhase("ai_turn");
       }
     }else{
       // Ignore le CF
@@ -454,6 +473,8 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
   }
 
   // Refs pour valeurs fraîches dans useEffect
+  const nextAfterCFRef=useRef(null);
+  const cfBonusTurn=useRef(false);
   const playersRef=useRef(players);
   const deckRef=useRef(deck);
   const discardRef=useRef(discard);
