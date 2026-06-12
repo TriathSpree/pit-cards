@@ -9,7 +9,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.19";
+const VERSION="1.5.20";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -313,6 +313,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     playerOrder.forEach(p=>{scores[p.name]=0;});
     if(Object.keys(totalScores).length===0)setTotalScores(scores);
     setTimeout(()=>{
+      setDrawn(false);
       setPhase(playerOrder[0].isHuman ? "play" : "ai_turn");
     }, 100);
   }
@@ -485,6 +486,13 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
   useEffect(()=>{deckRef.current=deck;},[deck]);
   useEffect(()=>{discardRef.current=discard;},[discard]);
   useEffect(()=>{turnIdxRef.current=turnIdx;},[turnIdx]);
+
+  useEffect(()=>{
+    // Force drawn:false à chaque nouveau tour humain, sauf si CF bonus en cours
+    if(phase==="play"&&players&&players[turnIdx]?.isHuman&&!cfBonusTurn.current){
+      setDrawn(false);
+    }
+  },[turnIdx,phase]);
 
   useEffect(()=>{
     if(!players||phase!=="ai_turn")return;
