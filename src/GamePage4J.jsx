@@ -9,7 +9,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.24";
+const VERSION="1.5.25";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -566,21 +566,24 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     return getPlaysFor(players,turnIdx);
   }
 
-  function handleCardClick(id){
+  function handleCardClick(id,cardIdx){
     if(!drawn||phase!=="play")return;
-    setSelected(prev=>prev===id?null:id);
+    const key=`${id}:${cardIdx}`;
+    setSelected(prev=>prev===key?null:key);
     setTargetIdx(null);
   }
 
+  // Extrait l'id de la carte depuis selected ("id:index")
+  const selectedId=selected?selected.split(":")[0]:null;
+
   function handlePlay(){
-    if(!selected||!drawn||phase!=="play")return;
-    const validPlays=getValidPlays().filter(p=>p.cardId===selected);
+    if(!selectedId||!drawn||phase!=="play")return;
+    const validPlays=getValidPlays().filter(p=>p.cardId===selectedId);
     if(validPlays.length===0)return;
 
-    // Pour les attaques : toujours afficher la sélection de cible
     const attaques=validPlays.filter(p=>p.action==="attaque");
     if(attaques.length>=1&&targetIdx===null){
-      setTargetIdx(-1); // mode sélection cible
+      setTargetIdx(-1);
       return;
     }
 
@@ -597,7 +600,6 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     setSelected(null);setTargetIdx(null);
 
     if(!checkMancheEnd(ps)){
-      // Vérifie coup-fourré si c'est une attaque
       if(play.action==="attaque"){
         const cfPossible=checkCoupFourre(ps,turnIdx,play.cardId,play.targetIdx,deck,discard);
         if(cfPossible){setPlayers(ps);return;}
@@ -613,7 +615,9 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     if(!drawn||!id)return;
     const ps=players.map((p,i)=>{
       if(i!==turnIdx)return p;
-      const hand=p.hand.filter(c=>c!==id);
+      const hand=[...p.hand];
+      const idx=hand.indexOf(id);
+      if(idx!==-1)hand.splice(idx,1);
       return{...p,hand};
     });
     setDiscard([...discard,id]);
@@ -746,19 +750,19 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
                 {targetIdx===-1&&<span style={{color:"#e67e22",marginLeft:"8px"}}>— Choisissez une cible</span>}
               </div>
               <div style={{display:"flex",gap:"4px",flexWrap:"wrap",overflow:"hidden"}}>
-                {players[humanIdx]?.hand?.map(id=>{
+                {players[humanIdx]?.hand?.map((id,cardIdx)=>{
                   const valid=discardMode||(!discardMode&&drawn&&validCardIds.includes(id));
                   const c=getCard(id);
                   return(
-                    <div key={id} onClick={()=>handleCardClick(id)} style={{
+                    <div key={id+"-"+cardIdx} onClick={()=>handleCardClick(id,cardIdx)} style={{
                       background:valid?cColor(id,dark):dark?"#3a3a4a":"#9e9e9e",
-                      color:"#fff",border:selected===id?"3px solid #FFD700":"2px solid rgba(255,255,255,0.2)",
+                      color:"#fff",border:selected===`${id}:${cardIdx}`?"3px solid #FFD700":"2px solid rgba(255,255,255,0.2)",
                       borderRadius:"8px",padding:"4px 2px",cursor:valid?"pointer":"not-allowed",
                       width:"72px",minWidth:"72px",maxWidth:"72px",height:"80px",
                       display:"flex",flexDirection:"column",alignItems:"center",
                       justifyContent:"center",textAlign:"center",opacity:valid?1:0.45,
-                      transform:selected===id?"translateY(-4px)":"none",transition:"transform 0.15s",
-                      boxShadow:selected===id?"0 4px 12px rgba(255,215,0,0.4)":"none",
+                      transform:selected===`${id}:${cardIdx}`?"translateY(-4px)":"none",transition:"transform 0.15s",
+                      boxShadow:selected===`${id}:${cardIdx}`?"0 4px 12px rgba(255,215,0,0.4)":"none",
                       wordBreak:"break-word",lineHeight:1.2
                     }}>
                       <div style={{fontSize:"15px",marginBottom:"1px"}}>{cEmoji(id)}</div>
@@ -774,7 +778,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
                 <div style={{marginTop:"8px",flexShrink:0}}>
                   <div style={{fontSize:"11px",color:"#e67e22",marginBottom:"6px"}}>Choisir la cible :</div>
                   <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
-                    {validPlays.filter(p=>p.cardId===selected&&p.action==="attaque").map(p=>(
+                    {validPlays.filter(p=>p.cardId===selectedId&&p.action==="attaque").map(p=>(
                       <button key={p.targetIdx} onClick={()=>{setTargetIdx(p.targetIdx);}} style={{...th.btn("#c0392b"),fontSize:"11px",padding:"5px 10px"}}>
                         {players[p.targetIdx]?.emoji} {players[p.targetIdx]?.name}
                       </button>
@@ -786,14 +790,14 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
 
               {/* Actions */}
               <div style={{display:"flex",gap:"8px",marginTop:"8px",alignItems:"center",flexWrap:"wrap",flexShrink:0}}>
-                {drawn&&!discardMode&&selected&&(targetIdx===null||targetIdx>=0)&&validCardIds.includes(selected)&&targetIdx!==-1&&(
+                {drawn&&!discardMode&&selected&&(targetIdx===null||targetIdx>=0)&&validCardIds.includes(selectedId)&&targetIdx!==-1&&(
                   <button onClick={handlePlay} style={th.btn("#27ae60")}>✅ Jouer</button>
                 )}
                 {drawn&&!discardMode&&(
                   <button onClick={()=>{setDiscardMode(true);setSelected(null);}} style={th.btn("#7f8c8d")}>🗑️ Défausser</button>
                 )}
                 {discardMode&&selected&&(
-                  <button onClick={()=>handleDiscard(selected)} style={th.btn("#c0392b")}>🗑️ Jeter {getCard(selected)?.label}</button>
+                  <button onClick={()=>handleDiscard(selectedId)} style={th.btn("#c0392b")}>🗑️ Jeter {getCard(selectedId)?.label}</button>
                 )}
                 {discardMode&&(
                   <button onClick={()=>{setDiscardMode(false);setSelected(null);}} style={th.btn("#7f8c8d")}>↩️ Annuler</button>
