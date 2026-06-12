@@ -9,7 +9,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.20";
+const VERSION="1.5.21";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -276,7 +276,8 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
   const [mancheOver,setMancheOver]=useState(null);
   const [gameOver,setGameOver]=useState(null);
   const [animCard,setAnimCard]=useState(null);
-  const [coupFourreData,setCoupFourreData]=useState(null); // {attackerIdx, defenderIdx, attaqueId, botteId}
+  const [coupFourreData,setCoupFourreData]=useState(null);
+  const [cfNotif,setCfNotif]=useState(null); // {defenderName, botteLabel, attackerName}
 
   const th={
     bg:dark?"linear-gradient(135deg,#1a1a2e,#16213e)":"linear-gradient(135deg,#fdf6e3,#fae8c0)",
@@ -467,6 +468,8 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
         addLog(`⚡ COUP-FOURRÉ ! ${def.name} neutralise avec ${bo.label} !`,def.name);
         ps2[targetIdx]=def;
         setPlayers(ps2);setDeck(d2);setDiscard(disc2);
+        setCfNotif({defenderName:def.name,botteLabel:bo.label,attackerName:ps2[attackerIdx]?.name});
+        setTimeout(()=>setCfNotif(null),3000);
         // Le défenseur IA rejoue
         setTurnIdx(targetIdx);setPhase("ai_turn");
       },800);
@@ -872,6 +875,18 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
             </div>
           </div>
         </>
+      )}
+
+      {/* NOTIF COUP-FOURRÉ IA */}
+      {cfNotif&&(
+        <div style={{position:"fixed",top:"20px",left:"50%",transform:"translateX(-50%)",zIndex:150,background:dark?"#1e2a3a":"#fdf6e3",border:"4px double #d4ac0d",borderRadius:"14px",padding:"14px 20px",textAlign:"center",boxShadow:"0 8px 24px rgba(0,0,0,0.5)",minWidth:"280px"}}>
+          <div style={{fontSize:"28px",marginBottom:"4px"}}>⚡</div>
+          <div style={{fontSize:"14px",fontWeight:"bold",color:"#d4ac0d",marginBottom:"6px"}}>COUP-FOURRÉ !</div>
+          <div style={{fontSize:"12px",color:th.text,marginBottom:"10px"}}>
+            <strong>{cfNotif.defenderName}</strong> neutralise l'attaque de <strong>{cfNotif.attackerName}</strong><br/>avec <strong>{cfNotif.botteLabel}</strong> !
+          </div>
+          <button onClick={()=>setCfNotif(null)} style={{...th.btn("#d4ac0d"),fontSize:"11px",padding:"5px 14px"}}>OK</button>
+        </div>
       )}
 
       {/* ANIMATION CARTE */}
