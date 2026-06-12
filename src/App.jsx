@@ -70,65 +70,65 @@ const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const TOTAL_QTY={accident:3,panne:3,crevaison:3,feu_rouge:5,limite:4,reparations:6,essence:6,roue_secours:6,feu_vert:14,fin_limite:6,as_volant:1,citerne:1,increvable:1,prioritaire:1,b25:10,b50:10,b75:10,b100:12,b200:4};
 const SCORE_CIBLE=5000;
-const VERSION="1.5.8";
+const VERSION="1.5.10";
 const GAME_NAME="Pit Cards";
 
 const OBJECTIFS=[
   // mode: "solo" = Solo vs Victor uniquement, "4j" = 1vs3IA uniquement, null = les deux
-  {id:"first_win",cat:"🏁 Victoire",label:"Première victoire",desc:"Gagner ta première partie",pts:100,mode:null},
-  {id:"win5",cat:"🏁 Victoire",label:"Série de 5",desc:"Gagner 5 parties",pts:300,mode:null},
-  {id:"win10",cat:"🏁 Victoire",label:"Vétéran",desc:"Gagner 10 parties",pts:600,mode:null},
-  {id:"win50",cat:"🏁 Victoire",label:"Champion",desc:"Gagner 50 parties",pts:800,mode:null},
-  {id:"win100",cat:"🏁 Victoire",label:"Légende",desc:"Gagner 100 parties",pts:1500,mode:null},
-  {id:"win3_streak",cat:"🏁 Victoire",label:"Triplé",desc:"Gagner 3 parties de suite",pts:500,mode:null},
+  {id:"first_win",cat:"🏁 Victoire",label:"Première victoire",desc:"Gagner ton premier championnat",pts:100,mode:null},
+  {id:"win5",cat:"🏁 Victoire",label:"Série de 5",desc:"Gagner 5 championnats",pts:300,mode:null},
+  {id:"win10",cat:"🏁 Victoire",label:"Vétéran",desc:"Gagner 10 championnats",pts:600,mode:null},
+  {id:"win50",cat:"🏁 Victoire",label:"Champion",desc:"Gagner 50 championnats",pts:800,mode:null},
+  {id:"win100",cat:"🏁 Victoire",label:"Légende",desc:"Gagner 100 championnats",pts:1500,mode:null},
+  {id:"win3_streak",cat:"🏁 Victoire",label:"Triplé",desc:"Gagner 3 championnats de suite",pts:500,mode:null},
   {id:"win_hard",cat:"🏁 Victoire",label:"Casse-cou",desc:"Gagner en mode Difficile",pts:400,mode:null},
   {id:"win_hardcore",cat:"🏁 Victoire",label:"Intouchable",desc:"Gagner en mode Hardcore",pts:800,mode:null},
-  {id:"win_fast",cat:"🏁 Victoire",label:"Éclair",desc:"Gagner en moins de 5 manches",pts:400,mode:null},
+  {id:"win_fast",cat:"🏁 Victoire",label:"Éclair",desc:"Gagner en moins de 5 courses",pts:400,mode:null},
   {id:"win_no_discard",cat:"🏁 Victoire",label:"Sans gaspillage",desc:"Gagner sans jamais défausser",pts:350,mode:null},
-  {id:"win_from_zero",cat:"🏁 Victoire",label:"Remontée héroïque",desc:"Gagner en étant à 0 km au début de la dernière manche",pts:450,mode:null},
+  {id:"win_from_zero",cat:"🏁 Victoire",label:"Remontée héroïque",desc:"Gagner en étant à 0 km au début de la dernière course",pts:450,mode:null},
   {id:"win_solo_hard",cat:"🏁 Victoire",label:"Domination",desc:"Gagner 5 fois de suite contre Victor",pts:600,mode:"solo"},
-  {id:"win_4j_comeback",cat:"🏁 Victoire",label:"Revanche collective",desc:"Gagner une partie à 4 en étant dernier à mi-chemin",pts:500,mode:"4j"},
-  {id:"win_4j_wire",cat:"🏁 Victoire",label:"Sur le fil",desc:"Gagner une manche à 4 avec moins de 100 pts d'avance sur le 2ème",pts:400,mode:"4j"},
-  {id:"no_block",cat:"🛣️ Kilomètres",label:"Route libre",desc:"Gagner une manche sans jamais être bloqué",pts:350,mode:null},
-  {id:"no_200",cat:"🛣️ Kilomètres",label:"Sans turbo",desc:"Gagner une manche sans jouer de carte 200 km",pts:250,mode:null},
+  {id:"win_4j_comeback",cat:"🏁 Victoire",label:"Revanche collective",desc:"Gagner un championnat à 4 en étant dernier à mi-chemin",pts:500,mode:"4j"},
+  {id:"win_4j_wire",cat:"🏁 Victoire",label:"Sur le fil",desc:"Gagner une course à 4 avec moins de 100 pts d'avance sur le 2ème",pts:400,mode:"4j"},
+  {id:"no_block",cat:"🛣️ Kilomètres",label:"Route libre",desc:"Gagner une course sans jamais être bloqué",pts:350,mode:null},
+  {id:"no_200",cat:"🛣️ Kilomètres",label:"Sans turbo",desc:"Gagner une course sans jouer de carte 200 km",pts:250,mode:null},
   {id:"total_10k",cat:"🛣️ Kilomètres",label:"10 000 km",desc:"Parcourir 10 000 km au total",pts:300,mode:null},
   {id:"total_50k",cat:"🛣️ Kilomètres",label:"50 000 km",desc:"Parcourir 50 000 km au total",pts:700,mode:null},
-  {id:"five_200",cat:"🛣️ Kilomètres",label:"Turbo x5",desc:"Jouer 5 cartes 200 km dans une même partie",pts:300,mode:null},
+  {id:"five_200",cat:"🛣️ Kilomètres",label:"Turbo x5",desc:"Jouer 5 cartes 200 km dans un même championnat",pts:300,mode:null},
   {id:"km_1000_solo",cat:"🛣️ Kilomètres",label:"Parfait",desc:"Atteindre exactement 1000 km contre Victor sans dépasser",pts:200,mode:"solo"},
-  {id:"km_4j_leader",cat:"🛣️ Kilomètres",label:"En tête",desc:"Être premier en km pendant 3 manches consécutives à 4 joueurs",pts:350,mode:"4j"},
-  {id:"capot",cat:"💥 Attaque",label:"Capot !",desc:"Laisser un adversaire à 0 km en fin de manche",pts:500,mode:null},
-  {id:"capot_3",cat:"💥 Attaque",label:"Triple capot",desc:"Laisser les 3 adversaires à 0 km dans la même manche",pts:800,mode:"4j"},
+  {id:"km_4j_leader",cat:"🛣️ Kilomètres",label:"En tête",desc:"Être premier en km pendant 3 courses consécutives à 4 joueurs",pts:350,mode:"4j"},
+  {id:"capot",cat:"💥 Attaque",label:"Capot !",desc:"Laisser un adversaire à 0 km en fin de course",pts:500,mode:null},
+  {id:"capot_3",cat:"💥 Attaque",label:"Triple capot",desc:"Laisser les 3 adversaires à 0 km dans la même course",pts:800,mode:"4j"},
   {id:"cf1",cat:"💥 Attaque",label:"Coup-Fourré",desc:"Réussir 1 Coup-Fourré",pts:150,mode:null},
-  {id:"cf3",cat:"💥 Attaque",label:"Triple Fourré",desc:"Réussir 3 Coups-Fourrés en une partie",pts:400,mode:null},
-  {id:"cf2_manche",cat:"💥 Attaque",label:"Double Fourré",desc:"Réussir 2 Coups-Fourrés dans la même manche",pts:350,mode:null},
-  {id:"all_bottes",cat:"💥 Attaque",label:"Arsenal complet",desc:"Jouer les 4 bottes dans une même manche",pts:450,mode:null},
-  {id:"attack10",cat:"💥 Attaque",label:"Agressif",desc:"Attaquer Victor 10 fois dans une même partie",pts:300,mode:"solo"},
-  {id:"attack_all_4j",cat:"💥 Attaque",label:"Semeur de chaos",desc:"Attaquer les 3 adversaires dans la même manche à 4",pts:400,mode:"4j"},
-  {id:"all_attacks",cat:"💥 Attaque",label:"Panoplie",desc:"Utiliser les 5 attaques différentes dans une partie",pts:500,mode:null},
+  {id:"cf3",cat:"💥 Attaque",label:"Triple Fourré",desc:"Réussir 3 Coups-Fourrés en un championnat",pts:400,mode:null},
+  {id:"cf2_manche",cat:"💥 Attaque",label:"Double Fourré",desc:"Réussir 2 Coups-Fourrés dans la même course",pts:350,mode:null},
+  {id:"all_bottes",cat:"💥 Attaque",label:"Arsenal complet",desc:"Jouer les 4 bottes dans une même course",pts:450,mode:null},
+  {id:"attack10",cat:"💥 Attaque",label:"Agressif",desc:"Attaquer Victor 10 fois dans un même championnat",pts:300,mode:"solo"},
+  {id:"attack_all_4j",cat:"💥 Attaque",label:"Semeur de chaos",desc:"Attaquer les 3 adversaires dans la même course à 4",pts:400,mode:"4j"},
+  {id:"all_attacks",cat:"💥 Attaque",label:"Panoplie",desc:"Utiliser les 5 attaques différentes dans un championnat",pts:500,mode:null},
   {id:"chain_attack_4j",cat:"💥 Attaque",label:"Réaction en chaîne",desc:"Attaquer 3 fois de suite sans jamais être attaqué à 4 joueurs",pts:450,mode:"4j"},
-  {id:"no_attack",cat:"⚡ Exploits",label:"Invincible",desc:"Gagner une manche sans jamais être attaqué",pts:300,mode:null},
+  {id:"no_attack",cat:"⚡ Exploits",label:"Invincible",desc:"Gagner une course sans jamais être attaqué",pts:300,mode:null},
   {id:"comeback",cat:"⚡ Exploits",label:"Remontada",desc:"Gagner alors que Victor avait plus de 800 km",pts:350,mode:"solo"},
-  {id:"win_while_limited",cat:"⚡ Exploits",label:"Limité mais vainqueur",desc:"Gagner une manche en étant limité en vitesse",pts:300,mode:null},
+  {id:"win_while_limited",cat:"⚡ Exploits",label:"Limité mais vainqueur",desc:"Gagner une course en étant limité en vitesse",pts:300,mode:null},
   {id:"win_small_bornes",cat:"⚡ Exploits",label:"Petit pas",desc:"Gagner avec uniquement des 25 km et 50 km",pts:400,mode:null},
   {id:"win_vs_prioritaire",cat:"⚡ Exploits",label:"Sans peur",desc:"Gagner alors que Victor avait la Safety Car",pts:350,mode:"solo"},
-  {id:"last_start_win",cat:"⚡ Exploits",label:"Tortue gagnante",desc:"Être le dernier à démarrer et gagner la manche à 4",pts:500,mode:"4j"},
-  {id:"win_4j_no_cf",cat:"⚡ Exploits",label:"Fair-play",desc:"Gagner une partie à 4 sans aucun Coup-Fourré",pts:300,mode:"4j"},
+  {id:"last_start_win",cat:"⚡ Exploits",label:"Tortue gagnante",desc:"Être le dernier à démarrer et gagner la course à 4",pts:500,mode:"4j"},
+  {id:"win_4j_no_cf",cat:"⚡ Exploits",label:"Fair-play",desc:"Gagner un championnat à 4 sans aucun Coup-Fourré",pts:300,mode:"4j"},
   {id:"solo_capot_hard",cat:"⚡ Exploits",label:"Écrasant",desc:"Laisser Victor à 0 km en mode Difficile",pts:600,mode:"solo"},
-  {id:"discard20",cat:"🎯 Stratégie",label:"Sélectif",desc:"Défausser 20 cartes dans une même partie",pts:250,mode:null},
+  {id:"discard20",cat:"🎯 Stratégie",label:"Sélectif",desc:"Défausser 20 cartes dans un même championnat",pts:250,mode:null},
   {id:"win_no_attack",cat:"🎯 Stratégie",label:"Pacifiste",desc:"Gagner sans jamais attaquer",pts:400,mode:null},
   {id:"win_all_bottes",cat:"🎯 Stratégie",label:"Blindé",desc:"Gagner avec les 4 bottes jouées",pts:300,mode:null},
   {id:"solo_win_3bottes",cat:"🎯 Stratégie",label:"Fortifié",desc:"Gagner contre Victor avec exactement 3 bottes jouées",pts:250,mode:"solo"},
-  {id:"4j_win_no_bottes",cat:"🎯 Stratégie",label:"À mains nues",desc:"Gagner une partie à 4 sans jouer aucune botte",pts:500,mode:"4j"},
-  {id:"4j_sabotage",cat:"🎯 Stratégie",label:"Saboteur",desc:"Attaquer le joueur en tête 5 fois dans une partie à 4",pts:350,mode:"4j"},
-  {id:"play10",cat:"😊 Progression",label:"Apprenti",desc:"Jouer 10 manches au total",pts:200,mode:null},
-  {id:"play50",cat:"😊 Progression",label:"Routard",desc:"Jouer 50 manches au total",pts:500,mode:null},
-  {id:"play100",cat:"😊 Progression",label:"Habitué",desc:"Jouer 100 manches au total",pts:800,mode:null},
-  {id:"play500",cat:"😊 Progression",label:"Marathonien",desc:"Jouer 500 manches au total",pts:1500,mode:null},
-  {id:"play10_solo",cat:"😊 Progression",label:"Rival de Victor",desc:"Jouer 10 parties Solo vs Victor",pts:150,mode:"solo"},
-  {id:"play10_4j",cat:"😊 Progression",label:"Habitué du peloton",desc:"Jouer 10 parties à 4 joueurs",pts:150,mode:"4j"},
+  {id:"4j_win_no_bottes",cat:"🎯 Stratégie",label:"À mains nues",desc:"Gagner un championnat à 4 sans jouer aucune botte",pts:500,mode:"4j"},
+  {id:"4j_sabotage",cat:"🎯 Stratégie",label:"Saboteur",desc:"Attaquer le joueur en tête 5 fois dans un championnat à 4",pts:350,mode:"4j"},
+  {id:"play10",cat:"😊 Progression",label:"Apprenti",desc:"Jouer 10 courses au total",pts:200,mode:null},
+  {id:"play50",cat:"😊 Progression",label:"Routard",desc:"Jouer 50 courses au total",pts:500,mode:null},
+  {id:"play100",cat:"😊 Progression",label:"Habitué",desc:"Jouer 100 courses au total",pts:800,mode:null},
+  {id:"play500",cat:"😊 Progression",label:"Marathonien",desc:"Jouer 500 courses au total",pts:1500,mode:null},
+  {id:"play10_solo",cat:"😊 Progression",label:"Rival de Victor",desc:"Jouer 10 championnats Solo vs Victor",pts:150,mode:"solo"},
+  {id:"play10_4j",cat:"😊 Progression",label:"Habitué du peloton",desc:"Jouer 10 championnats à 4 joueurs",pts:150,mode:"4j"},
   {id:"unlock_hardcore",cat:"😊 Progression",label:"Élite",desc:"Débloquer le mode Hardcore",pts:300,mode:null},
   {id:"all_difficulties",cat:"😊 Progression",label:"Explorateur",desc:"Tester les 4 niveaux de difficulté",pts:200,mode:null},
-  {id:"play_both_modes",cat:"😊 Progression",label:"Polyvalent",desc:"Gagner au moins une partie dans chaque mode",pts:300,mode:null},
+  {id:"play_both_modes",cat:"😊 Progression",label:"Polyvalent",desc:"Gagner au moins un championnat dans chaque mode",pts:300,mode:null},
   {id:"all_objectives",cat:"🌟 Prestige",label:"Perfectionniste",desc:"Débloquer tous les autres objectifs",pts:2000,mode:null},
 ];
 const TOTAL_OBJ_PTS=OBJECTIFS.reduce((s,o)=>s+o.pts,0);
@@ -138,7 +138,7 @@ function buildDeck(){const d=[];BORNES.forEach(c=>{const q={b25:10,b50:10,b75:10
 function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 function mkP(hand){return{hand,km:0,attaque:null,limitee:false,started:false,bottes:[],coupsFourres:0,bornes:[],lastCard:null,lastLimite:null,wasAttacked:false};}
 function calcScore(p,w,opponent){let s=p.km;if(w&&p.km===1000)s+=400;s+=p.bottes.length*100;s+=(p.coupsFourres||0)*300;if(w&&!(p.bornes||[]).includes("b200"))s+=300;if(w&&opponent&&opponent.km===0)s+=500;return s;}
-function initManche(fp,diff){const d=buildDeck();const pc=diff==="hardcore"?5:6;return{deck:d,discard:[],player:mkP(d.splice(0,pc)),ai:mkP(d.splice(0,6)),turn:fp,phase:"play",log:[{text:"Manche — À vous !",who:"system"}],winner:null,coupFourreAvailable:null,drawn:false};}
+function initManche(fp,diff){const d=buildDeck();const pc=diff==="hardcore"?5:6;return{deck:d,discard:[],player:mkP(d.splice(0,pc)),ai:mkP(d.splice(0,6)),turn:fp,phase:"play",log:[{text:"Course — À vous !",who:"system"}],winner:null,coupFourreAvailable:null,drawn:false};}
 function canBorne(p,id){const c=getCard(id);if(!p.started||p.attaque)return false;if(p.limitee&&c.km>50)return false;if(id==="b200"&&(p.bornes||[]).filter(b=>b==="b200").length>=2)return false;return p.km+c.km<=1000;}
 function canParade(p,id){const c=getCard(id);if(c.id==="feu_vert"){if(!p.started)return true;return p.attaque==="feu_rouge";}if(c.id==="fin_limite")return p.limitee;return p.attaque===c.attaque;}
 function canAttaque(t,id){const b=botteFor(id);if(b&&t.bottes.includes(b.id))return false;if(!t.started&&id!=="limite")return false;if(id==="limite")return!t.limitee;return!t.attaque;}
@@ -258,7 +258,7 @@ function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,user
               </div>
               <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"12px",overflow:"hidden"}}>
                 <div style={{display:"grid",gridTemplateColumns:"44px 1fr 90px 80px 60px",padding:"8px 14px",background:dark?"rgba(0,0,0,0.3)":"rgba(139,0,0,0.08)",fontSize:"9px",fontWeight:"bold",textTransform:"uppercase",letterSpacing:"1px",color:th.subtext}}>
-                  <span>#</span><span>Joueur</span><span style={{textAlign:"right"}}>Pts</span><span style={{textAlign:"right"}}>Manches</span><span style={{textAlign:"right"}}>Wins</span>
+                  <span>#</span><span>Joueur</span><span style={{textAlign:"right"}}>Pts</span><span style={{textAlign:"right"}}>Courses</span><span style={{textAlign:"right"}}>Wins</span>
                 </div>
                 {loadingLB&&<div style={{padding:"20px",textAlign:"center",fontSize:"11px",color:th.subtext}}>⏳ Chargement...</div>}
                 {!loadingLB&&displayedScores.length===0&&<div style={{padding:"20px",textAlign:"center",fontSize:"11px",color:th.subtext,fontStyle:"italic"}}>Aucun score — soyez le premier !</div>}
@@ -313,7 +313,7 @@ function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,user
           {tab==="stats"&&(
             <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"12px",overflow:"hidden"}}>
               {progress.manchesPlayed===0
-                ?<div style={{padding:"30px",textAlign:"center",fontSize:"11px",color:th.subtext,fontStyle:"italic"}}>Aucune stat — jouez votre première manche !</div>
+                ?<div style={{padding:"30px",textAlign:"center",fontSize:"11px",color:th.subtext,fontStyle:"italic"}}>Aucune stat — jouez votre première course !</div>
                 :[
                   {icon:"🏆",label:"Taux de victoire",value:progress.manchesPlayed>0?Math.round(progress.wins/progress.manchesPlayed*100)+"%":"—",sub:progress.wins+" victoire"+(progress.wins>1?"s":"")+" sur "+progress.manchesPlayed+" manche"+(progress.manchesPlayed>1?"s":""),color:th.gold},
                   {icon:"🛣️",label:"Kilomètres totaux",value:((progress.totalKm||0)).toLocaleString()+" km",sub:"Moyenne : "+Math.round((progress.totalKm||0)/Math.max(1,progress.manchesPlayed))+" km/manche",color:th.accent},
@@ -527,7 +527,7 @@ function GamePage({dark,setDark,onBack,progress,setProgress,soundOn,setSoundOn})
         <div style={{flex:1,textAlign:"center",padding:"5px",background:dark?"rgba(224,112,112,0.15)":"rgba(139,0,0,0.1)",borderRadius:"8px",fontWeight:"bold",fontSize:"clamp(9px,3vw,12px)",color:th.text}}>{statusMsg}</div>
         {state.phase==="play"&&state.drawn&&state.turn==="player"&&(<div style={{background:turnTime>20?"rgba(192,57,43,0.25)":turnTime>10?"rgba(230,126,34,0.2)":dark?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.7)",border:"2px solid "+(turnTime>20?"#c0392b":turnTime>10?"#e67e22":th.border),borderRadius:"8px",padding:"4px 8px",fontSize:"13px",fontWeight:"bold",color:turnTime>20?"#c0392b":turnTime>10?"#e67e22":th.subtext,whiteSpace:"nowrap",minWidth:"48px",textAlign:"center"}}>⏱ {turnTime}s</div>)}
         {bestTime&&<div style={{background:dark?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.7)",border:"2px solid "+th.border,borderRadius:"8px",padding:"4px 8px",fontSize:"clamp(8px,2vw,10px)",color:dark?"#d4ac0d":"#7d6608",whiteSpace:"nowrap"}}>🏅 {bestTime.toFixed(1)}s</div>}
-        <div style={{background:dark?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.7)",border:"2px solid "+th.border,borderRadius:"8px",padding:"4px 8px",fontSize:"clamp(9px,3vw,12px)",fontWeight:"bold",color:th.subtext,whiteSpace:"nowrap"}}>M.{manche}</div>
+        <div style={{background:dark?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.7)",border:"2px solid "+th.border,borderRadius:"8px",padding:"4px 8px",fontSize:"clamp(9px,3vw,12px)",fontWeight:"bold",color:th.subtext,whiteSpace:"nowrap"}}>C.{manche}</div>
         <div style={{background:dark?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.7)",border:"2px solid "+th.border,borderRadius:"8px",padding:"4px 8px",fontSize:"clamp(9px,3vw,12px)",fontWeight:"bold",whiteSpace:"nowrap",color:difficulty==="easy"?"#27ae60":difficulty==="hard"?"#e07070":difficulty==="hardcore"?"#ff6b6b":"#e67e22"}}>{diffLabel}</div>
         <button onClick={()=>setSoundOn(v=>!v)} style={{background:dark?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.7)",border:"2px solid "+th.border,borderRadius:"8px",padding:"4px 8px",fontSize:"14px",cursor:"pointer",lineHeight:1}}>{soundOn?"🔊":"🔇"}</button>
         <button onClick={()=>setDark(v=>!v)} style={{background:dark?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.7)",border:"2px solid "+th.border,borderRadius:"8px",padding:"4px 8px",fontSize:"14px",cursor:"pointer",lineHeight:1}}>{dark?"☀️":"🌙"}</button>
@@ -568,7 +568,7 @@ function GamePage({dark,setDark,onBack,progress,setProgress,soundOn,setSoundOn})
 
       {isCF&&cf&&(<div style={mdlOverlay}><div style={th.modal}><div style={{fontSize:"28px",marginBottom:"6px"}}>⚡</div><h2 style={{color:th.title,marginBottom:"10px",fontSize:"16px"}}>COUP-FOURRÉ !</h2>{cf.attackerWho==="ai"?(<div><p style={{fontSize:"11px",marginBottom:"14px",color:th.text}}>Victor vous attaque avec <strong>{getCard(cf.attaqueId)?.label}</strong>.<br/>Vous avez <strong>{getCard(cf.botteId)?.label}</strong> !</p><div style={{display:"flex",gap:"10px",justifyContent:"center"}}><button style={th.btn("#27ae60")} onClick={()=>handleCF(true)}>⚡ Coup-Fourré !</button><button style={th.btn("#7f8c8d")} onClick={()=>handleCF(false)}>Ignorer</button></div></div>):(<div><p style={{fontSize:"11px",marginBottom:"14px",color:th.text}}>Vous attaquez Victor avec <strong>{getCard(cf.attaqueId)?.label}</strong>.<br/>Victor riposte avec <strong>{getCard(cf.botteId)?.label}</strong> !</p><button style={th.btn("#1a5276")} onClick={()=>handleCF(true)}>Continuer</button></div>)}</div></div>)}
 
-      {mancheResult&&!gameOver&&(<div style={mdlOverlay}><div style={th.modal}><div style={{fontSize:"26px",marginBottom:"6px"}}>{mancheResult.winner==="player"?"🏆":"🏎️"}</div><h2 style={{color:th.title,marginBottom:"4px",fontSize:"15px"}}>Fin de la manche {manche}</h2><p style={{fontSize:"11px",color:th.subtext,marginBottom:"10px"}}>{mancheResult.winner==="player"?dn+" remporte la manche !":"Victor remporte la manche !"}</p><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"6px",marginBottom:"10px"}}><div style={{background:dark?"rgba(224,112,112,0.1)":"rgba(139,0,0,0.08)",borderRadius:"8px",padding:"7px"}}><div style={{fontSize:"10px",fontWeight:"bold",color:th.playerBar}}>👤 {dn}</div><div style={{fontSize:"15px",fontWeight:"bold",color:th.playerBar}}>+{mancheResult.playerScore}</div><div style={{fontSize:"9px",color:dark?"#778":"#888"}}>Total : {mancheResult.total.player}</div><div style={{height:"4px",background:th.barBg,borderRadius:"2px",marginTop:"3px",overflow:"hidden"}}><div style={{height:"100%",width:barW(mancheResult.total.player)+"%",background:th.playerBar,transition:"width 0.6s ease"}}/></div></div><div style={{background:dark?"rgba(91,141,217,0.1)":"rgba(68,85,102,0.08)",borderRadius:"8px",padding:"7px"}}><div style={{fontSize:"10px",fontWeight:"bold",color:th.aiBar}}>🏎️ Victor</div><div style={{fontSize:"15px",fontWeight:"bold",color:th.aiBar}}>+{mancheResult.aiScore}</div><div style={{fontSize:"9px",color:dark?"#778":"#888"}}>Total : {mancheResult.total.ai}</div><div style={{height:"4px",background:th.barBg,borderRadius:"2px",marginTop:"3px",overflow:"hidden"}}><div style={{height:"100%",width:barW(mancheResult.total.ai)+"%",background:th.aiBar,transition:"width 0.6s ease"}}/></div></div></div><div style={{fontSize:"10px",color:dark?"#d4ac0d":"#7d6608",marginBottom:"10px"}}>{SCORE_CIBLE-Math.max(mancheResult.total.player,mancheResult.total.ai)} pts restants</div><button style={{...th.btn("#27ae60"),fontSize:"12px"}} onClick={()=>{const fp=mancheResult.winner;setFirstPlayer(fp);setManche(m=>m+1);setMancheResult(null);setDisplayedPlayerKm(0);setDisplayedAiKm(0);setMancheCFCount(0);setAiMaxKm(0);const ns=initManche(fp,difficulty);setState(fp==="ai"?{...ns,phase:"ai_turn"}:ns);}}>▶️ Manche {manche+1} !</button></div></div>)}
+      {mancheResult&&!gameOver&&(<div style={mdlOverlay}><div style={th.modal}><div style={{fontSize:"26px",marginBottom:"6px"}}>{mancheResult.winner==="player"?"🏆":"🏎️"}</div><h2 style={{color:th.title,marginBottom:"4px",fontSize:"15px"}}>Fin de la course {manche}</h2><p style={{fontSize:"11px",color:th.subtext,marginBottom:"10px"}}>{mancheResult.winner==="player"?dn+" remporte la course !":"Victor remporte la course !"}</p><div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"6px",marginBottom:"10px"}}><div style={{background:dark?"rgba(224,112,112,0.1)":"rgba(139,0,0,0.08)",borderRadius:"8px",padding:"7px"}}><div style={{fontSize:"10px",fontWeight:"bold",color:th.playerBar}}>👤 {dn}</div><div style={{fontSize:"15px",fontWeight:"bold",color:th.playerBar}}>+{mancheResult.playerScore}</div><div style={{fontSize:"9px",color:dark?"#778":"#888"}}>Total : {mancheResult.total.player}</div><div style={{height:"4px",background:th.barBg,borderRadius:"2px",marginTop:"3px",overflow:"hidden"}}><div style={{height:"100%",width:barW(mancheResult.total.player)+"%",background:th.playerBar,transition:"width 0.6s ease"}}/></div></div><div style={{background:dark?"rgba(91,141,217,0.1)":"rgba(68,85,102,0.08)",borderRadius:"8px",padding:"7px"}}><div style={{fontSize:"10px",fontWeight:"bold",color:th.aiBar}}>🏎️ Victor</div><div style={{fontSize:"15px",fontWeight:"bold",color:th.aiBar}}>+{mancheResult.aiScore}</div><div style={{fontSize:"9px",color:dark?"#778":"#888"}}>Total : {mancheResult.total.ai}</div><div style={{height:"4px",background:th.barBg,borderRadius:"2px",marginTop:"3px",overflow:"hidden"}}><div style={{height:"100%",width:barW(mancheResult.total.ai)+"%",background:th.aiBar,transition:"width 0.6s ease"}}/></div></div></div><div style={{fontSize:"10px",color:dark?"#d4ac0d":"#7d6608",marginBottom:"10px"}}>{SCORE_CIBLE-Math.max(mancheResult.total.player,mancheResult.total.ai)} pts restants</div><button style={{...th.btn("#27ae60"),fontSize:"12px"}} onClick={()=>{const fp=mancheResult.winner;setFirstPlayer(fp);setManche(m=>m+1);setMancheResult(null);setDisplayedPlayerKm(0);setDisplayedAiKm(0);setMancheCFCount(0);setAiMaxKm(0);const ns=initManche(fp,difficulty);setState(fp==="ai"?{...ns,phase:"ai_turn"}:ns);}}>▶️ Course {manche+1} !</button></div></div>)}
 
       {gameOver&&(<div style={mdlOverlay}><div style={th.modal}><div style={{fontSize:"36px",marginBottom:"6px"}}>{gameOver.winner==="player"?"🏆":"😢"}</div><h2 style={{color:th.title,marginBottom:"6px",fontSize:"16px"}}>{gameOver.winner==="player"?"Bravo "+dn+" !":"Victor s'impose !"}</h2><p style={{fontSize:"11px",color:th.subtext,marginBottom:"10px"}}>{gameOver.winner==="player"?"Vous avez vaincu Victor !":"Victor reste invaincu..."}</p>{hardcoreUnlocked&&!progress.unlocked.includes("win_hardcore")&&(<div style={{background:"linear-gradient(135deg,#1a1a2e,#8B0000)",border:"2px solid #FFD700",borderRadius:"10px",padding:"10px",marginBottom:"12px"}}><div style={{fontSize:"20px",marginBottom:"4px"}}>💀</div><div style={{color:"#FFD700",fontWeight:"bold",fontSize:"13px",marginBottom:"3px"}}>MODE HARDCORE DÉBLOQUÉ !</div><div style={{color:"rgba(255,255,255,0.8)",fontSize:"10px"}}>Vous avez prouvé votre valeur.</div></div>)}<div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"6px",marginBottom:"10px"}}><div style={{background:dark?"rgba(224,112,112,0.1)":"rgba(139,0,0,0.08)",borderRadius:"8px",padding:"8px"}}><div style={{fontSize:"10px",fontWeight:"bold",color:th.playerBar}}>👤 {dn}</div><div style={{fontSize:"18px",fontWeight:"bold",color:th.playerBar}}>{gameOver.total.player}</div></div><div style={{background:dark?"rgba(91,141,217,0.1)":"rgba(68,85,102,0.08)",borderRadius:"8px",padding:"8px"}}><div style={{fontSize:"10px",fontWeight:"bold",color:th.aiBar}}>🏎️ Victor</div><div style={{fontSize:"18px",fontWeight:"bold",color:th.aiBar}}>{gameOver.total.ai}</div></div></div><div style={{display:"flex",gap:"8px",justifyContent:"center",flexWrap:"wrap"}}><button style={th.btn()} onClick={nouvellePartie}>🔄 Rejouer</button><button style={th.btn("#445566")} onClick={onBack}>🏠 Accueil</button></div></div></div>)}
 
@@ -593,7 +593,7 @@ function GamePage({dark,setDark,onBack,progress,setProgress,soundOn,setSoundOn})
         {tirageStep===1&&(<div><div style={{fontSize:"13px",fontWeight:"bold",marginBottom:"12px",color:firstPlayer==="player"?"#27ae60":th.title}}>{des[0]>des[1]&&"🏆 "+dn+" commence !"}{des[1]>des[0]&&"🏎️ Victor commence !"}{des[0]===des[1]&&"⚖️ Égalité — relancez !"}</div>{des[0]===des[1]?<button style={{background:"#e67e22",color:"#fff",border:"none",borderRadius:"8px",padding:"8px 14px",cursor:"pointer",fontWeight:"bold",fontFamily:"Georgia,serif",fontSize:"11px",textTransform:"uppercase"}} onClick={()=>{setTirageStep(0);setTirageAnim(false);}}>🎲 Relancer</button>:<button style={{background:"#27ae60",color:"#fff",border:"none",borderRadius:"8px",padding:"8px 14px",cursor:"pointer",fontWeight:"bold",fontFamily:"Georgia,serif",fontSize:"11px",textTransform:"uppercase"}} onClick={demarrerPartie}>▶️ Démarrer !</button>}</div>)}
       </div></div>)}
 
-      <button style={{position:"fixed",bottom:"16px",right:"16px",zIndex:50,background:dark?"linear-gradient(135deg,#2a3a5a,#1a2a4a)":"linear-gradient(135deg,#5d4037,#3e2723)",color:"#fdf6e3",border:"2px solid "+(dark?"#4a6fa5":"#fdf6e3"),borderRadius:"50px",padding:"8px 14px",cursor:"pointer",fontWeight:"bold",letterSpacing:"1px",fontFamily:"Georgia,serif",fontSize:"10px",textTransform:"uppercase",boxShadow:"0 4px 12px rgba(0,0,0,0.4)"}} onClick={nouvellePartie}>🔄 Nouvelle partie</button>
+      <button style={{position:"fixed",bottom:"16px",right:"16px",zIndex:50,background:dark?"linear-gradient(135deg,#2a3a5a,#1a2a4a)":"linear-gradient(135deg,#5d4037,#3e2723)",color:"#fdf6e3",border:"2px solid "+(dark?"#4a6fa5":"#fdf6e3"),borderRadius:"50px",padding:"8px 14px",cursor:"pointer",fontWeight:"bold",letterSpacing:"1px",fontFamily:"Georgia,serif",fontSize:"10px",textTransform:"uppercase",boxShadow:"0 4px 12px rgba(0,0,0,0.4)"}} onClick={nouvellePartie}>🔄 Nouveau championnat</button>
     </div>
   );
 }
