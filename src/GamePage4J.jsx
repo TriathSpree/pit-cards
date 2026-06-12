@@ -661,8 +661,6 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
             {p.bottes.map(b=><div key={b} style={{background:cColor(b,dark),color:"#fff",borderRadius:"6px",padding:"2px 5px",fontSize:"9px",fontWeight:"bold",display:"flex",alignItems:"center",gap:"2px"}}><span>{cEmoji(b)}</span><span style={{lineHeight:1.2}}>{getCard(b)?.label}</span></div>)}
           </div>
         )}
-        {/* Score */}
-        <div style={{fontSize:"9px",color:th.gold}}>🏆 {(totalScores[p.name]||0)} pts</div>
       </div>
     );
   }
@@ -846,6 +844,9 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
                     </div>
                     <div style={{flex:1,position:"relative",height:"14px",background:th.barBg,borderRadius:"7px",overflow:"hidden"}}>
                       <div style={{height:"100%",width:pct+"%",background:c,borderRadius:"7px",transition:"width 0.5s",minWidth:pct>0?"4px":"0"}}/>
+                      {[200,400,600,800].map(v=>(
+                        <div key={v} style={{position:"absolute",top:0,bottom:0,left:(v/SCORE_CIBLE*100)+"%",width:"1px",background:dark?"rgba(255,255,255,0.2)":"rgba(0,0,0,0.15)",zIndex:1}}/>
+                      ))}
                       <div style={{position:"absolute",right:"4px",top:"0",bottom:"0",display:"flex",alignItems:"center",fontSize:"8px",opacity:0.5}}>🏁</div>
                     </div>
                     <div style={{width:"38px",fontSize:"11px",fontWeight:"bold",color:c,textAlign:"right"}}>{s}</div>
