@@ -74,44 +74,62 @@ const VERSION="1.5.0";
 const GAME_NAME="Pit Cards";
 
 const OBJECTIFS=[
-  {id:"first_win",cat:"🏁 Victoire",label:"Première victoire",desc:"Gagner ta première partie",pts:100},
-  {id:"win5",cat:"🏁 Victoire",label:"Série de 5",desc:"Gagner 5 parties",pts:300},
-  {id:"win10",cat:"🏁 Victoire",label:"Vétéran",desc:"Gagner 10 parties",pts:600},
-  {id:"win50",cat:"🏁 Victoire",label:"Champion",desc:"Gagner 50 parties",pts:800},
-  {id:"win100",cat:"🏁 Victoire",label:"Légende",desc:"Gagner 100 parties",pts:1500},
-  {id:"win3_streak",cat:"🏁 Victoire",label:"Triplé",desc:"Gagner 3 parties de suite",pts:500},
-  {id:"win_hard",cat:"🏁 Victoire",label:"Casse-cou",desc:"Gagner en mode Difficile",pts:400},
-  {id:"win_hardcore",cat:"🏁 Victoire",label:"Intouchable",desc:"Gagner en mode Hardcore",pts:800},
-  {id:"win_fast",cat:"🏁 Victoire",label:"Éclair",desc:"Gagner en moins de 5 manches",pts:400},
-  {id:"win_no_discard",cat:"🏁 Victoire",label:"Sans gaspillage",desc:"Gagner sans jamais défausser",pts:350},
-  {id:"win_from_zero",cat:"🏁 Victoire",label:"Remontée héroïque",desc:"Gagner en étant à 0 km au début de la dernière manche",pts:450},
-  {id:"no_block",cat:"🛣️ Kilomètres",label:"Route libre",desc:"Gagner une manche sans jamais être bloqué",pts:350},
-  {id:"no_200",cat:"🛣️ Kilomètres",label:"Sans turbo",desc:"Gagner une manche sans jouer de carte 200 km",pts:250},
-  {id:"total_10k",cat:"🛣️ Kilomètres",label:"10 000 km",desc:"Parcourir 10 000 km au total",pts:300},
-  {id:"total_50k",cat:"🛣️ Kilomètres",label:"50 000 km",desc:"Parcourir 50 000 km au total",pts:700},
-  {id:"five_200",cat:"🛣️ Kilomètres",label:"Turbo x5",desc:"Jouer 5 cartes 200 km dans une même partie",pts:300},
-  {id:"capot",cat:"💥 Attaque",label:"Capot !",desc:"Infliger un Capot (adversaire à 0 km)",pts:500},
-  {id:"cf1",cat:"💥 Attaque",label:"Coup-Fourré",desc:"Réussir 1 Coup-Fourré",pts:150},
-  {id:"cf3",cat:"💥 Attaque",label:"Triple Fourré",desc:"Réussir 3 Coups-Fourrés en une partie",pts:400},
-  {id:"cf2_manche",cat:"💥 Attaque",label:"Double Fourré",desc:"Réussir 2 Coups-Fourrés dans la même manche",pts:350},
-  {id:"all_bottes",cat:"💥 Attaque",label:"Arsenal complet",desc:"Jouer les 4 bottes dans une même manche",pts:450},
-  {id:"attack10",cat:"💥 Attaque",label:"Agressif",desc:"Attaquer Victor 10 fois dans une même partie",pts:300},
-  {id:"all_attacks",cat:"💥 Attaque",label:"Panoplie",desc:"Utiliser les 5 attaques différentes dans une partie",pts:500},
-  {id:"no_attack",cat:"⚡ Exploits",label:"Invincible",desc:"Gagner une manche sans jamais être attaqué",pts:300},
-  {id:"comeback",cat:"⚡ Exploits",label:"Remontada",desc:"Gagner alors que Victor avait plus de 800 km",pts:350},
-  {id:"win_while_limited",cat:"⚡ Exploits",label:"Limité mais vainqueur",desc:"Gagner une manche en étant limité en vitesse",pts:300},
-  {id:"win_small_bornes",cat:"⚡ Exploits",label:"Petit pas",desc:"Gagner avec uniquement des 25 km et 50 km",pts:400},
-  {id:"win_vs_prioritaire",cat:"⚡ Exploits",label:"Sans peur",desc:"Gagner alors que Victor avait la botte Prioritaire",pts:350},
-  {id:"discard20",cat:"🎯 Stratégie",label:"Sélectif",desc:"Défausser 20 cartes dans une même partie",pts:250},
-  {id:"win_no_attack",cat:"🎯 Stratégie",label:"Pacifiste",desc:"Gagner sans jamais attaquer Victor",pts:400},
-  {id:"win_all_bottes",cat:"🎯 Stratégie",label:"Blindé",desc:"Gagner avec les 4 bottes jouées",pts:300},
-  {id:"play10",cat:"😊 Progression",label:"Apprenti",desc:"Jouer 10 manches au total",pts:200},
-  {id:"play50",cat:"😊 Progression",label:"Routard",desc:"Jouer 50 manches au total",pts:500},
-  {id:"play100",cat:"😊 Progression",label:"Habitué",desc:"Jouer 100 manches au total",pts:800},
-  {id:"play500",cat:"😊 Progression",label:"Marathonien",desc:"Jouer 500 manches au total",pts:1500},
-  {id:"unlock_hardcore",cat:"😊 Progression",label:"Élite",desc:"Débloquer le mode Hardcore",pts:300},
-  {id:"all_difficulties",cat:"😊 Progression",label:"Explorateur",desc:"Tester les 4 niveaux de difficulté",pts:200},
-  {id:"all_objectives",cat:"🌟 Prestige",label:"Perfectionniste",desc:"Débloquer tous les autres objectifs",pts:2000},
+  // mode: "solo" = Solo vs Victor uniquement, "4j" = 1vs3IA uniquement, null = les deux
+  {id:"first_win",cat:"🏁 Victoire",label:"Première victoire",desc:"Gagner ta première partie",pts:100,mode:null},
+  {id:"win5",cat:"🏁 Victoire",label:"Série de 5",desc:"Gagner 5 parties",pts:300,mode:null},
+  {id:"win10",cat:"🏁 Victoire",label:"Vétéran",desc:"Gagner 10 parties",pts:600,mode:null},
+  {id:"win50",cat:"🏁 Victoire",label:"Champion",desc:"Gagner 50 parties",pts:800,mode:null},
+  {id:"win100",cat:"🏁 Victoire",label:"Légende",desc:"Gagner 100 parties",pts:1500,mode:null},
+  {id:"win3_streak",cat:"🏁 Victoire",label:"Triplé",desc:"Gagner 3 parties de suite",pts:500,mode:null},
+  {id:"win_hard",cat:"🏁 Victoire",label:"Casse-cou",desc:"Gagner en mode Difficile",pts:400,mode:null},
+  {id:"win_hardcore",cat:"🏁 Victoire",label:"Intouchable",desc:"Gagner en mode Hardcore",pts:800,mode:null},
+  {id:"win_fast",cat:"🏁 Victoire",label:"Éclair",desc:"Gagner en moins de 5 manches",pts:400,mode:null},
+  {id:"win_no_discard",cat:"🏁 Victoire",label:"Sans gaspillage",desc:"Gagner sans jamais défausser",pts:350,mode:null},
+  {id:"win_from_zero",cat:"🏁 Victoire",label:"Remontée héroïque",desc:"Gagner en étant à 0 km au début de la dernière manche",pts:450,mode:null},
+  {id:"win_solo_hard",cat:"🏁 Victoire",label:"Domination",desc:"Gagner 5 fois de suite contre Victor",pts:600,mode:"solo"},
+  {id:"win_4j_comeback",cat:"🏁 Victoire",label:"Revanche collective",desc:"Gagner une partie à 4 en étant dernier à mi-chemin",pts:500,mode:"4j"},
+  {id:"win_4j_wire",cat:"🏁 Victoire",label:"Sur le fil",desc:"Gagner une manche à 4 avec moins de 100 pts d'avance sur le 2ème",pts:400,mode:"4j"},
+  {id:"no_block",cat:"🛣️ Kilomètres",label:"Route libre",desc:"Gagner une manche sans jamais être bloqué",pts:350,mode:null},
+  {id:"no_200",cat:"🛣️ Kilomètres",label:"Sans turbo",desc:"Gagner une manche sans jouer de carte 200 km",pts:250,mode:null},
+  {id:"total_10k",cat:"🛣️ Kilomètres",label:"10 000 km",desc:"Parcourir 10 000 km au total",pts:300,mode:null},
+  {id:"total_50k",cat:"🛣️ Kilomètres",label:"50 000 km",desc:"Parcourir 50 000 km au total",pts:700,mode:null},
+  {id:"five_200",cat:"🛣️ Kilomètres",label:"Turbo x5",desc:"Jouer 5 cartes 200 km dans une même partie",pts:300,mode:null},
+  {id:"km_1000_solo",cat:"🛣️ Kilomètres",label:"Parfait",desc:"Atteindre exactement 1000 km contre Victor sans dépasser",pts:200,mode:"solo"},
+  {id:"km_4j_leader",cat:"🛣️ Kilomètres",label:"En tête",desc:"Être premier en km pendant 3 manches consécutives à 4 joueurs",pts:350,mode:"4j"},
+  {id:"capot",cat:"💥 Attaque",label:"Capot !",desc:"Laisser un adversaire à 0 km en fin de manche",pts:500,mode:null},
+  {id:"capot_3",cat:"💥 Attaque",label:"Triple capot",desc:"Laisser les 3 adversaires à 0 km dans la même manche",pts:800,mode:"4j"},
+  {id:"cf1",cat:"💥 Attaque",label:"Coup-Fourré",desc:"Réussir 1 Coup-Fourré",pts:150,mode:null},
+  {id:"cf3",cat:"💥 Attaque",label:"Triple Fourré",desc:"Réussir 3 Coups-Fourrés en une partie",pts:400,mode:null},
+  {id:"cf2_manche",cat:"💥 Attaque",label:"Double Fourré",desc:"Réussir 2 Coups-Fourrés dans la même manche",pts:350,mode:null},
+  {id:"all_bottes",cat:"💥 Attaque",label:"Arsenal complet",desc:"Jouer les 4 bottes dans une même manche",pts:450,mode:null},
+  {id:"attack10",cat:"💥 Attaque",label:"Agressif",desc:"Attaquer Victor 10 fois dans une même partie",pts:300,mode:"solo"},
+  {id:"attack_all_4j",cat:"💥 Attaque",label:"Semeur de chaos",desc:"Attaquer les 3 adversaires dans la même manche à 4",pts:400,mode:"4j"},
+  {id:"all_attacks",cat:"💥 Attaque",label:"Panoplie",desc:"Utiliser les 5 attaques différentes dans une partie",pts:500,mode:null},
+  {id:"chain_attack_4j",cat:"💥 Attaque",label:"Réaction en chaîne",desc:"Attaquer 3 fois de suite sans jamais être attaqué à 4 joueurs",pts:450,mode:"4j"},
+  {id:"no_attack",cat:"⚡ Exploits",label:"Invincible",desc:"Gagner une manche sans jamais être attaqué",pts:300,mode:null},
+  {id:"comeback",cat:"⚡ Exploits",label:"Remontada",desc:"Gagner alors que Victor avait plus de 800 km",pts:350,mode:"solo"},
+  {id:"win_while_limited",cat:"⚡ Exploits",label:"Limité mais vainqueur",desc:"Gagner une manche en étant limité en vitesse",pts:300,mode:null},
+  {id:"win_small_bornes",cat:"⚡ Exploits",label:"Petit pas",desc:"Gagner avec uniquement des 25 km et 50 km",pts:400,mode:null},
+  {id:"win_vs_prioritaire",cat:"⚡ Exploits",label:"Sans peur",desc:"Gagner alors que Victor avait la Safety Car",pts:350,mode:"solo"},
+  {id:"last_start_win",cat:"⚡ Exploits",label:"Tortue gagnante",desc:"Être le dernier à démarrer et gagner la manche à 4",pts:500,mode:"4j"},
+  {id:"win_4j_no_cf",cat:"⚡ Exploits",label:"Fair-play",desc:"Gagner une partie à 4 sans aucun Coup-Fourré",pts:300,mode:"4j"},
+  {id:"solo_capot_hard",cat:"⚡ Exploits",label:"Écrasant",desc:"Laisser Victor à 0 km en mode Difficile",pts:600,mode:"solo"},
+  {id:"discard20",cat:"🎯 Stratégie",label:"Sélectif",desc:"Défausser 20 cartes dans une même partie",pts:250,mode:null},
+  {id:"win_no_attack",cat:"🎯 Stratégie",label:"Pacifiste",desc:"Gagner sans jamais attaquer",pts:400,mode:null},
+  {id:"win_all_bottes",cat:"🎯 Stratégie",label:"Blindé",desc:"Gagner avec les 4 bottes jouées",pts:300,mode:null},
+  {id:"solo_win_3bottes",cat:"🎯 Stratégie",label:"Fortifié",desc:"Gagner contre Victor avec exactement 3 bottes jouées",pts:250,mode:"solo"},
+  {id:"4j_win_no_bottes",cat:"🎯 Stratégie",label:"À mains nues",desc:"Gagner une partie à 4 sans jouer aucune botte",pts:500,mode:"4j"},
+  {id:"4j_sabotage",cat:"🎯 Stratégie",label:"Saboteur",desc:"Attaquer le joueur en tête 5 fois dans une partie à 4",pts:350,mode:"4j"},
+  {id:"play10",cat:"😊 Progression",label:"Apprenti",desc:"Jouer 10 manches au total",pts:200,mode:null},
+  {id:"play50",cat:"😊 Progression",label:"Routard",desc:"Jouer 50 manches au total",pts:500,mode:null},
+  {id:"play100",cat:"😊 Progression",label:"Habitué",desc:"Jouer 100 manches au total",pts:800,mode:null},
+  {id:"play500",cat:"😊 Progression",label:"Marathonien",desc:"Jouer 500 manches au total",pts:1500,mode:null},
+  {id:"play10_solo",cat:"😊 Progression",label:"Rival de Victor",desc:"Jouer 10 parties Solo vs Victor",pts:150,mode:"solo"},
+  {id:"play10_4j",cat:"😊 Progression",label:"Habitué du peloton",desc:"Jouer 10 parties à 4 joueurs",pts:150,mode:"4j"},
+  {id:"unlock_hardcore",cat:"😊 Progression",label:"Élite",desc:"Débloquer le mode Hardcore",pts:300,mode:null},
+  {id:"all_difficulties",cat:"😊 Progression",label:"Explorateur",desc:"Tester les 4 niveaux de difficulté",pts:200,mode:null},
+  {id:"play_both_modes",cat:"😊 Progression",label:"Polyvalent",desc:"Gagner au moins une partie dans chaque mode",pts:300,mode:null},
+  {id:"all_objectives",cat:"🌟 Prestige",label:"Perfectionniste",desc:"Débloquer tous les autres objectifs",pts:2000,mode:null},
 ];
 const TOTAL_OBJ_PTS=OBJECTIFS.reduce((s,o)=>s+o.pts,0);
 const INIT_PROGRESS={wins:0,manchesPlayed:0,unlocked:[],objPts:0,playerName:"",totalKm:0,bestMancheScore:0,winStreak:0,triedDifficulties:[]};
@@ -275,7 +293,14 @@ function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,user
                     return(
                       <div key={o.id} style={{display:"flex",alignItems:"center",gap:"10px",padding:"10px 14px",borderTop:"1px solid "+th.border,opacity:done?1:0.6}}>
                         <div style={{fontSize:"20px",flexShrink:0}}>{done?"✅":"🔒"}</div>
-                        <div style={{flex:1}}><div style={{fontSize:"12px",fontWeight:"bold",color:done?th.title:th.text}}>{o.label}</div><div style={{fontSize:"10px",color:th.subtext}}>{o.desc}</div></div>
+                        <div style={{flex:1}}>
+                          <div style={{display:"flex",alignItems:"center",gap:"5px"}}>
+                            <span style={{fontSize:"12px",fontWeight:"bold",color:done?th.title:th.text}}>{o.label}</span>
+                            {o.mode==="solo"&&<span style={{fontSize:"8px",background:dark?"rgba(139,0,0,0.3)":"rgba(139,0,0,0.1)",color:th.title,borderRadius:"4px",padding:"1px 4px",fontWeight:"bold"}}>🧍 Solo</span>}
+                            {o.mode==="4j"&&<span style={{fontSize:"8px",background:dark?"rgba(26,82,118,0.3)":"rgba(26,82,118,0.1)",color:dark?"#4a9eda":"#1a5276",borderRadius:"4px",padding:"1px 4px",fontWeight:"bold"}}>👥 4J</span>}
+                          </div>
+                          <div style={{fontSize:"10px",color:th.subtext}}>{o.desc}</div>
+                        </div>
                         <div style={{textAlign:"right",flexShrink:0}}><div style={{fontSize:"12px",fontWeight:"bold",color:done?th.gold:th.subtext}}>+{o.pts}</div><div style={{fontSize:"9px",color:th.subtext}}>pts</div></div>
                       </div>
                     );
