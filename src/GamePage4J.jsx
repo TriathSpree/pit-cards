@@ -275,6 +275,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
   const [mancheOver,setMancheOver]=useState(null);
   const [gameOver,setGameOver]=useState(null);
   const [animCard,setAnimCard]=useState(null);
+  const [coupFourreData,setCoupFourreData]=useState(null); // {attackerIdx, defenderIdx, attaqueId, botteId}
 
   const th={
     bg:dark?"linear-gradient(135deg,#1a1a2e,#16213e)":"linear-gradient(135deg,#fdf6e3,#fae8c0)",
@@ -376,6 +377,82 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     }
   }
 
+  function handleCoupFourre(accept){
+    if(!coupFourreData)return;
+    const{attackerIdx,defenderIdx,attaqueId,botteId,deckAtTime,discardAtTime,psAtTime}=coupFourreData;
+    let ps=JSON.parse(JSON.stringify(psAtTime));
+    let d=[...deckAtTime];
+    let disc=[...discardAtTime];
+
+    if(accept){
+      // Joue la botte
+      const def=ps[defenderIdx];
+      const hand=[...def.hand];
+      hand.splice(hand.indexOf(botteId),1);
+      def.hand=hand;
+      def.bottes=[...def.bottes,botteId];
+      const bo=getCard(botteId);
+      const co=Array.isArray(bo.counters)?bo.counters:[bo.counters];
+      if(def.attaque&&co.includes(def.attaque))def.attaque=null;
+      if(botteId==="prioritaire"){def.limitee=false;}
+      def.coupsFourres=(def.coupsFourres||0)+1;
+      // Carte bonus
+      if(d.length>0){def.hand=[...def.hand,d.shift()];}
+      addLog(`⚡ COUP-FOURRÉ ! ${def.name} neutralise avec ${bo.label} !`,def.name);
+      ps[defenderIdx]=def;
+      setPlayers(ps);setDeck(d);setDiscard(disc);
+      setCoupFourreData(null);
+      // Le défenseur rejoue
+      if(ps[defenderIdx].isHuman){
+        setTurnIdx(defenderIdx);setPhase("play");setDrawn(true); // déjà pioché (carte bonus)
+      }else{
+        setTurnIdx(defenderIdx);setPhase("ai_turn");
+      }
+    }else{
+      // Ignore le CF
+      setCoupFourreData(null);
+      setPlayers(ps);setDeck(d);setDiscard(disc);
+      nextTurn(ps,attackerIdx,d,disc);
+    }
+  }
+
+  // Vérifie si un coup-fourré est possible après une attaque
+  function checkCoupFourre(ps,attackerIdx,attaqueId,targetIdx,d,disc){
+    const bo=botteFor(attaqueId);
+    if(!bo)return false;
+    const defender=ps[targetIdx];
+    if(defender.bottes.includes(bo.id))return false; // déjà jouée
+    if(!defender.hand.includes(bo.id))return false; // pas en main
+    // CF possible
+    if(defender.isHuman){
+      setCoupFourreData({attackerIdx,defenderIdx:targetIdx,attaqueId,botteId:bo.id,deckAtTime:d,discardAtTime:disc,psAtTime:ps});
+      setPhase("coup_fourre");
+    }else{
+      // IA joue le CF automatiquement après délai
+      setTimeout(()=>{
+        let ps2=JSON.parse(JSON.stringify(playersRef.current));
+        const def=ps2[targetIdx];
+        const hand=[...def.hand];
+        hand.splice(hand.indexOf(bo.id),1);
+        def.hand=hand;
+        def.bottes=[...def.bottes,bo.id];
+        const co=Array.isArray(bo.counters)?bo.counters:[bo.counters];
+        if(def.attaque&&co.includes(def.attaque))def.attaque=null;
+        if(bo.id==="prioritaire")def.limitee=false;
+        def.coupsFourres=(def.coupsFourres||0)+1;
+        const d2=[...deckRef.current];
+        const disc2=[...discardRef.current];
+        if(d2.length>0){def.hand=[...def.hand,d2.shift()];}
+        addLog(`⚡ COUP-FOURRÉ ! ${def.name} neutralise avec ${bo.label} !`,def.name);
+        ps2[targetIdx]=def;
+        setPlayers(ps2);setDeck(d2);setDiscard(disc2);
+        // Le défenseur IA rejoue
+        setTurnIdx(targetIdx);setPhase("ai_turn");
+      },800);
+    }
+    return true;
+  }
+
   // Refs pour valeurs fraîches dans useEffect
   const playersRef=useRef(players);
   const deckRef=useRef(deck);
@@ -407,6 +484,15 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
         ps=applyPlay(ps,idx,play.cardId,play.action,play.targetIdx);
         setAnimCard({id:play.cardId,from:"ai"});
         setTimeout(()=>setAnimCard(null),600);
+        // CF possible après attaque IA
+        if(play.action==="attaque"){
+          const bo=botteFor(play.cardId);
+          if(bo&&ps[play.targetIdx]&&ps[play.targetIdx].hand.includes(bo.id)&&!ps[play.targetIdx].bottes.includes(bo.id)){
+            setPlayers(ps);setDeck(d);setDiscard(disc);
+            checkCoupFourre(ps,idx,play.cardId,play.targetIdx,d,disc);
+            return;
+          }
+        }
       }else{
         const td=aiDiscard(ps,idx);
         if(td){
@@ -471,10 +557,18 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     addLog(`${players[turnIdx].name} joue ${getCard(play.cardId)?.label}${play.action==="attaque"?" sur "+players[play.targetIdx].name:""}`,players[turnIdx].name);
     setAnimCard({id:play.cardId,from:"player"});
     setTimeout(()=>setAnimCard(null),600);
-    setPlayers(ps);setSelected(null);setTargetIdx(null);
+    setSelected(null);setTargetIdx(null);
 
     if(!checkMancheEnd(ps)){
+      // Vérifie coup-fourré si c'est une attaque
+      if(play.action==="attaque"){
+        const cfPossible=checkCoupFourre(ps,turnIdx,play.cardId,play.targetIdx,deck,discard);
+        if(cfPossible){setPlayers(ps);return;}
+      }
+      setPlayers(ps);
       nextTurn(ps,turnIdx,deck,discard);
+    }else{
+      setPlayers(ps);
     }
   }
 
@@ -698,6 +792,24 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
           <div style={{background:cColor(animCard.id,dark),color:"#fff",borderRadius:"12px",padding:"12px 16px",textAlign:"center",boxShadow:"0 8px 24px rgba(0,0,0,0.6)",border:"3px solid rgba(255,255,255,0.4)"}}>
             <div style={{fontSize:"28px",marginBottom:"4px"}}>{cEmoji(animCard.id)}</div>
             <div style={{fontSize:"12px",fontWeight:"bold"}}>{getCard(animCard.id)?.label}</div>
+          </div>
+        </div>
+      )}
+
+      {/* COUP-FOURRÉ */}
+      {phase==="coup_fourre"&&coupFourreData&&coupFourreData.psAtTime[coupFourreData.defenderIdx]?.isHuman&&(
+        <div style={mdlOverlay}>
+          <div style={th.modal}>
+            <div style={{fontSize:"32px",marginBottom:"8px"}}>⚡</div>
+            <h2 style={{color:th.title,fontSize:"16px",marginBottom:"10px"}}>COUP-FOURRÉ !</h2>
+            <p style={{fontSize:"12px",color:th.text,marginBottom:"16px"}}>
+              {coupFourreData.psAtTime[coupFourreData.attackerIdx]?.name} vous attaque avec <strong>{getCard(coupFourreData.attaqueId)?.label}</strong>.<br/>
+              Vous avez <strong>{getCard(coupFourreData.botteId)?.label}</strong> — jouez le Coup-Fourré ?
+            </p>
+            <div style={{display:"flex",gap:"10px",justifyContent:"center"}}>
+              <button onClick={()=>handleCoupFourre(true)} style={th.btn("#27ae60")}>⚡ Coup-Fourré !</button>
+              <button onClick={()=>handleCoupFourre(false)} style={th.btn("#7f8c8d")}>Ignorer</button>
+            </div>
           </div>
         </div>
       )}
