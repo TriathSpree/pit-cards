@@ -70,7 +70,7 @@ const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const TOTAL_QTY={accident:3,panne:3,crevaison:3,feu_rouge:5,limite:4,reparations:6,essence:6,roue_secours:6,feu_vert:14,fin_limite:6,as_volant:1,citerne:1,increvable:1,prioritaire:1,b25:10,b50:10,b75:10,b100:12,b200:4};
 const SCORE_CIBLE=5000;
-const VERSION="1.5.28";
+const VERSION="1.5.29";
 const GAME_NAME="Pit Cards";
 
 const OBJECTIFS=[
@@ -235,7 +235,35 @@ function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,user
             {modes.map(m=>(
               <div key={m.id} onClick={m.active?()=>setSelectedMode(m.id):undefined} style={{background:selectedMode===m.id?(dark?"rgba(139,0,0,0.2)":"rgba(139,0,0,0.08)"):th.cardBg,border:selectedMode===m.id?"3px solid "+(dark?"#e07070":"#8B0000"):"2px solid "+th.border,borderRadius:"12px",padding:"16px",textAlign:"center",opacity:m.active?1:0.45,position:"relative",cursor:m.active?"pointer":"not-allowed",transition:"all 0.2s"}}>
                 {!m.active&&<div style={{position:"absolute",top:"8px",right:"8px",background:dark?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.08)",borderRadius:"6px",padding:"2px 6px",fontSize:"8px",fontWeight:"bold",color:th.subtext}}>BIENTÔT</div>}
-                <div style={{fontSize:"28px",marginBottom:"6px"}}>{m.emoji}</div>
+                {m.id==="4j"
+                  ?<div style={{marginBottom:"6px",lineHeight:0}}><svg viewBox="0 0 680 180" style={{width:"100%",maxHeight:"80px"}} role="img"><title>Course de voitures</title>
+                    <rect x="0" y="0" width="680" height="108" fill="#87CEEB"/>
+                    <ellipse cx="100" cy="30" rx="40" ry="18" fill="white" opacity="0.9"/>
+                    <ellipse cx="130" cy="25" rx="30" ry="15" fill="white" opacity="0.9"/>
+                    <ellipse cx="460" cy="38" rx="50" ry="20" fill="white" opacity="0.8"/>
+                    <ellipse cx="500" cy="32" rx="35" ry="16" fill="white" opacity="0.8"/>
+                    <rect x="0" y="52" width="680" height="50" fill="#c8a96a"/>
+                    <rect x="0" y="52" width="680" height="5" fill="#b8935a"/>
+                    <g fill="#8B0000" opacity="0.7"><rect x="20" y="61" width="14" height="10" rx="2"/><rect x="60" y="61" width="14" height="10" rx="2"/><rect x="100" y="61" width="14" height="10" rx="2"/><rect x="140" y="61" width="14" height="10" rx="2"/><rect x="180" y="61" width="14" height="10" rx="2"/><rect x="220" y="61" width="14" height="10" rx="2"/><rect x="260" y="61" width="14" height="10" rx="2"/><rect x="300" y="61" width="14" height="10" rx="2"/><rect x="340" y="61" width="14" height="10" rx="2"/><rect x="380" y="61" width="14" height="10" rx="2"/><rect x="420" y="61" width="14" height="10" rx="2"/><rect x="460" y="61" width="14" height="10" rx="2"/><rect x="500" y="61" width="14" height="10" rx="2"/><rect x="540" y="61" width="14" height="10" rx="2"/><rect x="580" y="61" width="14" height="10" rx="2"/><rect x="620" y="61" width="14" height="10" rx="2"/><rect x="660" y="61" width="14" height="10" rx="2"/></g>
+                    <rect x="0" y="100" width="680" height="70" fill="#555"/>
+                    <rect x="0" y="100" width="680" height="4" fill="#888"/>
+                    <line x1="0" y1="135" x2="680" y2="135" stroke="white" strokeWidth="2" strokeDasharray="30,20" opacity="0.4"/>
+                    <rect x="0" y="166" width="680" height="4" fill="#888"/>
+                    <rect x="0" y="170" width="680" height="10" fill="#4a4a2a"/>
+                    <g fill="black" opacity="0.5"><rect x="620" y="100" width="10" height="9"/><rect x="630" y="109" width="10" height="9"/><rect x="620" y="118" width="10" height="9"/><rect x="630" y="127" width="10" height="9"/><rect x="620" y="136" width="10" height="9"/><rect x="630" y="145" width="10" height="9"/><rect x="620" y="154" width="10" height="9"/><rect x="630" y="163" width="10" height="9"/></g>
+                    <g fill="white" opacity="0.5"><rect x="630" y="100" width="10" height="9"/><rect x="620" y="109" width="10" height="9"/><rect x="630" y="118" width="10" height="9"/><rect x="620" y="127" width="10" height="9"/><rect x="630" y="136" width="10" height="9"/><rect x="620" y="145" width="10" height="9"/><rect x="630" y="154" width="10" height="9"/><rect x="620" y="163" width="10" height="9"/></g>
+                    <line x1="640" y1="60" x2="640" y2="103" stroke="#333" strokeWidth="2.5"/>
+                    <rect x="640" y="60" width="28" height="18" fill="white"/>
+                    <rect x="640" y="60" width="9" height="9" fill="black"/><rect x="649" y="69" width="9" height="9" fill="black"/><rect x="658" y="60" width="10" height="9" fill="black"/>
+                    <g transform="translate(540,0) scale(-1,1) translate(-540,0)"><text x="540" y="130" fontSize="34" textAnchor="middle">🏎️</text></g>
+                    <ellipse cx="580" cy="122" rx="10" ry="5" fill="#bbb" opacity="0.35"/>
+                    <g transform="translate(370,0) scale(-1,1) translate(-370,0)"><text x="370" y="143" fontSize="30" textAnchor="middle">🚗</text></g>
+                    <ellipse cx="400" cy="136" rx="9" ry="4" fill="#bbb" opacity="0.3"/>
+                    <g transform="translate(200,0) scale(-1,1) translate(-200,0)"><text x="200" y="155" fontSize="27" textAnchor="middle">🚕</text></g>
+                    <ellipse cx="228" cy="149" rx="8" ry="4" fill="#bbb" opacity="0.25"/>
+                  </svg></div>
+                  :<div style={{fontSize:"28px",marginBottom:"6px"}}>{m.emoji}</div>
+                }
                 <div style={{fontSize:"12px",fontWeight:"bold",color:m.active?th.title:th.subtext,marginBottom:"3px"}}>{m.label}</div>
                 <div style={{fontSize:"10px",color:th.subtext}}>{m.desc}</div>
               </div>
