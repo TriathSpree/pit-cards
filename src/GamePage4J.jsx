@@ -301,7 +301,6 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     setDeck(d);
     setDiscard([]);
     setTurnIdx(0);
-    setPhase("play");
     setDrawn(false);
     setSelected(null);
     setLog([{text:`${playerOrder[0].name} commence !`,who:"system"}]);
@@ -309,6 +308,10 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     const scores={};
     playerOrder.forEach(p=>{scores[p.name]=0;});
     if(Object.keys(totalScores).length===0)setTotalScores(scores);
+    // Démarre en ai_turn si le premier joueur est une IA
+    setTimeout(()=>{
+      setPhase(playerOrder[0].isHuman ? "play" : "ai_turn");
+    }, 100);
   }
 
   function drawForPlayer(idx,currentDeck,currentDiscard){
