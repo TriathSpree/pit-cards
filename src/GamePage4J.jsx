@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 // ── CONSTANTES (partagées) ────────────────────────────────────────────────────
 const BORNES=[{id:"b25",type:"borne",km:25,label:"25 km"},{id:"b50",type:"borne",km:50,label:"50 km"},{id:"b75",type:"borne",km:75,label:"75 km"},{id:"b100",type:"borne",km:100,label:"100 km"},{id:"b200",type:"borne",km:200,label:"200 km"}];
@@ -376,19 +376,24 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     }
   }
 
-  // IA joue son tour — refs pour éviter les closures stale
-  const stateRef = {players,deck,discard,turnIdx,phase,difficulty};
-  const stateRefCurrent = {current: stateRef};
+  // Refs pour valeurs fraîches dans useEffect
+  const playersRef=useRef(players);
+  const deckRef=useRef(deck);
+  const discardRef=useRef(discard);
+  const turnIdxRef=useRef(turnIdx);
+  useEffect(()=>{playersRef.current=players;},[players]);
+  useEffect(()=>{deckRef.current=deck;},[deck]);
+  useEffect(()=>{discardRef.current=discard;},[discard]);
+  useEffect(()=>{turnIdxRef.current=turnIdx;},[turnIdx]);
 
   useEffect(()=>{
     if(!players||phase!=="ai_turn")return;
     const delay=difficulty==="hardcore"?600:1500;
     const t=setTimeout(()=>{
-      // Utilise les valeurs actuelles via closure directe (React re-render garantit valeurs fraîches)
-      let ps=JSON.parse(JSON.stringify(players));
-      let d=[...deck];
-      let disc=[...discard];
-      const idx=turnIdx;
+      let ps=JSON.parse(JSON.stringify(playersRef.current));
+      let d=[...deckRef.current];
+      let disc=[...discardRef.current];
+      const idx=turnIdxRef.current;
 
       // Pioche
       const{card,deck:nd,discard:ndisc}=drawForPlayer(idx,d,disc);
