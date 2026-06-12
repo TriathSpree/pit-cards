@@ -70,7 +70,7 @@ const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const TOTAL_QTY={accident:3,panne:3,crevaison:3,feu_rouge:5,limite:4,reparations:6,essence:6,roue_secours:6,feu_vert:14,fin_limite:6,as_volant:1,citerne:1,increvable:1,prioritaire:1,b25:10,b50:10,b75:10,b100:12,b200:4};
 const SCORE_CIBLE=5000;
-const VERSION="1.5.40";
+const VERSION="1.5.41";
 const GAME_NAME="Pit Cards";
 
 const OBJECTIFS=[
@@ -686,7 +686,15 @@ function PseudoModal({dark, onSave, canClose, unlockedIds, currentAvatar}){
   const [draft,setDraft]=useState("");
   const [err,setErr]=useState("");
   const [avatar,setAvatar]=useState(currentAvatar||"🧑");
+  const [tooltip,setTooltip]=useState(null);
   const th={bg:dark?"#1e2a3a":"#fdf6e3",border:dark?"#4a6fa5":"#8B0000",text:dark?"#e8e0d0":"#2c1810",sub:dark?"#a89880":"#5d4037"};
+
+  const objDesc=(unlockId)=>{
+    if(!unlockId)return"Disponible dès le début";
+    const obj=OBJECTIFS.find(o=>o.id===unlockId);
+    return obj?obj.desc:`Objectif : ${unlockId}`;
+  };
+
   function save(){
     const p=draft.trim();
     if(p.length<2){setErr("Minimum 2 caractères.");return;}
@@ -718,7 +726,9 @@ function PseudoModal({dark, onSave, canClose, unlockedIds, currentAvatar}){
               return(
                 <div key={a.emoji}
                   onClick={()=>{if(unlocked)setAvatar(a.emoji);}}
-                  title={unlocked?a.label:`🔒 ${a.label}`}
+                  onMouseEnter={()=>setTooltip({...a,unlocked})}
+                  onMouseLeave={()=>setTooltip(null)}
+                  onTouchStart={()=>setTooltip(p=>p?.emoji===a.emoji?null:{...a,unlocked})}
                   style={{
                     background:selected?(dark?"rgba(139,0,0,0.4)":"rgba(139,0,0,0.15)"):(dark?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.04)"),
                     border:selected?"2px solid #8B0000":"2px solid transparent",
@@ -740,6 +750,19 @@ function PseudoModal({dark, onSave, canClose, unlockedIds, currentAvatar}){
           <button onClick={save} style={{background:"linear-gradient(135deg,#8B0000,#c0392b)",color:"#fff",border:"none",borderRadius:"10px",padding:"10px 24px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:"12px",fontWeight:"bold",letterSpacing:"1px"}}>✅ Valider</button>
         </div>
       </div>
+
+      {/* Tooltip fixed — hors flow, zéro CLS */}
+      {tooltip&&(
+        <div style={{position:"fixed",bottom:"24px",left:"50%",transform:"translateX(-50%)",zIndex:600,background:dark?"#1e2a3a":"#2c1810",color:"#fff",borderRadius:"12px",padding:"10px 16px",fontSize:"12px",lineHeight:1.5,border:"2px solid "+(tooltip.unlocked?"#27ae60":"#e67e22"),maxWidth:"260px",textAlign:"center",pointerEvents:"none",boxShadow:"0 4px 20px rgba(0,0,0,0.5)"}}>
+          <div style={{fontSize:"24px",marginBottom:"3px"}}>{tooltip.emoji}</div>
+          <div style={{fontWeight:"bold",fontSize:"13px",marginBottom:"4px"}}>{tooltip.label}</div>
+          {tooltip.unlocked
+            ?<div style={{color:"#27ae60",fontSize:"11px"}}>✅ Débloqué</div>
+            :<><div style={{color:"#e67e22",fontSize:"10px",marginBottom:"2px"}}>🔒 Verrouillé</div>
+              <div style={{color:"rgba(255,255,255,0.75)",fontSize:"10px"}}>{objDesc(tooltip.unlock)}</div></>
+          }
+        </div>
+      )}
     </div>
   );
 }
