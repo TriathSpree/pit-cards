@@ -376,36 +376,40 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     }
   }
 
-  // IA joue son tour
+  // IA joue son tour — refs pour éviter les closures stale
+  const stateRef = {players,deck,discard,turnIdx,phase,difficulty};
+  const stateRefCurrent = {current: stateRef};
+
   useEffect(()=>{
     if(!players||phase!=="ai_turn")return;
     const delay=difficulty==="hardcore"?600:1500;
     const t=setTimeout(()=>{
-      let ps=[...players];
+      // Utilise les valeurs actuelles via closure directe (React re-render garantit valeurs fraîches)
+      let ps=JSON.parse(JSON.stringify(players));
       let d=[...deck];
       let disc=[...discard];
+      const idx=turnIdx;
 
       // Pioche
-      const{card,deck:nd,discard:ndisc}=drawForPlayer(turnIdx,d,disc);
-      if(card){ps[turnIdx]={...ps[turnIdx],hand:[...ps[turnIdx].hand,card]};}
+      const{card,deck:nd,discard:ndisc}=drawForPlayer(idx,d,disc);
+      if(card){ps[idx]={...ps[idx],hand:[...ps[idx].hand,card]};}
       d=nd;disc=ndisc;
 
       // Choisit une action
-      const play=aiChoose(ps,turnIdx,difficulty);
+      const play=aiChoose(ps,idx,difficulty);
       if(play){
-        addLog(`${ps[turnIdx].name} joue ${getCard(play.cardId)?.label}${play.targetIdx!==turnIdx?" sur "+ps[play.targetIdx].name:""}`,ps[turnIdx].name);
-        ps=applyPlay(ps,turnIdx,play.cardId,play.action,play.targetIdx);
+        addLog(`${ps[idx].name} joue ${getCard(play.cardId)?.label}${play.targetIdx!==idx?" sur "+ps[play.targetIdx].name:""}`,ps[idx].name);
+        ps=applyPlay(ps,idx,play.cardId,play.action,play.targetIdx);
         setAnimCard({id:play.cardId,from:"ai"});
         setTimeout(()=>setAnimCard(null),600);
       }else{
-        // Défausse
-        const td=aiDiscard(ps,turnIdx);
+        const td=aiDiscard(ps,idx);
         if(td){
-          const hand=[...ps[turnIdx].hand];
+          const hand=[...ps[idx].hand];
           hand.splice(hand.indexOf(td),1);
           disc=[...disc,td];
-          ps[turnIdx]={...ps[turnIdx],hand};
-          addLog(`${ps[turnIdx].name} défausse ${getCard(td)?.label}`,ps[turnIdx].name);
+          ps[idx]={...ps[idx],hand};
+          addLog(`${ps[idx].name} défausse ${getCard(td)?.label}`,ps[idx].name);
         }
       }
 
@@ -414,11 +418,11 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
       setDiscard(disc);
 
       if(!checkMancheEnd(ps)){
-        nextTurn(ps,turnIdx,d,disc);
+        nextTurn(ps,idx,d,disc);
       }
     },delay);
     return()=>clearTimeout(t);
-  },[phase,turnIdx,players]);
+  },[phase,turnIdx]);
 
   function handleDraw(){
     if(!mustDraw)return;
