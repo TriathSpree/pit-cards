@@ -190,6 +190,8 @@ function HomePage({dark,setDark,onPlay,progress,soundOn,setSoundOn,userButton,ps
         </div>
         <div style={{display:"flex",gap:"8px",alignItems:"center"}}>
           {progress.objPts>0&&<div style={{background:dark?"rgba(212,172,13,0.15)":"rgba(212,172,13,0.1)",border:"2px solid "+th.gold,borderRadius:"20px",padding:"4px 12px",fontSize:"11px",fontWeight:"bold",color:th.gold}}>🏆 {progress.objPts} pts</div>}
+          {pseudo&&<button onClick={onChangePseudo} style={{background:dark?"rgba(255,255,255,0.08)":"rgba(139,0,0,0.08)",border:"2px solid "+(dark?"#445566":"#a0856a"),borderRadius:"20px",padding:"4px 14px",cursor:"pointer",color:dark?"#e8e0d0":"#2c1810",fontFamily:"Georgia,serif",fontSize:"12px",fontWeight:"bold"}}>👤 {pseudo} ✏️</button>}
+          {userButton&&<div>{userButton}</div>}
           <button onClick={()=>setSoundOn(v=>!v)} style={{background:dark?"rgba(255,255,255,0.1)":"rgba(139,0,0,0.1)",border:"2px solid "+th.border,borderRadius:"8px",padding:"6px 10px",cursor:"pointer",fontSize:"16px"}}>{soundOn?"🔊":"🔇"}</button>
           <button onClick={()=>setDark(v=>!v)} style={{background:dark?"rgba(255,255,255,0.1)":"rgba(139,0,0,0.1)",border:"2px solid "+th.border,borderRadius:"8px",padding:"6px 10px",cursor:"pointer",fontSize:"16px"}}>{dark?"☀️":"🌙"}</button>
         </div>
