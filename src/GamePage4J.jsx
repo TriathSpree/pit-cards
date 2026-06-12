@@ -9,7 +9,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.30";
+const VERSION="1.5.31";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -828,14 +828,18 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
                   <div style={{fontSize:"10px",fontWeight:"bold",color:th.sub,textTransform:"uppercase"}}>Scores du Championnat</div>
                   <div style={{fontSize:"9px",color:th.sub}}>But : {SCORE_CIBLE} pts</div>
                 </div>
-                {players.map((p,i)=>{
-                  const colors=["#8B0000","#1a5276","#1e8449","#7d6608"];
-                  const c=colors[i%4];
+                {[...players].sort((a,b)=>(totalScores[b.name]||0)-(totalScores[a.name]||0)).map((p,rank)=>{
+                  const colorMap={};
+                  players.forEach((pl,i)=>{colorMap[pl.name]=["#8B0000","#1a5276","#1e8449","#7d6608"][i%4];});
+                  const c=colorMap[p.name];
                   const s=totalScores[p.name]||0;
+                  const rankIcon=rank===0?"🏆🥇":rank===1?"🥈":rank===2?"🥉":"4️⃣";
                   return(
                     <div key={p.name}>
                       <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"2px"}}>
-                        <div style={{fontSize:"10px",fontWeight:"bold",color:c}}>{p.emoji} {p.name}</div>
+                        <div style={{fontSize:"10px",fontWeight:"bold",color:c,display:"flex",alignItems:"center",gap:"3px"}}>
+                          <span style={{fontSize:"11px"}}>{rankIcon}</span> {p.emoji} {p.name}
+                        </div>
                         <div style={{fontSize:"11px",fontWeight:"bold",color:c}}>{s}</div>
                       </div>
                       <div style={{height:"6px",background:th.barBg,borderRadius:"3px",overflow:"hidden",marginBottom:"4px"}}>
