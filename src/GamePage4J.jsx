@@ -682,13 +682,13 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
           <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gridTemplateRows:"auto auto",gap:"8px",marginBottom:"8px"}}>
             {/* Haut gauche — joueur 0 */}
             <div>{renderPlayerCard(players[0],0,0===turnIdx)}</div>
-            {/* Centre haut — pioche + défausse */}
+            {/* Centre haut — pioche uniquement (défausse dans la zone MAIN) */}
             <div style={{display:"flex",flexDirection:"column",gap:"6px",alignItems:"center",justifyContent:"center"}}>
               <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"8px",padding:"5px 8px",textAlign:"center",minWidth:"64px"}}>
                 <div style={{fontSize:"20px"}}>🂠</div>
                 <div style={{fontSize:"13px",fontWeight:"bold",color:th.text}}>{deck.length}</div>
                 <div style={{fontSize:"8px",color:th.sub}}>pioche</div>
-                {mustDraw&&<button onClick={handleDraw} style={{...th.btn("#1a5276"),marginTop:"4px",padding:"3px 5px",fontSize:"9px"}}>Piocher</button>}
+                {mustDraw&&<button onClick={handleDraw} style={{...th.btn("#1a5276"),marginTop:"4px",padding:"3px 5px",fontSize:"9px"}}>PIOCHER</button>}
               </div>
               <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"8px",padding:"5px 8px",textAlign:"center",minWidth:"64px",display:"flex",flexDirection:"column",justifyContent:"center"}}>
                 {discard.length>0
@@ -756,25 +756,8 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
                 </div>
               )}
 
-              {/* Pioche + actions */}
+              {/* Actions */}
               <div style={{display:"flex",gap:"8px",marginTop:"8px",alignItems:"center",flexWrap:"wrap"}}>
-                <div style={{display:"flex",gap:"6px",flexShrink:0}}>
-                  <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"8px",padding:"5px 8px",textAlign:"center",minWidth:"60px"}}>
-                    <div style={{fontSize:"20px"}}>🂠</div>
-                    <div style={{fontSize:"13px",fontWeight:"bold",color:th.text}}>{deck.length}</div>
-                    <div style={{fontSize:"8px",color:th.sub}}>pioche</div>
-                    {mustDraw&&<button onClick={handleDraw} style={{...th.btn("#1a5276"),marginTop:"4px",padding:"3px 5px",fontSize:"9px"}}>Piocher</button>}
-                  </div>
-                  <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"8px",padding:"5px 8px",textAlign:"center",minWidth:"60px",display:"flex",flexDirection:"column",justifyContent:"center"}}>
-                    {discard.length>0
-                      ?<><div style={{fontSize:"18px"}}>{cEmoji(discard[discard.length-1])}</div>
-                        <div style={{fontSize:"7px",fontWeight:"bold",color:cColor(discard[discard.length-1],dark),lineHeight:1.2}}>{getCard(discard[discard.length-1])?.label}</div></>
-                      :<div style={{fontSize:"20px",opacity:0.3}}>🂠</div>}
-                    <div style={{fontSize:"13px",fontWeight:"bold",color:th.text}}>{discard.length}</div>
-                    <div style={{fontSize:"8px",color:th.sub}}>défausse</div>
-                  </div>
-                </div>
-
                 {drawn&&!discardMode&&selected&&(targetIdx===null||targetIdx>=0)&&validCardIds.includes(selected)&&targetIdx!==-1&&(
                   <button onClick={handlePlay} style={th.btn("#27ae60")}>✅ Jouer</button>
                 )}
@@ -796,6 +779,35 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
               {log.map((l,i)=>(
                 <div key={i} style={{fontSize:"10px",padding:"2px 4px",borderBottom:"1px solid "+th.border,color:th.text,opacity:1-i*0.04}}>{l.text}</div>
               ))}
+            </div>
+
+            {/* SCORES panneau latéral */}
+            <div style={{width:"160px",background:dark?"rgba(20,30,50,0.8)":"rgba(255,255,255,0.6)",border:"2px solid "+th.border,borderRadius:"10px",padding:"8px",flexShrink:0,display:"flex",flexDirection:"column",gap:"4px"}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"4px"}}>
+                <div style={{fontSize:"10px",fontWeight:"bold",color:th.sub,textTransform:"uppercase"}}>Scores <span style={{opacity:0.5,fontWeight:"normal"}}>ⓘ</span></div>
+                <div style={{fontSize:"9px",color:th.sub}}>But : {SCORE_CIBLE} pts</div>
+              </div>
+              {players.map((p,i)=>{
+                const colors=["#8B0000","#1a5276","#1e8449","#7d6608"];
+                const c=colors[i%4];
+                const s=totalScores[p.name]||0;
+                return(
+                  <div key={p.name}>
+                    <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"2px"}}>
+                      <div style={{fontSize:"10px",fontWeight:"bold",color:c,display:"flex",alignItems:"center",gap:"3px"}}>
+                        {p.emoji} {p.name}
+                      </div>
+                      <div style={{fontSize:"11px",fontWeight:"bold",color:c}}>{s}</div>
+                    </div>
+                    <div style={{height:"6px",background:th.barBg,borderRadius:"3px",overflow:"hidden",marginBottom:"6px"}}>
+                      <div style={{height:"100%",width:(s/SCORE_CIBLE*100)+"%",background:c,borderRadius:"3px",transition:"width 0.5s",minWidth:s>0?"3px":"0"}}/>
+                    </div>
+                  </div>
+                );
+              })}
+              <div style={{borderTop:"1px solid "+th.border,paddingTop:"4px",textAlign:"center"}}>
+                <div style={{fontSize:"9px",color:th.sub}}>{SCORE_CIBLE-Math.max(0,...Object.values(totalScores).concat([0]))} restants</div>
+              </div>
             </div>
           </div>
 
