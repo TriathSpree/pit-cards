@@ -23,7 +23,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.41";
+const VERSION="1.5.42";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -276,7 +276,7 @@ function TirageModal({dark,playerName,difficulty,setDifficulty,hardcoreUnlocked,
 }
 
 // ── GAME PAGE 4 JOUEURS ───────────────────────────────────────────────────────
-export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:initDiff,soundOn,setSoundOn,hardcoreUnlocked}){
+export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:initDiff,soundOn,setSoundOn,hardcoreUnlocked,progress,onDailyProgress}){
   const [difficulty,setDifficulty]=useState(initDiff||"normal");
   const [showTirage,setShowTirage]=useState(true);
   const [players,setPlayers]=useState(null); // array de joueurs dans l'ordre du tour
@@ -390,6 +390,23 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     const gameWinner=Object.entries(newTotal).sort((a,b)=>b[1]-a[1])[0];
     if(gameWinner[1]>=SCORE_CIBLE){
       setGameOver({winner:gameWinner[0],total:newTotal});
+    }
+    // Objectifs journaliers
+    if(onDailyProgress){
+      const human=ps.find(p=>p.isHuman);
+      const others=ps.filter(p=>!p.isHuman);
+      const kmLead=human?(human.km-Math.max(...others.map(o=>o.km))):0;
+      onDailyProgress({
+        winner:winnerName===human?.name,
+        playerState:human,
+        diff:difficulty,
+        cfCount:human?.coupsFourres||0,
+        discardCount:0,
+        raceIndex:manche,
+        attackTargets:[],
+        kmLead,
+        mancheCount:manche,
+      });
     }
   }
 
