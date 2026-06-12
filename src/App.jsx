@@ -18,7 +18,7 @@ async function storageGetPlayer(clerkId) {
       totalKm: f.totalKm||0, bestMancheScore: f.bestMancheScore||0,
       unlocked: JSON.parse(f.unlocked||"[]"),
       triedDifficulties: JSON.parse(f.triedDifficulties||"[]"),
-      winStreak: f.winStreak||0, _recId: d.id
+      winStreak: f.winStreak||0, avatar: f.avatar||"🧑", _recId: d.id
     };
   } catch { return null; }
 }
@@ -70,7 +70,7 @@ const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const TOTAL_QTY={accident:3,panne:3,crevaison:3,feu_rouge:5,limite:4,reparations:6,essence:6,roue_secours:6,feu_vert:14,fin_limite:6,as_volant:1,citerne:1,increvable:1,prioritaire:1,b25:10,b50:10,b75:10,b100:12,b200:4};
 const SCORE_CIBLE=5000;
-const VERSION="1.5.37";
+const VERSION="1.5.38";
 const GAME_NAME="Pit Cards";
 
 const OBJECTIFS=[
@@ -132,7 +132,7 @@ const OBJECTIFS=[
   {id:"all_objectives",cat:"🌟 Prestige",label:"Perfectionniste",desc:"Débloquer tous les autres objectifs",pts:2000,mode:null},
 ];
 const TOTAL_OBJ_PTS=OBJECTIFS.reduce((s,o)=>s+o.pts,0);
-const INIT_PROGRESS={wins:0,manchesPlayed:0,unlocked:[],objPts:0,playerName:"",totalKm:0,bestMancheScore:0,winStreak:0,triedDifficulties:[]};
+const INIT_PROGRESS={wins:0,manchesPlayed:0,unlocked:[],objPts:0,playerName:"",totalKm:0,bestMancheScore:0,winStreak:0,triedDifficulties:[],avatar:"🧑"};
 
 function buildDeck(){const d=[];BORNES.forEach(c=>{const q={b25:10,b50:10,b75:10,b100:12,b200:4};for(let i=0;i<q[c.id];i++)d.push(c.id);});ATTAQUES.forEach(c=>{const q={accident:3,panne:3,crevaison:3,feu_rouge:5,limite:4};for(let i=0;i<q[c.id];i++)d.push(c.id);});PARADES.forEach(c=>{const q={reparations:6,essence:6,roue_secours:6,feu_vert:14,fin_limite:6};for(let i=0;i<q[c.id];i++)d.push(c.id);});BOTTES.forEach(c=>d.push(c.id));return shuffle(d);}
 function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -158,7 +158,7 @@ function playSound(type,on){if(!on)return;try{const ctx=new(window.AudioContext|
 
 
 // ── HOME PAGE ──────────────────────────────────────────────────────────────────
-function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,userButton,pseudo,onChangePseudo}){
+function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,userButton,pseudo,avatar,onChangePseudo}){
   const [tab,setTab]=useState("scores");
   const [selectedMode,setSelectedMode]=useState("solo");
   const [nom,setNom]=useState(progress.playerName||"");
@@ -210,7 +210,7 @@ function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,user
         </div>
         <div style={{display:"flex",gap:"8px",alignItems:"center"}}>
           {progress.objPts>0&&<div style={{background:dark?"rgba(212,172,13,0.15)":"rgba(212,172,13,0.1)",border:"2px solid "+th.gold,borderRadius:"20px",padding:"4px 12px",fontSize:"11px",fontWeight:"bold",color:th.gold}}>🏆 {progress.objPts} pts</div>}
-          {pseudo&&<button onClick={onChangePseudo} style={{background:dark?"rgba(255,255,255,0.08)":"rgba(139,0,0,0.08)",border:"2px solid "+(dark?"#445566":"#a0856a"),borderRadius:"20px",padding:"4px 14px",cursor:"pointer",color:dark?"#e8e0d0":"#2c1810",fontFamily:"Georgia,serif",fontSize:"12px",fontWeight:"bold"}}>👤 {pseudo} ✏️</button>}
+          {pseudo&&<button onClick={onChangePseudo} style={{background:dark?"rgba(255,255,255,0.08)":"rgba(139,0,0,0.08)",border:"2px solid "+(dark?"#445566":"#a0856a"),borderRadius:"20px",padding:"4px 14px",cursor:"pointer",color:dark?"#e8e0d0":"#2c1810",fontFamily:"Georgia,serif",fontSize:"12px",fontWeight:"bold"}}>{avatar||"🧑"} {pseudo} ✏️</button>}
           {userButton&&<div>{userButton}</div>}
           <button onClick={()=>setSoundOn(v=>!v)} style={{background:dark?"rgba(255,255,255,0.1)":"rgba(139,0,0,0.1)",border:"2px solid "+th.border,borderRadius:"8px",padding:"6px 10px",cursor:"pointer",fontSize:"16px"}}>{soundOn?"🔊":"🔇"}</button>
           <button onClick={()=>setDark(v=>!v)} style={{background:dark?"rgba(255,255,255,0.1)":"rgba(139,0,0,0.1)",border:"2px solid "+th.border,borderRadius:"8px",padding:"6px 10px",cursor:"pointer",fontSize:"16px"}}>{dark?"☀️":"🌙"}</button>
@@ -658,22 +658,47 @@ function GamePage({dark,setDark,onBack,progress,setProgress,soundOn,setSoundOn})
 
 // ── APP ────────────────────────────────────────────────────────────────────────
 // ── PSEUDO MODAL ─────────────────────────────────────────────────────────────
-function PseudoModal({dark, onSave, canClose}){
+// ── AVATARS ────────────────────────────────────────────────────────────────────
+const AVATARS=[
+  {emoji:"🧑", label:"Pilote",       unlock:null},         // dès le début
+  {emoji:"🏎️", label:"Première victoire", unlock:"first_win"},
+  {emoji:"🚗", label:"Apprenti",     unlock:"play10"},
+  {emoji:"🚕", label:"Routard",      unlock:"play50"},
+  {emoji:"🚙", label:"Habitué",      unlock:"play100"},
+  {emoji:"🚓", label:"Hardcore",     unlock:"win_hardcore"},
+  {emoji:"🚑", label:"Triplé",       unlock:"win3_streak"},
+  {emoji:"🚒", label:"Champion",     unlock:"win50"},
+  {emoji:"🚐", label:"Marathonien",  unlock:"play500"},
+  {emoji:"🛻", label:"Légende",      unlock:"win100"},
+  {emoji:"🚌", label:"Perfectionniste", unlock:"all_objectives"},
+  {emoji:"🤖", label:"Difficile",    unlock:"win_hard"},
+  {emoji:"👾", label:"Triple Fourré",unlock:"cf3"},
+  {emoji:"🦸", label:"Sans gaspillage", unlock:"win_no_discard"},
+  {emoji:"🧙", label:"Arsenal",      unlock:"all_bottes"},
+  {emoji:"👴", label:"50 000 km",    unlock:"total_50k"},
+  {emoji:"👵", label:"Remontée héroïque", unlock:"win_from_zero"},
+  {emoji:"👨", label:"Route libre",  unlock:"no_block"},
+  {emoji:"👩", label:"Pacifiste",    unlock:"win_no_attack"},
+  {emoji:"🧔", label:"Capot !",      unlock:"capot"},
+];
+
+function PseudoModal({dark, onSave, canClose, unlockedIds, currentAvatar}){
   const [draft,setDraft]=useState("");
   const [err,setErr]=useState("");
+  const [avatar,setAvatar]=useState(currentAvatar||"🧑");
   const th={bg:dark?"#1e2a3a":"#fdf6e3",border:dark?"#4a6fa5":"#8B0000",text:dark?"#e8e0d0":"#2c1810",sub:dark?"#a89880":"#5d4037"};
   function save(){
     const p=draft.trim();
     if(p.length<2){setErr("Minimum 2 caractères.");return;}
     if(p.length>16){setErr("Maximum 16 caractères.");return;}
-    onSave(p);
+    onSave(p,avatar);
   }
   return(
     <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,background:"rgba(0,0,0,0.8)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:500}}>
-      <div style={{background:th.bg,border:"3px solid "+th.border,borderRadius:"20px",padding:"32px 28px",width:"min(340px,90vw)",fontFamily:"Georgia,serif",textAlign:"center"}}>
-        <div style={{fontSize:"48px",marginBottom:"12px"}}>🏎️</div>
-        <h2 style={{color:th.border,fontSize:"18px",marginBottom:"6px",letterSpacing:"2px"}}>CHOISIS TON PSEUDO</h2>
-        <p style={{fontSize:"11px",color:th.sub,marginBottom:"20px"}}>Il apparaîtra dans le classement global.<br/>Tu pourras le changer plus tard.</p>
+      <div style={{background:th.bg,border:"3px solid "+th.border,borderRadius:"20px",padding:"24px 20px",width:"min(380px,94vw)",fontFamily:"Georgia,serif",textAlign:"center",maxHeight:"90vh",overflowY:"auto"}}>
+        <div style={{fontSize:"48px",marginBottom:"4px"}}>{avatar}</div>
+        <h2 style={{color:th.border,fontSize:"18px",marginBottom:"4px",letterSpacing:"2px"}}>CHOISIS TON PSEUDO</h2>
+        <p style={{fontSize:"11px",color:th.sub,marginBottom:"16px"}}>Il apparaîtra dans le classement global.<br/>Tu pourras le changer plus tard.</p>
         <input
           type="text" maxLength={16} value={draft} onChange={e=>{setDraft(e.target.value);setErr("");}}
           onKeyDown={e=>{if(e.key==="Enter")save();}}
@@ -682,8 +707,36 @@ function PseudoModal({dark, onSave, canClose}){
           autoFocus
         />
         {err&&<div style={{fontSize:"11px",color:"#c0392b",marginBottom:"8px"}}>{err}</div>}
+
+        {/* Sélection avatar */}
+        <div style={{marginBottom:"14px"}}>
+          <div style={{fontSize:"11px",fontWeight:"bold",color:th.sub,textTransform:"uppercase",letterSpacing:"1px",marginBottom:"8px"}}>Avatar</div>
+          <div style={{display:"grid",gridTemplateColumns:"repeat(5,1fr)",gap:"6px"}}>
+            {AVATARS.map(a=>{
+              const unlocked=!a.unlock||(unlockedIds||[]).includes(a.unlock);
+              const selected=avatar===a.emoji;
+              return(
+                <div key={a.emoji}
+                  onClick={()=>{if(unlocked)setAvatar(a.emoji);}}
+                  title={unlocked?a.label:`🔒 ${a.label}`}
+                  style={{
+                    background:selected?(dark?"rgba(139,0,0,0.4)":"rgba(139,0,0,0.15)"):(dark?"rgba(255,255,255,0.06)":"rgba(0,0,0,0.04)"),
+                    border:selected?"2px solid #8B0000":"2px solid transparent",
+                    borderRadius:"10px",padding:"6px 2px",cursor:unlocked?"pointer":"not-allowed",
+                    display:"flex",flexDirection:"column",alignItems:"center",gap:"2px",
+                    opacity:unlocked?1:0.35,filter:unlocked?"none":"grayscale(1)",
+                    transition:"all 0.15s"
+                  }}>
+                  <div style={{fontSize:"22px"}}>{a.emoji}</div>
+                  <div style={{fontSize:"7px",color:th.sub,lineHeight:1.2,textAlign:"center"}}>{unlocked?a.label:"🔒"}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
         <div style={{display:"flex",gap:"8px",justifyContent:"center"}}>
-          {canClose&&<button onClick={()=>onSave(null)} style={{background:"#7f8c8d",color:"#fff",border:"none",borderRadius:"10px",padding:"10px 20px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:"12px",fontWeight:"bold"}}>Annuler</button>}
+          {canClose&&<button onClick={()=>onSave(null,null)} style={{background:"#7f8c8d",color:"#fff",border:"none",borderRadius:"10px",padding:"10px 20px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:"12px",fontWeight:"bold"}}>Annuler</button>}
           <button onClick={save} style={{background:"linear-gradient(135deg,#8B0000,#c0392b)",color:"#fff",border:"none",borderRadius:"10px",padding:"10px 24px",cursor:"pointer",fontFamily:"Georgia,serif",fontSize:"12px",fontWeight:"bold",letterSpacing:"1px"}}>✅ Valider</button>
         </div>
       </div>
@@ -736,11 +789,13 @@ export default function App(){
     if(user)storageSavePlayer(user.id,pseudo,p);
   }
 
-  function savePseudo(newPseudo){
+  function savePseudo(newPseudo,newAvatar){
     if(!newPseudo){setShowPseudoModal(false);return;}
     setPseudo(newPseudo);
     setShowPseudoModal(false);
-    if(user)storageSavePlayer(user.id,newPseudo,{...progress,playerName:newPseudo});
+    const updated={...progress,playerName:newPseudo,avatar:newAvatar||progress.avatar||"🧑"};
+    setProgress(updated);
+    if(user)storageSavePlayer(user.id,newPseudo,updated);
   }
 
   if(!isLoaded)return <div style={{display:"flex",alignItems:"center",justifyContent:"center",height:"100vh",fontFamily:"Georgia,serif",fontSize:"18px",background:"#fdf6e3"}}>⏳ Chargement...</div>;
@@ -765,7 +820,7 @@ export default function App(){
   if(screen==="game"&&gameProgress){
     return(
       <>
-        {showPseudoModal&&<PseudoModal dark={dark} onSave={savePseudo} canClose={true}/>}
+        {showPseudoModal&&<PseudoModal dark={dark} onSave={savePseudo} canClose={true} unlockedIds={progress.unlocked} currentAvatar={progress.avatar}/>}
         <GamePage dark={dark} setDark={setDark} onBack={()=>setScreen("home")} progress={gameProgress} setProgress={handleSetProgress} soundOn={soundOn} setSoundOn={setSoundOn}/>
       </>
     );
@@ -787,8 +842,8 @@ export default function App(){
 
   return(
     <>
-      {showPseudoModal&&<PseudoModal dark={dark} onSave={savePseudo} canClose={!!pseudo}/>}
-      <HomePage dark={dark} setDark={setDark} onPlay={goToGame} onPlay4J={goToGame4J} progress={progress} soundOn={soundOn} setSoundOn={setSoundOn} userButton={<UserButton/>} pseudo={pseudo} onChangePseudo={()=>setShowPseudoModal(true)}/>
+      {showPseudoModal&&<PseudoModal dark={dark} onSave={savePseudo} canClose={!!pseudo} unlockedIds={progress.unlocked} currentAvatar={progress.avatar}/>}
+      <HomePage dark={dark} setDark={setDark} onPlay={goToGame} onPlay4J={goToGame4J} progress={progress} soundOn={soundOn} setSoundOn={setSoundOn} userButton={<UserButton/>} pseudo={pseudo} avatar={progress.avatar||"🧑"} onChangePseudo={()=>setShowPseudoModal(true)}/>
     </>
   );
 }
