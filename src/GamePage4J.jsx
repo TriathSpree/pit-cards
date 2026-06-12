@@ -23,7 +23,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.33";
+const VERSION="1.5.34";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -313,6 +313,8 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
   const humanIdx=players?players.findIndex(p=>p.isHuman):0;
   const isHumanTurn=players&&players[turnIdx]?.isHuman;
   const mustDraw=isHumanTurn&&phase==="play"&&!drawn;
+  const [isMobile,setIsMobile]=useState(window.innerWidth<700);
+  useEffect(()=>{const h=()=>setIsMobile(window.innerWidth<700);window.addEventListener("resize",h);return()=>window.removeEventListener("resize",h);},[]);
 
   function addLog(text,who){setLog(prev=>[{text,who},...prev].slice(0,50));}
 
@@ -738,15 +740,15 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
       {/* HEADER */}
       <div style={{display:"flex",gap:"6px",marginBottom:"8px",alignItems:"center"}}>
         <button onClick={onBack} style={{...th.btn("#445566"),padding:"4px 10px",fontSize:"12px"}}>← Accueil</button>
-        <div style={{fontSize:"9px",color:th.sub,opacity:0.7,whiteSpace:"nowrap"}}>v{VERSION}</div>
-        <div style={{flex:1,textAlign:"center",padding:"5px",background:mustDraw?(pulse?(dark?"rgba(139,0,0,0.4)":"rgba(139,0,0,0.2)"):(dark?"rgba(224,112,112,0.15)":"rgba(139,0,0,0.1)")):(dark?"rgba(224,112,112,0.15)":"rgba(139,0,0,0.1)"),borderRadius:"8px",fontWeight:"bold",fontSize:"12px",transition:"background 0.3s"}}>
+        {!isMobile&&<div style={{fontSize:"9px",color:th.sub,opacity:0.7,whiteSpace:"nowrap"}}>v{VERSION}</div>}
+        <div style={{flex:1,textAlign:"center",padding:"5px",background:mustDraw?(pulse?(dark?"rgba(139,0,0,0.4)":"rgba(139,0,0,0.2)"):(dark?"rgba(224,112,112,0.15)":"rgba(139,0,0,0.1)")):(dark?"rgba(224,112,112,0.15)":"rgba(139,0,0,0.1)"),borderRadius:"8px",fontWeight:"bold",fontSize:isMobile?"11px":"12px",transition:"background 0.3s"}}>
           {!players?"🎲 Tirage au sort...":
-           phase==="ai_turn"?`⏳ ${players[turnIdx]?.name} réfléchit...`:
-           mustDraw?"👆 Piochez une carte":
-           `🃏 Votre tour — C.${manche}`}
+           phase==="ai_turn"?`⏳ ${players[turnIdx]?.name}...`:
+           mustDraw?"👆 Pioche":
+           `🃏 Ton tour — C.${manche}`}
         </div>
-        <div style={{fontSize:"11px",fontWeight:"bold",color:th.sub,background:dark?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.7)",border:"2px solid "+th.border,borderRadius:"8px",padding:"4px 8px"}}>
-          C.{manche} — {SCORE_CIBLE-Math.max(0,...Object.values(totalScores))} restants
+        <div style={{fontSize:"11px",fontWeight:"bold",color:th.sub,background:dark?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.7)",border:"2px solid "+th.border,borderRadius:"8px",padding:"4px 8px",whiteSpace:"nowrap"}}>
+          {isMobile?`C.${manche}`:`C.${manche} — ${SCORE_CIBLE-Math.max(0,...Object.values(totalScores))} restants`}
         </div>
         <button onClick={()=>setSoundOn(v=>!v)} style={{...th.btn("#445566"),padding:"4px 8px",fontSize:"14px"}}>{soundOn?"🔊":"🔇"}</button>
         <button onClick={()=>setDark(v=>!v)} style={{...th.btn("#445566"),padding:"4px 8px",fontSize:"14px"}}>{dark?"☀️":"🌙"}</button>
@@ -754,142 +756,256 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
 
       {players&&(
         <>
-          {/* LAYOUT : col1=joueurs 0+3, col2=pioche+défausse, col3=joueurs 1+2 */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gridTemplateRows:"1fr 1fr",gap:"8px",marginBottom:"8px",alignItems:"stretch"}}>
-            <div style={{gridColumn:1,gridRow:1,display:"flex"}}>{renderPlayerCard(players[0],0,0===turnIdx)}</div>
-            <div style={{gridColumn:1,gridRow:2,display:"flex"}}>{renderPlayerCard(players[3],3,3===turnIdx)}</div>
-            {/* Centre col2 span 2 rows — pioche + défausse */}
-            <div style={{gridColumn:2,gridRow:"1 / span 2",display:"flex",flexDirection:"column",gap:"8px",alignItems:"center",justifyContent:"space-between"}}>
-              <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"8px",padding:"5px 8px",textAlign:"center",minWidth:"64px",flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
-                <div style={{fontSize:"20px"}}>🂠</div>
-                <div style={{fontSize:"13px",fontWeight:"bold",color:th.text}}>{deck.length}</div>
-                <div style={{fontSize:"8px",color:th.sub}}>pioche</div>
-                {mustDraw&&<button onClick={handleDraw} style={{...th.btn("#1a5276"),marginTop:"4px",padding:"3px 5px",fontSize:"9px"}}>PIOCHER</button>}
+          {/* GRILLE JOUEURS + PIOCHE */}
+          {isMobile?(
+            // MOBILE : 2x2 + pioche en bandeau
+            <>
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"6px",marginBottom:"6px"}}>
+                <div>{renderPlayerCard(players[0],0,0===turnIdx)}</div>
+                <div>{renderPlayerCard(players[1],1,1===turnIdx)}</div>
+                <div>{renderPlayerCard(players[3],3,3===turnIdx)}</div>
+                <div>{renderPlayerCard(players[2],2,2===turnIdx)}</div>
               </div>
-              <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"8px",padding:"5px 8px",textAlign:"center",minWidth:"64px",flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
-                {discard.length>0
-                  ?<><div style={{fontSize:"18px"}}>{cEmoji(discard[discard.length-1])}</div>
-                    <div style={{fontSize:"7px",fontWeight:"bold",color:cColor(discard[discard.length-1],dark),lineHeight:1.2}}>{getCard(discard[discard.length-1])?.label}</div></>
-                  :<div style={{fontSize:"20px",opacity:0.3}}>🂠</div>}
-                <div style={{fontSize:"13px",fontWeight:"bold",color:th.text}}>{discard.length}</div>
-                <div style={{fontSize:"8px",color:th.sub}}>défausse</div>
-              </div>
-            </div>
-            <div style={{gridColumn:3,gridRow:1,display:"flex"}}>{renderPlayerCard(players[1],1,1===turnIdx)}</div>
-            <div style={{gridColumn:3,gridRow:2,display:"flex"}}>{renderPlayerCard(players[2],2,2===turnIdx)}</div>
-          </div>
-
-          {/* MAIN + LOG + SCORES — grille alignée sur la grille joueurs */}
-          <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:"8px",marginBottom:"8px",alignItems:"stretch"}}>
-            {/* MAIN — même largeur que col gauche */}
-            <div style={{background:dark?"rgba(10,20,40,0.6)":"rgba(26,82,118,0.05)",border:"2px dashed "+th.border,borderRadius:"10px",padding:"8px",overflow:"hidden",display:"flex",flexDirection:"column"}}>
-              <div style={{fontSize:"11px",fontWeight:"bold",marginBottom:"6px",color:th.sub,flexShrink:0}}>
-                {discardMode?"🗑️ DÉFAUSSER":"MAIN"} ({players[humanIdx]?.hand?.length||0})
-                {targetIdx===-1&&<span style={{color:"#e67e22",marginLeft:"8px"}}>— Choisissez une cible</span>}
-              </div>
-              <div style={{display:"flex",gap:"4px",flexWrap:"wrap",overflow:"hidden"}}>
-                {players[humanIdx]?.hand?.map((id,cardIdx)=>{
-                  const valid=discardMode||(!discardMode&&drawn&&validCardIds.includes(id));
-                  const c=getCard(id);
-                  return(
-                    <div key={id+"-"+cardIdx} onClick={()=>handleCardClick(id,cardIdx)} style={{
-                      background:valid?cColor(id,dark):dark?"#3a3a4a":"#9e9e9e",
-                      color:"#fff",border:selected===`${id}:${cardIdx}`?"3px solid #FFD700":"2px solid rgba(255,255,255,0.2)",
-                      borderRadius:"8px",padding:"4px 2px",cursor:valid?"pointer":"not-allowed",
-                      width:"72px",minWidth:"72px",maxWidth:"72px",height:"80px",
-                      display:"flex",flexDirection:"column",alignItems:"center",
-                      justifyContent:"center",textAlign:"center",opacity:valid?1:0.45,
-                      transform:selected===`${id}:${cardIdx}`?"translateY(-4px)":"none",transition:"transform 0.15s",
-                      boxShadow:selected===`${id}:${cardIdx}`?"0 4px 12px rgba(255,215,0,0.4)":"none",
-                      wordBreak:"break-word",lineHeight:1.2
-                    }}>
-                      <div style={{fontSize:"15px",marginBottom:"1px"}}>{cEmoji(id)}</div>
-                      <div style={{fontSize:"9px",lineHeight:1.2}}>{c?.label}</div>
-                      {c?.km&&<div style={{fontSize:"12px",fontWeight:"bold"}}>{c.km}</div>}
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Sélection de cible pour attaque */}
-              {targetIdx===-1&&selected&&(
-                <div style={{marginTop:"8px",flexShrink:0}}>
-                  <div style={{fontSize:"11px",color:"#e67e22",marginBottom:"6px"}}>Choisir la cible :</div>
-                  <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
-                    {[...new Map(validPlays.filter(p=>p.cardId===selectedId&&p.action==="attaque").map(p=>[p.targetIdx,p])).values()].map(p=>(
-                      <button key={p.targetIdx} onClick={()=>{setTargetIdx(p.targetIdx);}} style={{...th.btn("#c0392b"),fontSize:"11px",padding:"5px 10px"}}>
-                        {players[p.targetIdx]?.emoji} {players[p.targetIdx]?.name}
-                      </button>
-                    ))}
-                    <button onClick={()=>{setSelected(null);setTargetIdx(null);}} style={{...th.btn("#7f8c8d"),fontSize:"11px",padding:"5px 10px"}}>Annuler</button>
+              {/* Pioche + défausse en bandeau horizontal */}
+              <div style={{display:"flex",gap:"6px",marginBottom:"6px",justifyContent:"center"}}>
+                <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"8px",padding:"6px 14px",textAlign:"center",display:"flex",alignItems:"center",gap:"10px"}}>
+                  <div>
+                    <div style={{fontSize:"18px"}}>🂠</div>
+                    <div style={{fontSize:"12px",fontWeight:"bold",color:th.text}}>{deck.length}</div>
+                    <div style={{fontSize:"8px",color:th.sub}}>pioche</div>
+                    {mustDraw&&<button onClick={handleDraw} style={{...th.btn("#1a5276"),marginTop:"4px",padding:"4px 8px",fontSize:"10px"}}>PIOCHER</button>}
+                  </div>
+                  <div style={{width:"1px",height:"40px",background:th.border}}/>
+                  <div>
+                    {discard.length>0
+                      ?<><div style={{fontSize:"16px"}}>{cEmoji(discard[discard.length-1])}</div>
+                        <div style={{fontSize:"7px",fontWeight:"bold",color:cColor(discard[discard.length-1],dark),lineHeight:1.2}}>{getCard(discard[discard.length-1])?.label}</div></>
+                      :<div style={{fontSize:"18px",opacity:0.3}}>🂠</div>}
+                    <div style={{fontSize:"12px",fontWeight:"bold",color:th.text}}>{discard.length}</div>
+                    <div style={{fontSize:"8px",color:th.sub}}>défausse</div>
                   </div>
                 </div>
-              )}
-
-              {/* Actions */}
-              <div style={{display:"flex",gap:"8px",marginTop:"8px",alignItems:"center",flexWrap:"wrap",flexShrink:0}}>
-                {drawn&&!discardMode&&selected&&(targetIdx===null||targetIdx>=0)&&validCardIds.includes(selectedId)&&targetIdx!==-1&&(
-                  <button onClick={handlePlay} style={th.btn("#27ae60")}>✅ Jouer</button>
-                )}
-                {drawn&&!discardMode&&(
-                  <button onClick={()=>{setDiscardMode(true);setSelected(null);}} style={th.btn("#7f8c8d")}>🗑️ Défausser</button>
-                )}
-                {discardMode&&selected&&(
-                  <button onClick={()=>handleDiscard(selectedId)} style={th.btn("#c0392b")}>🗑️ Jeter {getCard(selectedId)?.label}</button>
-                )}
-                {discardMode&&(
-                  <button onClick={()=>{setDiscardMode(false);setSelected(null);}} style={th.btn("#7f8c8d")}>↩️ Annuler</button>
-                )}
               </div>
-            </div>
-
-            {/* Colonne centrale — même largeur auto que la colonne pioche/défausse */}
-            <div style={{width:"80px"}}/>
-
-            {/* Journal + Scores du Championnat — même largeur que col droite */}
-            <div style={{display:"flex",gap:"8px"}}>
-              {/* LOG */}
-              <div style={{flex:1,background:dark?"rgba(20,30,50,0.8)":"rgba(255,255,255,0.6)",border:"2px solid "+th.border,borderRadius:"10px",padding:"8px",overflowY:"auto",maxHeight:"220px"}}>
-                <div style={{fontSize:"10px",fontWeight:"bold",marginBottom:"4px",color:th.sub,textTransform:"uppercase"}}>Journal</div>
-                {log.map((l,i)=>(
-                  <div key={i} style={{fontSize:"10px",padding:"2px 4px",borderBottom:"1px solid "+th.border,color:th.text}}>{l.text}</div>
-                ))}
-              </div>
-              {/* SCORES DU CHAMPIONNAT */}
-              <div style={{flex:1,background:dark?"rgba(20,30,50,0.8)":"rgba(255,255,255,0.6)",border:"2px solid "+th.border,borderRadius:"10px",padding:"8px",display:"flex",flexDirection:"column",gap:"4px"}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"4px"}}>
-                  <div style={{fontSize:"10px",fontWeight:"bold",color:th.sub,textTransform:"uppercase"}}>Scores du Championnat</div>
-                  <div style={{fontSize:"9px",color:th.sub}}>But : {SCORE_CIBLE} pts</div>
+            </>
+          ):(
+            // DESKTOP : grille 3 colonnes
+            <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gridTemplateRows:"1fr 1fr",gap:"8px",marginBottom:"8px",alignItems:"stretch"}}>
+              <div style={{gridColumn:1,gridRow:1,display:"flex"}}>{renderPlayerCard(players[0],0,0===turnIdx)}</div>
+              <div style={{gridColumn:1,gridRow:2,display:"flex"}}>{renderPlayerCard(players[3],3,3===turnIdx)}</div>
+              <div style={{gridColumn:2,gridRow:"1 / span 2",display:"flex",flexDirection:"column",gap:"8px",alignItems:"center",justifyContent:"space-between"}}>
+                <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"8px",padding:"5px 8px",textAlign:"center",minWidth:"64px",flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+                  <div style={{fontSize:"20px"}}>🂠</div>
+                  <div style={{fontSize:"13px",fontWeight:"bold",color:th.text}}>{deck.length}</div>
+                  <div style={{fontSize:"8px",color:th.sub}}>pioche</div>
+                  {mustDraw&&<button onClick={handleDraw} style={{...th.btn("#1a5276"),marginTop:"4px",padding:"3px 5px",fontSize:"9px"}}>PIOCHER</button>}
                 </div>
-                {[...players].sort((a,b)=>(totalScores[b.name]||0)-(totalScores[a.name]||0)).map((p,rank)=>{
-                  const colorMap={};
-                  players.forEach((pl,i)=>{colorMap[pl.name]=["#8B0000","#1a5276","#1e8449","#7d6608"][i%4];});
-                  const c=colorMap[p.name];
-                  const s=totalScores[p.name]||0;
-                  const rankIcon=rank===0?"🏆🥇":rank===1?"🥈":rank===2?"🥉":"4️⃣";
-                  return(
-                    <div key={p.name}>
-                      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"2px"}}>
-                        <div style={{fontSize:"10px",fontWeight:"bold",color:c,display:"flex",alignItems:"center",gap:"3px"}}>
-                          <span style={{fontSize:"11px"}}>{rankIcon}</span> {p.emoji} {p.name}
-                        </div>
-                        <div style={{fontSize:"11px",fontWeight:"bold",color:c}}>{s}</div>
+                <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"8px",padding:"5px 8px",textAlign:"center",minWidth:"64px",flex:1,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center"}}>
+                  {discard.length>0
+                    ?<><div style={{fontSize:"18px"}}>{cEmoji(discard[discard.length-1])}</div>
+                      <div style={{fontSize:"7px",fontWeight:"bold",color:cColor(discard[discard.length-1],dark),lineHeight:1.2}}>{getCard(discard[discard.length-1])?.label}</div></>
+                    :<div style={{fontSize:"20px",opacity:0.3}}>🂠</div>}
+                  <div style={{fontSize:"13px",fontWeight:"bold",color:th.text}}>{discard.length}</div>
+                  <div style={{fontSize:"8px",color:th.sub}}>défausse</div>
+                </div>
+              </div>
+              <div style={{gridColumn:3,gridRow:1,display:"flex"}}>{renderPlayerCard(players[1],1,1===turnIdx)}</div>
+              <div style={{gridColumn:3,gridRow:2,display:"flex"}}>{renderPlayerCard(players[2],2,2===turnIdx)}</div>
+            </div>
+          )}
+
+          {/* MAIN + LOG + SCORES */}
+          {isMobile?(
+            // MOBILE : tout en colonne pleine largeur
+            <>
+              {/* MAIN */}
+              <div style={{background:dark?"rgba(10,20,40,0.6)":"rgba(26,82,118,0.05)",border:"2px dashed "+th.border,borderRadius:"10px",padding:"8px",marginBottom:"6px"}}>
+                <div style={{fontSize:"11px",fontWeight:"bold",marginBottom:"6px",color:th.sub}}>
+                  {discardMode?"🗑️ DÉFAUSSER":"MAIN"} ({players[humanIdx]?.hand?.length||0})
+                  {targetIdx===-1&&<span style={{color:"#e67e22",marginLeft:"8px"}}>— Choisissez une cible</span>}
+                </div>
+                <div style={{display:"flex",gap:"4px",flexWrap:"wrap"}}>
+                  {players[humanIdx]?.hand?.map((id,cardIdx)=>{
+                    const valid=discardMode||(!discardMode&&drawn&&validCardIds.includes(id));
+                    const c=getCard(id);
+                    return(
+                      <div key={id+"-"+cardIdx} onClick={()=>handleCardClick(id,cardIdx)} style={{
+                        background:valid?cColor(id,dark):dark?"#3a3a4a":"#9e9e9e",
+                        color:"#fff",border:selected===`${id}:${cardIdx}`?"3px solid #FFD700":"2px solid rgba(255,255,255,0.2)",
+                        borderRadius:"8px",padding:"4px 2px",cursor:valid?"pointer":"not-allowed",
+                        width:"calc(14% - 4px)",minWidth:"52px",maxWidth:"72px",height:"72px",
+                        display:"flex",flexDirection:"column",alignItems:"center",
+                        justifyContent:"center",textAlign:"center",opacity:valid?1:0.45,
+                        transform:selected===`${id}:${cardIdx}`?"translateY(-4px)":"none",transition:"transform 0.15s",
+                        boxShadow:selected===`${id}:${cardIdx}`?"0 4px 12px rgba(255,215,0,0.4)":"none",
+                        wordBreak:"break-word",lineHeight:1.2,flexShrink:0
+                      }}>
+                        <div style={{fontSize:"14px",marginBottom:"1px"}}>{cEmoji(id)}</div>
+                        <div style={{fontSize:"8px",lineHeight:1.2}}>{c?.label}</div>
+                        {c?.km&&<div style={{fontSize:"11px",fontWeight:"bold"}}>{c.km}</div>}
                       </div>
-                      <div style={{height:"6px",background:th.barBg,borderRadius:"3px",overflow:"hidden",marginBottom:"4px"}}>
-                        <div style={{height:"100%",width:(s/SCORE_CIBLE*100)+"%",background:c,borderRadius:"3px",transition:"width 0.5s",minWidth:s>0?"3px":"0"}}/>
-                      </div>
+                    );
+                  })}
+                </div>
+                {targetIdx===-1&&selected&&(
+                  <div style={{marginTop:"8px"}}>
+                    <div style={{fontSize:"11px",color:"#e67e22",marginBottom:"6px"}}>Choisir la cible :</div>
+                    <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
+                      {[...new Map(validPlays.filter(p=>p.cardId===selectedId&&p.action==="attaque").map(p=>[p.targetIdx,p])).values()].map(p=>(
+                        <button key={p.targetIdx} onClick={()=>setTargetIdx(p.targetIdx)} style={{...th.btn("#c0392b"),fontSize:"11px",padding:"5px 10px"}}>
+                          {players[p.targetIdx]?.emoji} {players[p.targetIdx]?.name}
+                        </button>
+                      ))}
+                      <button onClick={()=>{setSelected(null);setTargetIdx(null);}} style={{...th.btn("#7f8c8d"),fontSize:"11px",padding:"5px 10px"}}>Annuler</button>
                     </div>
-                  );
-                })}
-                <div style={{borderTop:"1px solid "+th.border,paddingTop:"4px",textAlign:"center"}}>
-                  <div style={{fontSize:"9px",color:th.sub}}>{SCORE_CIBLE-Math.max(0,...Object.values(totalScores).concat([0]))} restants</div>
+                  </div>
+                )}
+                <div style={{display:"flex",gap:"8px",marginTop:"8px",alignItems:"center",flexWrap:"wrap"}}>
+                  {drawn&&!discardMode&&selected&&(targetIdx===null||targetIdx>=0)&&validCardIds.includes(selectedId)&&targetIdx!==-1&&(
+                    <button onClick={handlePlay} style={th.btn("#27ae60")}>✅ Jouer</button>
+                  )}
+                  {drawn&&!discardMode&&(
+                    <button onClick={()=>{setDiscardMode(true);setSelected(null);}} style={th.btn("#7f8c8d")}>🗑️ Défausser</button>
+                  )}
+                  {discardMode&&selected&&(
+                    <button onClick={()=>handleDiscard(selectedId)} style={th.btn("#c0392b")}>🗑️ Jeter {getCard(selectedId)?.label}</button>
+                  )}
+                  {discardMode&&(
+                    <button onClick={()=>{setDiscardMode(false);setSelected(null);}} style={th.btn("#7f8c8d")}>↩️ Annuler</button>
+                  )}
+                </div>
+              </div>
+              {/* Journal + Scores côte à côte sur mobile */}
+              <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:"6px",marginBottom:"6px"}}>
+                <div style={{background:dark?"rgba(20,30,50,0.8)":"rgba(255,255,255,0.6)",border:"2px solid "+th.border,borderRadius:"10px",padding:"8px",maxHeight:"160px",overflowY:"auto"}}>
+                  <div style={{fontSize:"10px",fontWeight:"bold",marginBottom:"4px",color:th.sub,textTransform:"uppercase"}}>Journal</div>
+                  {log.map((l,i)=>(
+                    <div key={i} style={{fontSize:"9px",padding:"2px 3px",borderBottom:"1px solid "+th.border,color:th.text}}>{l.text}</div>
+                  ))}
+                </div>
+                <div style={{background:dark?"rgba(20,30,50,0.8)":"rgba(255,255,255,0.6)",border:"2px solid "+th.border,borderRadius:"10px",padding:"8px",display:"flex",flexDirection:"column",gap:"3px"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",marginBottom:"3px"}}>
+                    <div style={{fontSize:"9px",fontWeight:"bold",color:th.sub,textTransform:"uppercase"}}>Championnat</div>
+                    <div style={{fontSize:"8px",color:th.sub}}>{SCORE_CIBLE} pts</div>
+                  </div>
+                  {[...players].sort((a,b)=>(totalScores[b.name]||0)-(totalScores[a.name]||0)).map((p,rank)=>{
+                    const colorMap={};players.forEach((pl,i)=>{colorMap[pl.name]=["#8B0000","#1a5276","#1e8449","#7d6608"][i%4];});
+                    const c=colorMap[p.name];const s=totalScores[p.name]||0;
+                    const rankIcon=rank===0?"🏆":rank===1?"🥈":rank===2?"🥉":"4️⃣";
+                    return(<div key={p.name}>
+                      <div style={{display:"flex",justifyContent:"space-between",fontSize:"9px",fontWeight:"bold",color:c}}>
+                        <span>{rankIcon} {p.name}</span><span>{s}</span>
+                      </div>
+                      <div style={{height:"4px",background:th.barBg,borderRadius:"2px",overflow:"hidden",marginBottom:"3px"}}>
+                        <div style={{height:"100%",width:(s/SCORE_CIBLE*100)+"%",background:c,borderRadius:"2px",transition:"width 0.5s"}}/>
+                      </div>
+                    </div>);
+                  })}
+                  <div style={{fontSize:"8px",color:th.sub,textAlign:"center",borderTop:"1px solid "+th.border,paddingTop:"3px"}}>{SCORE_CIBLE-Math.max(0,...Object.values(totalScores).concat([0]))} restants</div>
+                </div>
+              </div>
+            </>
+          ):(
+            // DESKTOP : grille 3 colonnes MAIN + spacer + Journal/Scores
+            <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gap:"8px",marginBottom:"8px",alignItems:"stretch"}}>
+              <div style={{background:dark?"rgba(10,20,40,0.6)":"rgba(26,82,118,0.05)",border:"2px dashed "+th.border,borderRadius:"10px",padding:"8px",overflow:"hidden",display:"flex",flexDirection:"column"}}>
+                <div style={{fontSize:"11px",fontWeight:"bold",marginBottom:"6px",color:th.sub,flexShrink:0}}>
+                  {discardMode?"🗑️ DÉFAUSSER":"MAIN"} ({players[humanIdx]?.hand?.length||0})
+                  {targetIdx===-1&&<span style={{color:"#e67e22",marginLeft:"8px"}}>— Choisissez une cible</span>}
+                </div>
+                <div style={{display:"flex",gap:"4px",flexWrap:"wrap",overflow:"hidden"}}>
+                  {players[humanIdx]?.hand?.map((id,cardIdx)=>{
+                    const valid=discardMode||(!discardMode&&drawn&&validCardIds.includes(id));
+                    const c=getCard(id);
+                    return(
+                      <div key={id+"-"+cardIdx} onClick={()=>handleCardClick(id,cardIdx)} style={{
+                        background:valid?cColor(id,dark):dark?"#3a3a4a":"#9e9e9e",
+                        color:"#fff",border:selected===`${id}:${cardIdx}`?"3px solid #FFD700":"2px solid rgba(255,255,255,0.2)",
+                        borderRadius:"8px",padding:"4px 2px",cursor:valid?"pointer":"not-allowed",
+                        width:"72px",minWidth:"72px",maxWidth:"72px",height:"80px",
+                        display:"flex",flexDirection:"column",alignItems:"center",
+                        justifyContent:"center",textAlign:"center",opacity:valid?1:0.45,
+                        transform:selected===`${id}:${cardIdx}`?"translateY(-4px)":"none",transition:"transform 0.15s",
+                        boxShadow:selected===`${id}:${cardIdx}`?"0 4px 12px rgba(255,215,0,0.4)":"none",
+                        wordBreak:"break-word",lineHeight:1.2
+                      }}>
+                        <div style={{fontSize:"15px",marginBottom:"1px"}}>{cEmoji(id)}</div>
+                        <div style={{fontSize:"9px",lineHeight:1.2}}>{c?.label}</div>
+                        {c?.km&&<div style={{fontSize:"12px",fontWeight:"bold"}}>{c.km}</div>}
+                      </div>
+                    );
+                  })}
+                </div>
+                {targetIdx===-1&&selected&&(
+                  <div style={{marginTop:"8px",flexShrink:0}}>
+                    <div style={{fontSize:"11px",color:"#e67e22",marginBottom:"6px"}}>Choisir la cible :</div>
+                    <div style={{display:"flex",gap:"6px",flexWrap:"wrap"}}>
+                      {[...new Map(validPlays.filter(p=>p.cardId===selectedId&&p.action==="attaque").map(p=>[p.targetIdx,p])).values()].map(p=>(
+                        <button key={p.targetIdx} onClick={()=>{setTargetIdx(p.targetIdx);}} style={{...th.btn("#c0392b"),fontSize:"11px",padding:"5px 10px"}}>
+                          {players[p.targetIdx]?.emoji} {players[p.targetIdx]?.name}
+                        </button>
+                      ))}
+                      <button onClick={()=>{setSelected(null);setTargetIdx(null);}} style={{...th.btn("#7f8c8d"),fontSize:"11px",padding:"5px 10px"}}>Annuler</button>
+                    </div>
+                  </div>
+                )}
+                <div style={{display:"flex",gap:"8px",marginTop:"8px",alignItems:"center",flexWrap:"wrap",flexShrink:0}}>
+                  {drawn&&!discardMode&&selected&&(targetIdx===null||targetIdx>=0)&&validCardIds.includes(selectedId)&&targetIdx!==-1&&(
+                    <button onClick={handlePlay} style={th.btn("#27ae60")}>✅ Jouer</button>
+                  )}
+                  {drawn&&!discardMode&&(
+                    <button onClick={()=>{setDiscardMode(true);setSelected(null);}} style={th.btn("#7f8c8d")}>🗑️ Défausser</button>
+                  )}
+                  {discardMode&&selected&&(
+                    <button onClick={()=>handleDiscard(selectedId)} style={th.btn("#c0392b")}>🗑️ Jeter {getCard(selectedId)?.label}</button>
+                  )}
+                  {discardMode&&(
+                    <button onClick={()=>{setDiscardMode(false);setSelected(null);}} style={th.btn("#7f8c8d")}>↩️ Annuler</button>
+                  )}
+                </div>
+              </div>
+              <div style={{width:"80px"}}/>
+              <div style={{display:"flex",gap:"8px"}}>
+                <div style={{flex:1,background:dark?"rgba(20,30,50,0.8)":"rgba(255,255,255,0.6)",border:"2px solid "+th.border,borderRadius:"10px",padding:"8px",overflowY:"auto",maxHeight:"220px"}}>
+                  <div style={{fontSize:"10px",fontWeight:"bold",marginBottom:"4px",color:th.sub,textTransform:"uppercase"}}>Journal</div>
+                  {log.map((l,i)=>(
+                    <div key={i} style={{fontSize:"10px",padding:"2px 4px",borderBottom:"1px solid "+th.border,color:th.text}}>{l.text}</div>
+                  ))}
+                </div>
+                <div style={{flex:1,background:dark?"rgba(20,30,50,0.8)":"rgba(255,255,255,0.6)",border:"2px solid "+th.border,borderRadius:"10px",padding:"8px",display:"flex",flexDirection:"column",gap:"4px"}}>
+                  <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"4px"}}>
+                    <div style={{fontSize:"10px",fontWeight:"bold",color:th.sub,textTransform:"uppercase"}}>Scores du Championnat</div>
+                    <div style={{fontSize:"9px",color:th.sub}}>But : {SCORE_CIBLE} pts</div>
+                  </div>
+                  {[...players].sort((a,b)=>(totalScores[b.name]||0)-(totalScores[a.name]||0)).map((p,rank)=>{
+                    const colorMap={};
+                    players.forEach((pl,i)=>{colorMap[pl.name]=["#8B0000","#1a5276","#1e8449","#7d6608"][i%4];});
+                    const c=colorMap[p.name];
+                    const s=totalScores[p.name]||0;
+                    const rankIcon=rank===0?"🏆🥇":rank===1?"🥈":rank===2?"🥉":"4️⃣";
+                    return(
+                      <div key={p.name}>
+                        <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"2px"}}>
+                          <div style={{fontSize:"10px",fontWeight:"bold",color:c,display:"flex",alignItems:"center",gap:"3px"}}>
+                            <span style={{fontSize:"11px"}}>{rankIcon}</span> {p.emoji} {p.name}
+                          </div>
+                          <div style={{fontSize:"11px",fontWeight:"bold",color:c}}>{s}</div>
+                        </div>
+                        <div style={{height:"6px",background:th.barBg,borderRadius:"3px",overflow:"hidden",marginBottom:"4px"}}>
+                          <div style={{height:"100%",width:(s/SCORE_CIBLE*100)+"%",background:c,borderRadius:"3px",transition:"width 0.5s",minWidth:s>0?"3px":"0"}}/>
+                        </div>
+                      </div>
+                    );
+                  })}
+                  <div style={{borderTop:"1px solid "+th.border,paddingTop:"4px",textAlign:"center"}}>
+                    <div style={{fontSize:"9px",color:th.sub}}>{SCORE_CIBLE-Math.max(0,...Object.values(totalScores).concat([0]))} restants</div>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* KM — COURSE EN COURS */}
-          <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"10px",padding:"8px"}}>
+          {/* KM — COURSE EN COURS (desktop seulement) */}
+          {!isMobile&&<div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"10px",padding:"8px"}}>
             <div style={{display:"flex",justifyContent:"space-between",marginBottom:"6px"}}>
               <div style={{fontSize:"10px",fontWeight:"bold",color:th.sub,textTransform:"uppercase"}}>Course C.{manche} — km parcourus</div>
               <div style={{fontSize:"10px",color:th.sub}}>1000 km</div>
@@ -919,7 +1035,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
                 );
               })}
             </div>
-          </div>
+          </div>}
         </>
       )}
 
