@@ -678,9 +678,35 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
 
       {players&&(
         <>
-          {/* JOUEURS */}
-          <div style={{display:"flex",gap:"8px",marginBottom:"8px",flexWrap:"wrap"}}>
-            {players.map((p,i)=>renderPlayerCard(p,i,i===turnIdx))}
+          {/* LAYOUT HORAIRE : HG→HD→BD→BG + centre pioche/main */}
+          <div style={{display:"grid",gridTemplateColumns:"1fr auto 1fr",gridTemplateRows:"auto auto",gap:"8px",marginBottom:"8px"}}>
+            {/* Haut gauche — joueur 0 */}
+            <div>{renderPlayerCard(players[0],0,0===turnIdx)}</div>
+            {/* Centre haut — pioche + défausse */}
+            <div style={{display:"flex",flexDirection:"column",gap:"6px",alignItems:"center",justifyContent:"center"}}>
+              <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"8px",padding:"5px 8px",textAlign:"center",minWidth:"64px"}}>
+                <div style={{fontSize:"20px"}}>🂠</div>
+                <div style={{fontSize:"13px",fontWeight:"bold",color:th.text}}>{deck.length}</div>
+                <div style={{fontSize:"8px",color:th.sub}}>pioche</div>
+                {mustDraw&&<button onClick={handleDraw} style={{...th.btn("#1a5276"),marginTop:"4px",padding:"3px 5px",fontSize:"9px"}}>Piocher</button>}
+              </div>
+              <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"8px",padding:"5px 8px",textAlign:"center",minWidth:"64px",display:"flex",flexDirection:"column",justifyContent:"center"}}>
+                {discard.length>0
+                  ?<><div style={{fontSize:"18px"}}>{cEmoji(discard[discard.length-1])}</div>
+                    <div style={{fontSize:"7px",fontWeight:"bold",color:cColor(discard[discard.length-1],dark),lineHeight:1.2}}>{getCard(discard[discard.length-1])?.label}</div></>
+                  :<div style={{fontSize:"20px",opacity:0.3}}>🂠</div>}
+                <div style={{fontSize:"13px",fontWeight:"bold",color:th.text}}>{discard.length}</div>
+                <div style={{fontSize:"8px",color:th.sub}}>défausse</div>
+              </div>
+            </div>
+            {/* Haut droite — joueur 1 */}
+            <div>{renderPlayerCard(players[1],1,1===turnIdx)}</div>
+            {/* Bas gauche — joueur 3 */}
+            <div>{renderPlayerCard(players[3],3,3===turnIdx)}</div>
+            {/* Centre bas — vide */}
+            <div/>
+            {/* Bas droite — joueur 2 */}
+            <div>{renderPlayerCard(players[2],2,2===turnIdx)}</div>
           </div>
 
           {/* MAIN + LOG */}
