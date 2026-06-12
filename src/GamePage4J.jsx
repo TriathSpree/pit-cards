@@ -630,8 +630,14 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
           {p.emoji||"🏎️"} {p.name} {isCurrent&&"◀"}
         </div>
         <div style={{fontSize:"18px",fontWeight:"bold",color:th.accent}}>{p.km} km</div>
-        <div style={{height:"4px",background:th.barBg,borderRadius:"2px",margin:"4px 0",overflow:"hidden"}}>
-          <div style={{height:"100%",width:(p.km/1000*100)+"%",background:color,transition:"width 0.3s"}}/>
+        <div style={{position:"relative",height:"8px",background:th.barBg,borderRadius:"4px",margin:"4px 0",overflow:"hidden"}}>
+          <div style={{height:"100%",width:(p.km/1000*100)+"%",background:color,transition:"width 0.3s",borderRadius:"4px"}}/>
+          {[200,400,600,800].map(v=>(
+            <div key={v} style={{position:"absolute",top:0,bottom:0,left:(v/1000*100)+"%",width:"1px",background:dark?"rgba(255,255,255,0.15)":"rgba(0,0,0,0.15)"}}/>
+          ))}
+        </div>
+        <div style={{display:"flex",justifyContent:"space-between",fontSize:"7px",color:th.sub,marginBottom:"2px"}}>
+          {[0,200,400,600,800,1000].map(v=><span key={v}>{v}</span>)}
         </div>
         {p.attaque&&<div style={{fontSize:"9px",color:"#c0392b",fontWeight:"bold"}}>⚠️ {getCard(p.attaque)?.label}</div>}
         {p.limitee&&!p.attaque&&<div style={{fontSize:"9px",color:"#e67e22",fontWeight:"bold"}}>🐢 Limité</div>}
