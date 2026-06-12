@@ -560,15 +560,14 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     const validPlays=getValidPlays().filter(p=>p.cardId===selected);
     if(validPlays.length===0)return;
 
-    // Si attaque avec plusieurs cibles possibles
+    // Pour les attaques : toujours afficher la sélection de cible
     const attaques=validPlays.filter(p=>p.action==="attaque");
-    if(attaques.length>1&&targetIdx===null){
-      // Demande de choisir la cible
+    if(attaques.length>=1&&targetIdx===null){
       setTargetIdx(-1); // mode sélection cible
       return;
     }
 
-    const play=attaques.length>1&&targetIdx!==null
+    const play=attaques.length>=1&&targetIdx!==null
       ? attaques.find(p=>p.targetIdx===targetIdx)||attaques[0]
       : validPlays[0];
 
