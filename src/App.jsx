@@ -70,7 +70,7 @@ const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const TOTAL_QTY={accident:3,panne:3,crevaison:3,feu_rouge:5,limite:4,reparations:6,essence:6,roue_secours:6,feu_vert:14,fin_limite:6,as_volant:1,citerne:1,increvable:1,prioritaire:1,b25:10,b50:10,b75:10,b100:12,b200:4};
 const SCORE_CIBLE=5000;
-const VERSION="1.5.16";
+const VERSION="1.5.17";
 const GAME_NAME="Pit Cards";
 
 const OBJECTIFS=[
