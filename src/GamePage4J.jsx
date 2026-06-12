@@ -304,12 +304,13 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     setTurnIdx(0);
     setDrawn(false);
     setSelected(null);
+    setDiscardMode(false);
+    setTargetIdx(null);
     setLog([{text:`${playerOrder[0].name} commence !`,who:"system"}]);
     setShowTirage(false);
     const scores={};
     playerOrder.forEach(p=>{scores[p.name]=0;});
     if(Object.keys(totalScores).length===0)setTotalScores(scores);
-    // Démarre en ai_turn si le premier joueur est une IA
     setTimeout(()=>{
       setPhase(playerOrder[0].isHuman ? "play" : "ai_turn");
     }, 100);
@@ -416,9 +417,10 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
       if(ps[defenderIdx].isHuman){
         nextAfterCFRef.current=nextAfterCF;
         cfBonusTurn.current=true;
+        // Carte bonus déjà piochée ligne 409 (d.shift())
         setTurnIdx(defenderIdx);
         setPhase("play");
-        setDrawn(true); // carte bonus déjà piochée — pas de pioche supplémentaire
+        setDrawn(true);
       }else{
         nextAfterCFRef.current=nextAfterCF;
         cfBonusTurn.current=true;
