@@ -652,7 +652,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
             <div style={{fontSize:"22px",fontWeight:"bold",color:th.accent,textAlign:"center"}}>{p.km} km</div>
             <div style={{fontSize:"10px",textAlign:"center"}}>
               {!p.started&&<span style={{color:"#c0392b",fontWeight:"bold"}}>🔴 Pas démarré</span>}
-              {p.started&&!p.attaque&&!p.limitee&&<span style={{color:"#27ae60",fontWeight:"bold"}}>🟢 En route</span>}
+              {p.started&&!p.attaque&&!p.limitee&&<span style={{color:"#27ae60",fontWeight:"bold"}}>🏁 En route</span>}
               {p.attaque&&<span style={{color:"#c0392b",fontWeight:"bold"}}>⚠️ {getCard(p.attaque)?.label}</span>}
               {p.limitee&&<span style={{color:"#e67e22",fontWeight:"bold"}}> 🐢</span>}
             </div>
