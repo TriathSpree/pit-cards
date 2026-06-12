@@ -125,7 +125,7 @@ function aiDiscard(players,actorIdx){
 }
 
 function cColor(id,dark){const c=getCard(id);if(!c)return dark?"#666":"#888";if(c.type==="borne")return dark?"#2e86c1":"#1a5276";if(c.type==="attaque")return dark?"#c0392b":"#922b21";if(c.type==="parade")return dark?"#27ae60":"#1e8449";if(c.type==="botte")return dark?"#d4ac0d":"#7d6608";return dark?"#777":"#555";}
-function cEmoji(id){return{b25:"🛣️",b50:"🛣️",b75:"🛣️",b100:"🛣️",b200:"🛣️",accident:"💥",panne:"⛽",crevaison:"🔧",feu_rouge:"🚩",limite:"🟡",reparations:"🔩",essence:"⛽",roue_secours:"🔄",feu_vert:"🟢",fin_limite:"⚡",as_volant:"⭐",citerne:"🛢️",increvable:"🛡️",prioritaire:"🚔"}[id]||"🃏";}
+function cEmoji(id){return{b25:"🚶",b50:"🚲",b75:"🛵",b100:"🏎️",b200:"✈️",accident:"💥",panne:"⛽",crevaison:"🔧",feu_rouge:"🚩",limite:"🟡",reparations:"🔩",essence:"⛽",roue_secours:"🔄",feu_vert:"🟢",fin_limite:"⚡",as_volant:"⭐",citerne:"🛢️",increvable:"🛡️",prioritaire:"🚔"}[id]||"🃏";}
 
 const DOTS={1:[[50,50]],2:[[25,25],[75,75]],3:[[25,25],[50,50],[75,75]],4:[[25,25],[75,25],[25,75],[75,75]],5:[[25,25],[75,25],[50,50],[25,75],[75,75]],6:[[25,25],[75,25],[25,50],[75,50],[25,75],[75,75]]};
 function De({val,dark}){const dots=DOTS[val]||DOTS[1];return(<div style={{width:"50px",height:"50px",background:dark?"#2a2a3e":"#fff",borderRadius:"10px",border:"3px solid "+(dark?"#555":"#2c1810"),position:"relative",boxShadow:"2px 2px 6px rgba(0,0,0,0.4)"}}>{dots.map((p,i)=><div key={i} style={{position:"absolute",width:"9px",height:"9px",background:dark?"#e0e0e0":"#2c1810",borderRadius:"50%",left:"calc("+p[0]+"% - 4px)",top:"calc("+p[1]+"% - 4px)"}}/>)}</div>);}
