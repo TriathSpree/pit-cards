@@ -9,6 +9,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
+const VERSION="1.5.19";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -684,6 +685,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
       {/* HEADER */}
       <div style={{display:"flex",gap:"6px",marginBottom:"8px",alignItems:"center"}}>
         <button onClick={onBack} style={{...th.btn("#445566"),padding:"4px 10px",fontSize:"12px"}}>← Accueil</button>
+        <div style={{fontSize:"9px",color:th.sub,opacity:0.7,whiteSpace:"nowrap"}}>v{VERSION}</div>
         <div style={{flex:1,textAlign:"center",padding:"5px",background:dark?"rgba(224,112,112,0.15)":"rgba(139,0,0,0.1)",borderRadius:"8px",fontWeight:"bold",fontSize:"12px"}}>
           {!players?"🎲 Tirage au sort...":
            phase==="ai_turn"?`⏳ ${players[turnIdx]?.name} réfléchit...`:
