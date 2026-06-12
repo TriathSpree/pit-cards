@@ -18,7 +18,8 @@ async function storageGetPlayer(clerkId) {
       totalKm: f.totalKm||0, bestMancheScore: f.bestMancheScore||0,
       unlocked: JSON.parse(f.unlocked||"[]"),
       triedDifficulties: JSON.parse(f.triedDifficulties||"[]"),
-      winStreak: f.winStreak||0, avatar: f.avatar||"🧑", _recId: d.id
+      winStreak: f.winStreak||0, avatar: f.avatar||"🧑",
+      dailyDone: JSON.parse(f.dailyDone||"{}"), _recId: d.id
     };
   } catch { return null; }
 }
@@ -32,7 +33,14 @@ async function storageSavePlayer(clerkId, pseudo, progress) {
     wins: progress.wins||0, totalKm: progress.totalKm||0, bestMancheScore: progress.bestMancheScore||0,
     unlocked: JSON.stringify(progress.unlocked||[]),
     triedDifficulties: JSON.stringify(progress.triedDifficulties||[]),
-    winStreak: progress.winStreak||0, updatedAt: new Date().toISOString()
+    winStreak: progress.winStreak||0, updatedAt: new Date().toISOString(),
+    avatar: progress.avatar||"🧑",
+    dailyDone: JSON.stringify(progress.dailyDone||{}),
+    dailyKey: getDailyKey(),
+    dailyPts: Object.entries(progress.dailyDone||{})
+      .filter(([k])=>k===getDailyKey())
+      .flatMap(([,ids])=>ids)
+      .reduce((s,id)=>{const o=DAILY_POOL.find(x=>x.id===id);return s+(o?o.pts:0);},0)
   };
   try {
     const r = await fetch("/api/savePlayer", {
@@ -70,7 +78,7 @@ const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const TOTAL_QTY={accident:3,panne:3,crevaison:3,feu_rouge:5,limite:4,reparations:6,essence:6,roue_secours:6,feu_vert:14,fin_limite:6,as_volant:1,citerne:1,increvable:1,prioritaire:1,b25:10,b50:10,b75:10,b100:12,b200:4};
 const SCORE_CIBLE=5000;
-const VERSION="1.5.41";
+const VERSION="1.5.42";
 const GAME_NAME="Pit Cards";
 
 const OBJECTIFS=[
@@ -132,7 +140,7 @@ const OBJECTIFS=[
   {id:"all_objectives",cat:"🌟 Prestige",label:"Perfectionniste",desc:"Débloquer tous les autres objectifs",pts:2000,mode:null},
 ];
 const TOTAL_OBJ_PTS=OBJECTIFS.reduce((s,o)=>s+o.pts,0);
-const INIT_PROGRESS={wins:0,manchesPlayed:0,unlocked:[],objPts:0,playerName:"",totalKm:0,bestMancheScore:0,winStreak:0,triedDifficulties:[],avatar:"🧑"};
+const INIT_PROGRESS={wins:0,manchesPlayed:0,unlocked:[],objPts:0,playerName:"",totalKm:0,bestMancheScore:0,winStreak:0,triedDifficulties:[],avatar:"🧑",dailyDone:{}};
 
 function buildDeck(){const d=[];BORNES.forEach(c=>{const q={b25:10,b50:10,b75:10,b100:12,b200:4};for(let i=0;i<q[c.id];i++)d.push(c.id);});ATTAQUES.forEach(c=>{const q={accident:3,panne:3,crevaison:3,feu_rouge:5,limite:4};for(let i=0;i<q[c.id];i++)d.push(c.id);});PARADES.forEach(c=>{const q={reparations:6,essence:6,roue_secours:6,feu_vert:14,fin_limite:6};for(let i=0;i<q[c.id];i++)d.push(c.id);});BOTTES.forEach(c=>d.push(c.id));return shuffle(d);}
 function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -164,6 +172,12 @@ function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,user
   const [nom,setNom]=useState(progress.playerName||"");
   const [leaderboard,setLeaderboard]=useState([]);
   const [loadingLB,setLoadingLB]=useState(false);
+  const [dailyLB,setDailyLB]=useState([]);
+  const [loadingDailyLB,setLoadingDailyLB]=useState(false);
+  const dailyObjectifs=getDailyObjectifs();
+  const dailyKey=getDailyKey();
+  const dailyDone=progress.dailyDone||{};
+  const dailyPts=dailyObjectifs.filter(o=>dailyDone[dailyKey]?.includes(o.id)).reduce((s,o)=>s+o.pts,0);
   const th={
     bg:dark?"linear-gradient(135deg,#1a1a2e 0%,#16213e 100%)":"linear-gradient(135deg,#fdf6e3 0%,#fae8c0 100%)",
     text:dark?"#e8e0d0":"#2c1810",subtext:dark?"#a89880":"#5d4037",border:dark?"#445566":"#a0856a",
@@ -186,6 +200,20 @@ function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,user
       setLeaderboard(records);
       setLoadingLB(false);
     }).catch(()=>setLoadingLB(false));
+  },[tab]);
+
+  useEffect(()=>{
+    if(tab!=="daily")return;
+    setLoadingDailyLB(true);
+    sharedGetLeaderboard().then(records=>{
+      // Filtre sur dailyPts du jour courant
+      const key=getDailyKey();
+      const withDaily=records
+        .filter(r=>r.dailyKey===key&&(r.dailyPts||0)>0)
+        .sort((a,b)=>(b.dailyPts||0)-(a.dailyPts||0));
+      setDailyLB(withDaily);
+      setLoadingDailyLB(false);
+    }).catch(()=>setLoadingDailyLB(false));
   },[tab]);
 
   // Inclure le joueur local s'il n'est pas dans le classement partagé
@@ -304,9 +332,9 @@ function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,user
 
         {/* ONGLETS */}
         <div style={{marginBottom:"24px"}}>
-          <div style={{display:"flex",gap:"4px",marginBottom:"12px"}}>
-            {[["scores","🏆 Classement"],["objectifs","🎯 Objectifs"],["stats","📊 Stats"]].map(([id,lbl])=>(
-              <button key={id} onClick={()=>setTab(id)} style={{flex:1,padding:"8px",border:"2px solid "+(tab===id?th.title:th.border),borderRadius:"10px",background:tab===id?(dark?"rgba(224,112,112,0.15)":"rgba(139,0,0,0.08)"):"transparent",color:tab===id?th.title:th.subtext,fontFamily:"Georgia,serif",fontSize:"12px",fontWeight:"bold",cursor:"pointer"}}>{lbl}</button>
+          <div style={{display:"flex",gap:"4px",marginBottom:"12px",flexWrap:"wrap"}}>
+            {[["scores","🏆 Classement"],["daily","📅 Journalier"],["objectifs","🎯 Objectifs"],["stats","📊 Stats"]].map(([id,lbl])=>(
+              <button key={id} onClick={()=>setTab(id)} style={{flex:1,minWidth:"80px",padding:"8px",border:"2px solid "+(tab===id?th.title:th.border),borderRadius:"10px",background:tab===id?(dark?"rgba(224,112,112,0.15)":"rgba(139,0,0,0.08)"):"transparent",color:tab===id?th.title:th.subtext,fontFamily:"Georgia,serif",fontSize:"12px",fontWeight:"bold",cursor:"pointer"}}>{lbl}</button>
             ))}
           </div>
 
@@ -333,7 +361,62 @@ function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,user
             </div>
           )}
 
-          {tab==="objectifs"&&(
+          {tab==="daily"&&(
+            <div>
+              {/* Défis du jour */}
+              <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"12px",padding:"12px 16px",marginBottom:"12px"}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px"}}>
+                  <div style={{fontSize:"13px",fontWeight:"bold",color:th.title}}>📅 Défis du jour</div>
+                  <div style={{fontSize:"10px",color:th.subtext}}>Reset à minuit</div>
+                </div>
+                {dailyObjectifs.map((o,i)=>{
+                  const done=(dailyDone[dailyKey]||[]).includes(o.id);
+                  const diffColor=o.diff==="easy"?"#27ae60":o.diff==="medium"?"#e67e22":"#c0392b";
+                  const diffLabel=o.diff==="easy"?"Facile":o.diff==="medium"?"Moyen":"Difficile";
+                  return(
+                    <div key={o.id} style={{display:"flex",alignItems:"center",gap:"10px",padding:"10px 0",borderTop:i>0?"1px solid "+th.border:"none"}}>
+                      <div style={{fontSize:"22px",flexShrink:0}}>{done?"✅":"🎯"}</div>
+                      <div style={{flex:1}}>
+                        <div style={{display:"flex",alignItems:"center",gap:"6px",marginBottom:"2px"}}>
+                          <span style={{fontSize:"12px",fontWeight:"bold",color:done?th.subtext:th.text,textDecoration:done?"line-through":"none"}}>{o.label}</span>
+                          <span style={{fontSize:"8px",background:diffColor,color:"#fff",borderRadius:"4px",padding:"1px 5px",fontWeight:"bold"}}>{diffLabel}</span>
+                        </div>
+                        <div style={{fontSize:"10px",color:th.subtext}}>{o.desc}</div>
+                      </div>
+                      <div style={{fontSize:"13px",fontWeight:"bold",color:done?th.subtext:th.gold,flexShrink:0}}>+{o.pts} pts</div>
+                    </div>
+                  );
+                })}
+                <div style={{borderTop:"1px solid "+th.border,marginTop:"10px",paddingTop:"8px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+                  <span style={{fontSize:"11px",color:th.subtext}}>{(dailyDone[dailyKey]||[]).length}/3 complétés</span>
+                  <span style={{fontSize:"13px",fontWeight:"bold",color:th.gold}}>🏆 {dailyPts} / 350 pts</span>
+                </div>
+              </div>
+
+              {/* Classement journalier */}
+              <div style={{background:dark?"rgba(39,174,96,0.08)":"rgba(39,174,96,0.05)",border:"1px solid #27ae60",borderRadius:"10px",padding:"8px 14px",marginBottom:"10px",fontSize:"11px",color:"#27ae60"}}>
+                🌐 Classement du jour — reset à minuit
+              </div>
+              <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"12px",overflow:"hidden"}}>
+                <div style={{display:"grid",gridTemplateColumns:"36px 1fr 80px",padding:"8px 10px",background:dark?"rgba(0,0,0,0.3)":"rgba(139,0,0,0.08)",fontSize:"9px",fontWeight:"bold",textTransform:"uppercase",letterSpacing:"1px",color:th.subtext}}>
+                  <span>#</span><span>Joueur</span><span style={{textAlign:"right"}}>Pts aujourd'hui</span>
+                </div>
+                {loadingDailyLB&&<div style={{padding:"20px",textAlign:"center",fontSize:"11px",color:th.subtext}}>⏳ Chargement...</div>}
+                {!loadingDailyLB&&dailyLB.length===0&&(
+                  <div style={{padding:"20px",textAlign:"center",fontSize:"11px",color:th.subtext,fontStyle:"italic"}}>
+                    Aucun défi complété aujourd'hui — soyez le premier !
+                  </div>
+                )}
+                {!loadingDailyLB&&dailyLB.map((s,i)=>(
+                  <div key={i} style={{display:"grid",gridTemplateColumns:"36px 1fr 80px",padding:"10px",borderTop:"1px solid "+th.border,alignItems:"center",background:i===0?(dark?"rgba(212,172,13,0.08)":"rgba(212,172,13,0.05)"):"transparent"}}>
+                    <span style={{fontSize:"16px"}}>{medals[i]||i+1}</span>
+                    <span style={{fontSize:"12px",fontWeight:"bold",color:i===0?th.gold:th.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.nom}</span>
+                    <span style={{fontSize:"12px",fontWeight:"bold",color:i===0?th.gold:th.accent,textAlign:"right"}}>{s.dailyPts||0}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
             <div>
               <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"12px",padding:"12px 16px",marginBottom:"10px"}}>
                 <div style={{display:"flex",justifyContent:"space-between",marginBottom:"6px"}}>
@@ -480,6 +563,36 @@ function GamePage({dark,setDark,onBack,progress,setProgress,soundOn,setSoundOn})
   function playAnim(id,from){setAnimCard({id,from});setTimeout(()=>setAnimCard(null),700);}
   function playDiscardAnim(id){setAnimDiscard(id);setTimeout(()=>setAnimDiscard(null),800);}
 
+  function checkDailyObjectifs(params,currentProgress){
+    const{winner,playerState,diff,cfCount,discardCount,raceIndex,attackTargets,kmLead,mancheCount}=params;
+    const key=getDailyKey();
+    const already=currentProgress.dailyDone?.[key]||[];
+    const newDone=[];
+    const check=(id,cond)=>{if(!already.includes(id)&&!newDone.includes(id)&&cond)newDone.push(id);};
+
+    check("d_win",winner==="player"||winner===true);
+    check("d_cf",cfCount>=1);
+    check("d_500km",(currentProgress.totalKm||0)+(playerState?.km||0)>=500);
+    check("d_200km",(playerState?.bornes||[]).includes("b200"));
+    check("d_2parades",(playerState?.paradesCount||0)>=2);
+    check("d_discard5",winner&&(discardCount||0)<5);
+    check("d_hard",(winner==="player"||winner===true)&&(diff==="hard"||diff==="hardcore"));
+    check("d_4bottes",(playerState?.bottes||[]).length>=4);
+    check("d_attack3",(attackTargets||[]).some(t=>(attackTargets.filter(x=>x===t).length)>=3));
+    check("d_first_win",(raceIndex===0||raceIndex===1)&&(winner==="player"||winner===true));
+    check("d_2targets",[...new Set(attackTargets||[])].length>=2);
+    check("d_200lead",(kmLead||0)>=200);
+    check("d_2wins",(currentProgress.dailyWins||0)+(winner==="player"||winner===true?1:0)>=2);
+    check("d_2cf_race",cfCount>=2);
+    check("d_no_block",(winner==="player"||winner===true)&&!(playerState?.wasAttacked));
+    check("d_fast_champ",(mancheCount||0)<=4&&(winner==="player"||winner===true));
+
+    if(newDone.length===0)return null;
+    const addedPts=newDone.reduce((s,id)=>{const o=DAILY_POOL.find(x=>x.id===id);return s+(o?o.pts:0);},0);
+    const updated={...currentProgress.dailyDone,[key]:[...already,...newDone]};
+    return{newDone,addedPts,dailyDone:updated};
+  }
+
   function checkObjectifs(params){
     const{winner,playerState,aiState,diff,wins,manchesPlayed,cfCount}=params;
     const newUnlocked=[];const cur=progress.unlocked;
@@ -517,6 +630,14 @@ function GamePage({dark,setDark,onBack,progress,setProgress,soundOn,setSoundOn})
     setMancheResult({playerScore:ps,aiScore:as,winner:w,total:nt});
     setProgress(p=>({...p,manchesPlayed:newManchesPlayed,wins:newWins,totalKm:newTotalKm,bestMancheScore:newBestManche,winStreak:newStreak,triedDifficulties:[...triedDiffs]}));
     checkObjectifs({winner:w,playerState:{...s.player,startedLastMancheAtZero:lastMancheZero},aiState:s.ai,diff:difficulty,wins:newWins,manchesPlayed:newManchesPlayed,cfCount:mancheCFCount,streak:newStreak,mancheCount:manche,discardCount,attackCount,attackTypes,nbBottes200:partieNb200});
+    // Objectifs journaliers
+    setProgress(p=>{
+      const daily=checkDailyObjectifs({winner:w,playerState:{...s.player},diff:difficulty,cfCount:mancheCFCount,discardCount,raceIndex:manche,attackTargets:[],kmLead:s.player.km-(s.ai?.km||0),mancheCount:manche},p);
+      if(!daily)return p;
+      const np={...p,dailyDone:daily.dailyDone,objPts:(p.objPts||0)+daily.addedPts,dailyWins:(p.dailyWins||0)+(w==="player"?1:0)};
+      if(user)storageSavePlayer(user.id,pseudo,np);
+      return np;
+    });
     setLastMancheZero(s.player.km===0);
     if(nt.player>=SCORE_CIBLE||nt.ai>=SCORE_CIBLE){const winner=nt.player>=nt.ai?"player":"ai";const newHcu=!hardcoreUnlocked&&winner==="player";if(newHcu)setHardcoreUnlocked(true);setGameOver({winner,total:nt,newHardcore:newHcu});setTimeout(()=>snd(winner==="player"?"win":"lose"),300);}
     return true;
@@ -658,7 +779,42 @@ function GamePage({dark,setDark,onBack,progress,setProgress,soundOn,setSoundOn})
 
 // ── APP ────────────────────────────────────────────────────────────────────────
 // ── PSEUDO MODAL ─────────────────────────────────────────────────────────────
-// ── AVATARS ────────────────────────────────────────────────────────────────────
+// ── OBJECTIFS JOURNALIERS ─────────────────────────────────────────────────────
+const DAILY_POOL=[
+  // Faciles (50 pts)
+  {id:"d_win",label:"Vainqueur du jour",desc:"Gagner une course aujourd'hui",pts:50,diff:"easy"},
+  {id:"d_cf",label:"Coup-Fourré !",desc:"Jouer un Coup-Fourré aujourd'hui",pts:50,diff:"easy"},
+  {id:"d_500km",label:"500 km parcourus",desc:"Parcourir 500 km au total aujourd'hui",pts:50,diff:"easy"},
+  {id:"d_200km",label:"Turbo !",desc:"Jouer une carte 200 km dans une course",pts:50,diff:"easy"},
+  {id:"d_2parades",label:"Bon défenseur",desc:"Jouer 2 parades dans une même course",pts:50,diff:"easy"},
+  {id:"d_discard5",label:"Sélectif",desc:"Défausser moins de 5 cartes dans une course gagnée",pts:50,diff:"easy"},
+  // Moyens (100 pts)
+  {id:"d_hard",label:"Mode difficile",desc:"Gagner en mode Difficile ou Hardcore",pts:100,diff:"medium"},
+  {id:"d_4bottes",label:"Arsenal",desc:"Jouer les 4 bottes dans une même course",pts:100,diff:"medium"},
+  {id:"d_attack3",label:"Harcèlement",desc:"Attaquer le même adversaire 3 fois dans une course",pts:100,diff:"medium"},
+  {id:"d_first_win",label:"Pole Position",desc:"Commencer une course en premier et la gagner",pts:100,diff:"medium"},
+  {id:"d_2targets",label:"Multi-cibles",desc:"Attaquer 2 adversaires différents dans une course (4J)",pts:100,diff:"medium"},
+  {id:"d_200lead",label:"Écrasant",desc:"Terminer une course avec 200+ km d'avance sur le 2ème",pts:100,diff:"medium"},
+  // Difficiles (200 pts)
+  {id:"d_2wins",label:"Doublé",desc:"Gagner 2 courses dans la journée",pts:200,diff:"hard"},
+  {id:"d_2cf_race",label:"Double Fourré",desc:"Réussir 2 CF dans la même course",pts:200,diff:"hard"},
+  {id:"d_no_block",label:"Route libre",desc:"Gagner une course sans jamais être bloqué",pts:200,diff:"hard"},
+  {id:"d_fast_champ",label:"Champion express",desc:"Terminer un championnat en moins de 4 courses",pts:200,diff:"hard"},
+];
+
+function getDailyObjectifs(){
+  // Seed basé sur le jour (minuit UTC) — même défis pour tous
+  const day=Math.floor(Date.now()/86400000);
+  const seeded=(n)=>{let x=Math.sin(day*9301+n*49297+233)*100003;return x-Math.floor(x);};
+  const easy=DAILY_POOL.filter(o=>o.diff==="easy");
+  const medium=DAILY_POOL.filter(o=>o.diff==="medium");
+  const hard=DAILY_POOL.filter(o=>o.diff==="hard");
+  const pick=(arr,seed)=>arr[Math.floor(seeded(seed)*arr.length)];
+  return[pick(easy,1),pick(medium,2),pick(hard,3)];
+}
+
+function getDailyKey(){return`daily_${Math.floor(Date.now()/86400000)}`;}
+
 const AVATARS=[
   {emoji:"🧑", label:"Pilote",       unlock:null},         // dès le début
   {emoji:"🏎️", label:"Première victoire", unlock:"first_win"},
@@ -837,7 +993,18 @@ export default function App(){
   );
 
   if(screen==="game4j"){
-    return <GamePage4J dark={dark} setDark={setDark} onBack={()=>setScreen("home")} playerName={pseudo||"Joueur"} difficulty="normal" soundOn={soundOn} setSoundOn={setSoundOn} hardcoreUnlocked={progress.unlocked.includes("win_hard")}/>;
+    return <GamePage4J dark={dark} setDark={setDark} onBack={()=>setScreen("home")} playerName={pseudo||"Joueur"} difficulty="normal" soundOn={soundOn} setSoundOn={setSoundOn} hardcoreUnlocked={progress.unlocked.includes("win_hard")}
+      progress={progress}
+      onDailyProgress={(params)=>{
+        setProgress(p=>{
+          const daily=checkDailyObjectifs(params,p);
+          if(!daily)return p;
+          const np={...p,dailyDone:daily.dailyDone,objPts:(p.objPts||0)+daily.addedPts,dailyWins:(p.dailyWins||0)+(params.winner?1:0)};
+          if(user)storageSavePlayer(user.id,pseudo,np);
+          return np;
+        });
+      }}
+    />;
   }
 
   if(screen==="game"&&gameProgress){
