@@ -9,7 +9,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.26";
+const VERSION="1.5.27";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -318,6 +318,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     const scores={};
     playerOrder.forEach(p=>{scores[p.name]=0;});
     if(Object.keys(totalScores).length===0)setTotalScores(scores);
+    aiRunningRef.current=false;
     setTimeout(()=>{
       setDrawn(false);
       setPhase(playerOrder[0].isHuman ? "play" : "ai_turn");
@@ -637,15 +638,15 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     const d=buildDeck();
     const winnerName=mancheOver?.winner;
     const winnerIdx=players.findIndex(p=>p.name===winnerName);
-    // Le gagnant commence la prochaine manche
     const newOrder=[...players.slice(winnerIdx),...players.slice(0,winnerIdx)];
     const ps=newOrder.map(p=>mkPlayer(p.name,p.isHuman,d.splice(0,6)));
     newOrder.forEach((p,i)=>{ps[i].emoji=p.emoji;});
+    aiRunningRef.current=false; // reset guard IA
     setPlayers(ps);setDeck(d);setDiscard([]);
-    setTurnIdx(0);setPhase("play");setDrawn(false);
+    setTurnIdx(0);setTurnCount(c=>c+1);setDrawn(false);
     setSelected(null);setMancheOver(null);setManche(m=>m+1);
-    setLog([{text:`Manche ${manche+1} — ${winnerName} commence !`,who:"system"}]);
-    if(!ps[0].isHuman)setPhase("ai_turn");
+    setLog([{text:`Course ${manche+1} — ${winnerName} commence !`,who:"system"}]);
+    setPhase(ps[0].isHuman?"play":"ai_turn");
   }
 
   function renderPlayerCard(p,idx,isCurrent){
