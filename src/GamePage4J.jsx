@@ -607,10 +607,21 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
 
               {/* Pioche + actions */}
               <div style={{display:"flex",gap:"8px",marginTop:"8px",alignItems:"center",flexWrap:"wrap"}}>
-                <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"8px",padding:"6px 10px",textAlign:"center"}}>
-                  <div style={{fontSize:"16px"}}>🂠</div>
-                  <div style={{fontSize:"12px",fontWeight:"bold"}}>{deck.length}</div>
-                  {mustDraw&&<button onClick={handleDraw} style={{...th.btn("#1a5276"),marginTop:"4px",padding:"4px 8px",fontSize:"10px"}}>Piocher</button>}
+                <div style={{display:"flex",gap:"6px"}}>
+                  <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"8px",padding:"6px 10px",textAlign:"center"}}>
+                    <div style={{fontSize:"16px"}}>🂠</div>
+                    <div style={{fontSize:"12px",fontWeight:"bold"}}>{deck.length}</div>
+                    <div style={{fontSize:"9px",color:th.sub}}>pioche</div>
+                    {mustDraw&&<button onClick={handleDraw} style={{...th.btn("#1a5276"),marginTop:"4px",padding:"4px 8px",fontSize:"10px"}}>Piocher</button>}
+                  </div>
+                  <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"8px",padding:"6px 10px",textAlign:"center",minWidth:"64px"}}>
+                    {discard.length>0
+                      ?<><div style={{fontSize:"14px"}}>{cEmoji(discard[discard.length-1])}</div>
+                        <div style={{fontSize:"8px",fontWeight:"bold",color:cColor(discard[discard.length-1],dark),lineHeight:1.2}}>{getCard(discard[discard.length-1])?.label}</div></>
+                      :<div style={{fontSize:"16px",opacity:0.3}}>🂠</div>}
+                    <div style={{fontSize:"12px",fontWeight:"bold"}}>{discard.length}</div>
+                    <div style={{fontSize:"9px",color:th.sub}}>défausse</div>
+                  </div>
                 </div>
 
                 {drawn&&!discardMode&&selected&&(targetIdx===null||targetIdx>=0)&&validCardIds.includes(selected)&&targetIdx!==-1&&(
