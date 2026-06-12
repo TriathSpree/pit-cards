@@ -142,6 +142,7 @@ function playSound(type,on){if(!on)return;try{const ctx=new(window.AudioContext|
 // ── HOME PAGE ──────────────────────────────────────────────────────────────────
 function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,userButton,pseudo,onChangePseudo}){
   const [tab,setTab]=useState("scores");
+  const [selectedMode,setSelectedMode]=useState("solo");
   const [nom,setNom]=useState(progress.playerName||"");
   const [leaderboard,setLeaderboard]=useState([]);
   const [loadingLB,setLoadingLB]=useState(false);
@@ -205,7 +206,7 @@ function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,user
           <h1 style={{fontSize:"clamp(22px,5vw,32px)",fontWeight:"bold",color:th.title,letterSpacing:"4px",textTransform:"uppercase",margin:"0 0 6px 0"}}>{GAME_NAME}</h1>
           <p style={{fontSize:"13px",color:th.subtext,margin:"0 0 16px 0"}}>Le jeu de cartes de course — Soyez le premier à parcourir 1000 km !</p>
           <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:"10px"}}>
-            <button onClick={onPlay} style={{background:"linear-gradient(135deg,#8B0000,#c0392b)",color:"#fff",border:"none",borderRadius:"12px",padding:"14px 40px",cursor:"pointer",fontWeight:"bold",letterSpacing:"2px",fontFamily:"Georgia,serif",fontSize:"16px",textTransform:"uppercase",boxShadow:"0 4px 16px rgba(139,0,0,0.4)"}}>▶️ Jouer !</button>
+            <button onClick={()=>selectedMode==="4j"?onPlay4J&&onPlay4J():onPlay()} style={{background:"linear-gradient(135deg,#8B0000,#c0392b)",color:"#fff",border:"none",borderRadius:"12px",padding:"14px 40px",cursor:"pointer",fontWeight:"bold",letterSpacing:"2px",fontFamily:"Georgia,serif",fontSize:"16px",textTransform:"uppercase",boxShadow:"0 4px 16px rgba(139,0,0,0.4)"}}>▶️ Jouer !</button>
             <div style={{fontSize:"9px",color:th.subtext,opacity:0.7}}>☁️ Progression & classement synchronisés automatiquement</div>
           </div>
         </div>
@@ -214,7 +215,7 @@ function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,user
         <div style={{marginBottom:"24px"}}>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:"10px"}}>
             {modes.map(m=>(
-              <div key={m.id} onClick={m.active&&m.id!=="solo"?()=>onPlay4J&&onPlay4J():undefined} style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"12px",padding:"16px",textAlign:"center",opacity:m.active?1:0.55,position:"relative",cursor:m.active&&m.id!=="solo"?"pointer":"default"}}>
+              <div key={m.id} onClick={m.active?()=>setSelectedMode(m.id):undefined} style={{background:selectedMode===m.id?(dark?"rgba(139,0,0,0.2)":"rgba(139,0,0,0.08)"):th.cardBg,border:selectedMode===m.id?"3px solid "+(dark?"#e07070":"#8B0000"):"2px solid "+th.border,borderRadius:"12px",padding:"16px",textAlign:"center",opacity:m.active?1:0.45,position:"relative",cursor:m.active?"pointer":"not-allowed",transition:"all 0.2s"}}>
                 {!m.active&&<div style={{position:"absolute",top:"8px",right:"8px",background:dark?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.08)",borderRadius:"6px",padding:"2px 6px",fontSize:"8px",fontWeight:"bold",color:th.subtext}}>BIENTÔT</div>}
                 <div style={{fontSize:"28px",marginBottom:"6px"}}>{m.emoji}</div>
                 <div style={{fontSize:"12px",fontWeight:"bold",color:m.active?th.title:th.subtext,marginBottom:"3px"}}>{m.label}</div>
