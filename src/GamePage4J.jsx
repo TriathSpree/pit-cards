@@ -9,7 +9,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.25";
+const VERSION="1.5.26";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -110,7 +110,11 @@ function aiChoose(players,actorIdx,diff){
   const bornes=plays.filter(p=>p.action==="borne").sort((a,b)=>getCard(b.cardId).km-getCard(a.cardId).km);
   const attaques=plays.filter(p=>p.action==="attaque");
   // Attaque le joueur le plus avancé
-  const bestAttaque=attaques.sort((a,b)=>players[b.targetIdx].km-players[a.targetIdx].km)[0];
+  const bestAttaque=attaques.sort((a,b)=>{
+    const kmDiff=players[b.targetIdx].km-players[a.targetIdx].km;
+    if(kmDiff!==0)return kmDiff;
+    return players[b.targetIdx].bottes.length-players[a.targetIdx].bottes.length;
+  })[0];
   const botteAny=plays.find(p=>p.action==="botte");
   if(diff==="hardcore")return botteUrgent||bestAttaque||parade||botteAny||bornes[0]||null;
   return botteUrgent||parade||bestAttaque||bornes[0]||botteAny||null;
