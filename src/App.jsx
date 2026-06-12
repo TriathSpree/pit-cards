@@ -677,6 +677,20 @@ export default function App(){
     );
   }
 
+  // Sécurité : si pas connecté, affiche la page de login
+  if(!user) return(
+    <div style={{display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",height:"100vh",background:"linear-gradient(135deg,#fdf6e3,#fae8c0)",fontFamily:"Georgia,serif"}}>
+      <div style={{fontSize:"64px",marginBottom:"16px"}}>🏁</div>
+      <h1 style={{fontSize:"32px",fontWeight:"bold",color:"#8B0000",letterSpacing:"4px",marginBottom:"8px"}}>PIT CARDS</h1>
+      <p style={{color:"#5d4037",marginBottom:"24px"}}>Le jeu de cartes de course</p>
+      <SignInButton mode="modal">
+        <button style={{background:"linear-gradient(135deg,#8B0000,#c0392b)",color:"#fff",border:"none",borderRadius:"12px",padding:"14px 36px",cursor:"pointer",fontWeight:"bold",fontSize:"16px",fontFamily:"Georgia,serif",letterSpacing:"2px",textTransform:"uppercase",boxShadow:"0 4px 16px rgba(139,0,0,0.4)"}}>
+          🚗 Se connecter
+        </button>
+      </SignInButton>
+    </div>
+  );
+
   return(
     <>
       {showPseudoModal&&<PseudoModal dark={dark} onSave={savePseudo} canClose={!!pseudo}/>}
