@@ -576,15 +576,17 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
                     <div key={id} onClick={()=>handleCardClick(id)} style={{
                       background:valid?cColor(id,dark):dark?"#3a3a4a":"#9e9e9e",
                       color:"#fff",border:selected===id?"3px solid #FFD700":"2px solid rgba(255,255,255,0.2)",
-                      borderRadius:"8px",padding:"4px",cursor:valid?"pointer":"not-allowed",
-                      width:"64px",height:"72px",display:"flex",flexDirection:"column",alignItems:"center",
+                      borderRadius:"8px",padding:"4px 2px",cursor:valid?"pointer":"not-allowed",
+                      width:"72px",minWidth:"72px",maxWidth:"72px",height:"80px",
+                      display:"flex",flexDirection:"column",alignItems:"center",
                       justifyContent:"center",textAlign:"center",opacity:valid?1:0.45,
                       transform:selected===id?"translateY(-4px)":"none",transition:"transform 0.15s",
-                      boxShadow:selected===id?"0 4px 12px rgba(255,215,0,0.4)":"none"
+                      boxShadow:selected===id?"0 4px 12px rgba(255,215,0,0.4)":"none",
+                      wordBreak:"break-word",lineHeight:1.2
                     }}>
-                      <div style={{fontSize:"14px",marginBottom:"1px"}}>{cEmoji(id)}</div>
-                      <div style={{fontSize:"8px",lineHeight:1.2}}>{c?.label}</div>
-                      {c?.km&&<div style={{fontSize:"11px",fontWeight:"bold"}}>{c.km}</div>}
+                      <div style={{fontSize:"15px",marginBottom:"1px"}}>{cEmoji(id)}</div>
+                      <div style={{fontSize:"9px",lineHeight:1.2}}>{c?.label}</div>
+                      {c?.km&&<div style={{fontSize:"12px",fontWeight:"bold"}}>{c.km}</div>}
                     </div>
                   );
                 })}
@@ -607,20 +609,20 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
 
               {/* Pioche + actions */}
               <div style={{display:"flex",gap:"8px",marginTop:"8px",alignItems:"center",flexWrap:"wrap"}}>
-                <div style={{display:"flex",gap:"6px"}}>
-                  <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"8px",padding:"6px 10px",textAlign:"center"}}>
-                    <div style={{fontSize:"16px"}}>🂠</div>
-                    <div style={{fontSize:"12px",fontWeight:"bold"}}>{deck.length}</div>
-                    <div style={{fontSize:"9px",color:th.sub}}>pioche</div>
-                    {mustDraw&&<button onClick={handleDraw} style={{...th.btn("#1a5276"),marginTop:"4px",padding:"4px 8px",fontSize:"10px"}}>Piocher</button>}
+                <div style={{display:"flex",gap:"6px",flexShrink:0}}>
+                  <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"8px",padding:"5px 8px",textAlign:"center",minWidth:"60px"}}>
+                    <div style={{fontSize:"20px"}}>🂠</div>
+                    <div style={{fontSize:"13px",fontWeight:"bold",color:th.text}}>{deck.length}</div>
+                    <div style={{fontSize:"8px",color:th.sub}}>pioche</div>
+                    {mustDraw&&<button onClick={handleDraw} style={{...th.btn("#1a5276"),marginTop:"4px",padding:"3px 5px",fontSize:"9px"}}>Piocher</button>}
                   </div>
-                  <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"8px",padding:"6px 10px",textAlign:"center",minWidth:"64px"}}>
+                  <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"8px",padding:"5px 8px",textAlign:"center",minWidth:"60px",display:"flex",flexDirection:"column",justifyContent:"center"}}>
                     {discard.length>0
-                      ?<><div style={{fontSize:"14px"}}>{cEmoji(discard[discard.length-1])}</div>
-                        <div style={{fontSize:"8px",fontWeight:"bold",color:cColor(discard[discard.length-1],dark),lineHeight:1.2}}>{getCard(discard[discard.length-1])?.label}</div></>
-                      :<div style={{fontSize:"16px",opacity:0.3}}>🂠</div>}
-                    <div style={{fontSize:"12px",fontWeight:"bold"}}>{discard.length}</div>
-                    <div style={{fontSize:"9px",color:th.sub}}>défausse</div>
+                      ?<><div style={{fontSize:"18px"}}>{cEmoji(discard[discard.length-1])}</div>
+                        <div style={{fontSize:"7px",fontWeight:"bold",color:cColor(discard[discard.length-1],dark),lineHeight:1.2}}>{getCard(discard[discard.length-1])?.label}</div></>
+                      :<div style={{fontSize:"20px",opacity:0.3}}>🂠</div>}
+                    <div style={{fontSize:"13px",fontWeight:"bold",color:th.text}}>{discard.length}</div>
+                    <div style={{fontSize:"8px",color:th.sub}}>défausse</div>
                   </div>
                 </div>
 
