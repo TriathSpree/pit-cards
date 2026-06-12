@@ -386,10 +386,11 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
 
   function handleCoupFourre(accept){
     if(!coupFourreData)return;
-    const{attackerIdx,defenderIdx,attaqueId,botteId,deckAtTime,discardAtTime,psAtTime}=coupFourreData;
-    let ps=JSON.parse(JSON.stringify(psAtTime));
-    let d=[...deckAtTime];
-    let disc=[...discardAtTime];
+    const{attackerIdx,defenderIdx,attaqueId,botteId}=coupFourreData;
+    // Utilise l'état courant (pas psAtTime qui peut être stale)
+    let ps=JSON.parse(JSON.stringify(playersRef.current));
+    let d=[...deckRef.current];
+    let disc=[...discardRef.current];
 
     if(accept){
       // Joue la botte
