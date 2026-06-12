@@ -501,7 +501,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
       // Choisit une action
       const play=aiChoose(ps,idx,difficulty);
       if(play){
-        addLog(`${ps[idx].name} joue ${getCard(play.cardId)?.label}${play.targetIdx!==idx?" sur "+ps[play.targetIdx].name:""}`,ps[idx].name);
+        addLog(`${ps[idx].name} joue ${cEmoji(play.cardId)} ${getCard(play.cardId)?.label}${play.targetIdx!==idx?" sur "+ps[play.targetIdx].name:""}`,ps[idx].name);
         ps=applyPlay(ps,idx,play.cardId,play.action,play.targetIdx);
         setAnimCard({id:play.cardId,from:"ai"});
         setTimeout(()=>setAnimCard(null),600);
@@ -521,7 +521,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
           hand.splice(hand.indexOf(td),1);
           disc=[...disc,td];
           ps[idx]={...ps[idx],hand};
-          addLog(`${ps[idx].name} défausse ${getCard(td)?.label}`,ps[idx].name);
+          addLog(`${ps[idx].name} défausse ${cEmoji(td)} ${getCard(td)?.label}`,ps[idx].name);
         }
       }
 
@@ -557,7 +557,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
   }
 
   function handlePlay(){
-    if(!selected||!drawn)return;
+    if(!selected||!drawn||phase!=="play")return;
     const validPlays=getValidPlays().filter(p=>p.cardId===selected);
     if(validPlays.length===0)return;
 
@@ -575,7 +575,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     if(!play)return;
 
     let ps=applyPlay(players,turnIdx,play.cardId,play.action,play.targetIdx);
-    addLog(`${players[turnIdx].name} joue ${getCard(play.cardId)?.label}${play.action==="attaque"?" sur "+players[play.targetIdx].name:""}`,players[turnIdx].name);
+    addLog(`${players[turnIdx].name} joue ${cEmoji(play.cardId)} ${getCard(play.cardId)?.label}${play.action==="attaque"?" sur "+players[play.targetIdx].name:""}`,players[turnIdx].name);
     setAnimCard({id:play.cardId,from:"player"});
     setTimeout(()=>setAnimCard(null),600);
     setSelected(null);setTargetIdx(null);
@@ -602,7 +602,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     });
     setDiscard([...discard,id]);
     setPlayers(ps);
-    addLog(`${players[turnIdx].name} défausse ${getCard(id)?.label}`,players[turnIdx].name);
+    addLog(`${players[turnIdx].name} défausse ${cEmoji(id)} ${getCard(id)?.label}`,players[turnIdx].name);
     setSelected(null);setDiscardMode(false);
     if(!checkMancheEnd(ps)){
       nextTurn(ps,turnIdx,deck,discard);
