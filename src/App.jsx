@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useUser, SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/clerk-react";
 
 // ── AIRTABLE via API Routes Vercel ───────────────────────────────────────────
 
