@@ -1,5 +1,19 @@
 import { useState, useEffect, useRef } from "react";
 
+// ── SON (Web Audio API) ───────────────────────────────────────────────────────
+function playSound(type,soundOn){
+  if(!soundOn)return;
+  try{
+    const ctx=new(window.AudioContext||window.webkitAudioContext)();
+    const o=ctx.createOscillator();
+    const g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    if(type==="attack"){o.frequency.setValueAtTime(180,ctx.currentTime);o.frequency.exponentialRampToValueAtTime(80,ctx.currentTime+0.3);g.gain.setValueAtTime(0.3,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.3);o.start();o.stop(ctx.currentTime+0.3);}
+    else if(type==="win"){o.frequency.setValueAtTime(523,ctx.currentTime);o.frequency.setValueAtTime(659,ctx.currentTime+0.1);o.frequency.setValueAtTime(784,ctx.currentTime+0.2);g.gain.setValueAtTime(0.2,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.5);o.start();o.stop(ctx.currentTime+0.5);}
+    else if(type==="draw"){o.frequency.setValueAtTime(440,ctx.currentTime);g.gain.setValueAtTime(0.1,ctx.currentTime);g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.1);o.start();o.stop(ctx.currentTime+0.1);}
+  }catch(e){}
+}
+
 // ── CONSTANTES (partagées) ────────────────────────────────────────────────────
 const BORNES=[{id:"b25",type:"borne",km:25,label:"25 km"},{id:"b50",type:"borne",km:50,label:"50 km"},{id:"b75",type:"borne",km:75,label:"75 km"},{id:"b100",type:"borne",km:100,label:"100 km"},{id:"b200",type:"borne",km:200,label:"200 km"}];
 const ATTAQUES=[{id:"accident",type:"attaque",label:"Collision"},{id:"panne",type:"attaque",label:"Manque de carburant"},{id:"crevaison",type:"attaque",label:"Pneus usés"},{id:"feu_rouge",type:"attaque",label:"Drapeau rouge"},{id:"limite",type:"attaque",label:"Drapeau jaune"}];
@@ -9,7 +23,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.32";
+const VERSION="1.5.33";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -282,7 +296,9 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
   const [gameOver,setGameOver]=useState(null);
   const [animCard,setAnimCard]=useState(null);
   const [coupFourreData,setCoupFourreData]=useState(null);
-  const [cfNotif,setCfNotif]=useState(null); // {defenderName, botteLabel, attackerName}
+  const [cfNotif,setCfNotif]=useState(null);
+  const [confetti,setConfetti]=useState(null); // {name} du vainqueur de course
+  const [pulse,setPulse]=useState(false); // clignotement tour humain
 
   const th={
     bg:dark?"linear-gradient(135deg,#1a1a2e,#16213e)":"linear-gradient(135deg,#fdf6e3,#fae8c0)",
@@ -366,6 +382,9 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     ps.forEach(p=>{newTotal[p.name]=(newTotal[p.name]||0)+scores[p.name];});
     setTotalScores(newTotal);
     setMancheOver({winner:winnerName,scores,total:newTotal});
+    setConfetti({name:winnerName});
+    playSound("win",soundOn);
+    setTimeout(()=>setConfetti(null),3500);
     // Vérifie si quelqu'un a atteint SCORE_CIBLE
     const gameWinner=Object.entries(newTotal).sort((a,b)=>b[1]-a[1])[0];
     if(gameWinner[1]>=SCORE_CIBLE){
@@ -495,7 +514,19 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
   useEffect(()=>{playersRef.current=players;},[players]);
   useEffect(()=>{deckRef.current=deck;},[deck]);
   useEffect(()=>{discardRef.current=discard;},[discard]);
-  useEffect(()=>{turnIdxRef.current=turnIdx;},[turnIdx]);
+  // Pulse clignotant quand c'est le tour humain
+  useEffect(()=>{
+    if(!isHumanTurn||!mustDraw)return;
+    const iv=setInterval(()=>setPulse(p=>!p),600);
+    return()=>{clearInterval(iv);setPulse(false);};
+  },[isHumanTurn,mustDraw]);
+
+  // Son attaque reçue par le joueur humain
+  useEffect(()=>{
+    if(!players)return;
+    const human=players[humanIdx];
+    if(human?.wasAttacked){playSound("attack",soundOn);}
+  },[players]);
 
   // turnCount change à chaque nextTurn — garantit drawn:false même si turnIdx inchangé
   useEffect(()=>{
@@ -689,6 +720,8 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
             {p.bottes.map(b=><div key={b} style={{background:cColor(b,dark),color:"#fff",borderRadius:"6px",padding:"2px 5px",fontSize:"9px",fontWeight:"bold",display:"flex",alignItems:"center",gap:"2px"}}><span>{cEmoji(b)}</span><span style={{lineHeight:1.2}}>{getCard(b)?.label}</span></div>)}
           </div>
         )}
+        {/* Compteur 200km */}
+        {(()=>{const nb200=(p.bornes||[]).filter(b=>b==="b200").length;return nb200>0?<div style={{fontSize:"9px",color:th.sub}}>✈️ ×{nb200}/2</div>:null;})()}
       </div>
     );
   }
@@ -706,7 +739,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
       <div style={{display:"flex",gap:"6px",marginBottom:"8px",alignItems:"center"}}>
         <button onClick={onBack} style={{...th.btn("#445566"),padding:"4px 10px",fontSize:"12px"}}>← Accueil</button>
         <div style={{fontSize:"9px",color:th.sub,opacity:0.7,whiteSpace:"nowrap"}}>v{VERSION}</div>
-        <div style={{flex:1,textAlign:"center",padding:"5px",background:dark?"rgba(224,112,112,0.15)":"rgba(139,0,0,0.1)",borderRadius:"8px",fontWeight:"bold",fontSize:"12px"}}>
+        <div style={{flex:1,textAlign:"center",padding:"5px",background:mustDraw?(pulse?(dark?"rgba(139,0,0,0.4)":"rgba(139,0,0,0.2)"):(dark?"rgba(224,112,112,0.15)":"rgba(139,0,0,0.1)")):(dark?"rgba(224,112,112,0.15)":"rgba(139,0,0,0.1)"),borderRadius:"8px",fontWeight:"bold",fontSize:"12px",transition:"background 0.3s"}}>
           {!players?"🎲 Tirage au sort...":
            phase==="ai_turn"?`⏳ ${players[turnIdx]?.name} réfléchit...`:
            mustDraw?"👆 Piochez une carte":
@@ -899,6 +932,30 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
             <strong>{cfNotif.defenderName}</strong> neutralise l'attaque de <strong>{cfNotif.attackerName}</strong><br/>avec <strong>{cfNotif.botteLabel}</strong> !
           </div>
           <button onClick={()=>setCfNotif(null)} style={{...th.btn("#d4ac0d"),fontSize:"11px",padding:"5px 14px"}}>OK</button>
+        </div>
+      )}
+
+      {/* CONFETTIS fin de course */}
+      {confetti&&(
+        <div style={{position:"fixed",top:0,left:0,right:0,bottom:0,pointerEvents:"none",zIndex:85,overflow:"hidden"}}>
+          {[...Array(30)].map((_,i)=>(
+            <div key={i} style={{
+              position:"absolute",
+              left:Math.random()*100+"%",
+              top:"-20px",
+              width:Math.random()*10+6+"px",
+              height:Math.random()*10+6+"px",
+              background:["#FFD700","#e63946","#1a5276","#27ae60","#e67e22","#8B0000"][i%6],
+              borderRadius:i%3===0?"50%":"2px",
+              animation:`confettiFall ${Math.random()*2+1.5}s linear ${Math.random()*0.5}s forwards`,
+              transform:`rotate(${Math.random()*360}deg)`
+            }}/>
+          ))}
+          <style>{`@keyframes confettiFall{0%{top:-20px;opacity:1;transform:rotate(0deg)}100%{top:110vh;opacity:0.3;transform:rotate(720deg)}}`}</style>
+          <div style={{position:"absolute",top:"40%",left:"50%",transform:"translateX(-50%)",background:"rgba(0,0,0,0.7)",borderRadius:"16px",padding:"16px 28px",textAlign:"center"}}>
+            <div style={{fontSize:"32px",marginBottom:"4px"}}>🏁</div>
+            <div style={{fontSize:"18px",fontWeight:"bold",color:"#FFD700",fontFamily:"Georgia,serif"}}>{confetti.name} remporte la course !</div>
+          </div>
         </div>
       )}
 
