@@ -495,7 +495,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
 
       // Pioche
       const{card,deck:nd,discard:ndisc}=drawForPlayer(idx,d,disc);
-      if(card){ps[idx]={...ps[idx],hand:[...ps[idx].hand,card]};}
+      if(card){ps[idx]={...ps[idx],hand:[...ps[idx].hand,card]};addLog(`${ps[idx].name} pioche une carte`,ps[idx].name);}
       d=nd;disc=ndisc;
 
       // Choisit une action
@@ -541,6 +541,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     const{card,deck:nd,discard:ndisc}=drawForPlayer(turnIdx,deck,discard);
     if(!card){setDrawn(true);return;}
     const ps=players.map((p,i)=>i===turnIdx?{...p,hand:[...p.hand,card]}:p);
+    addLog(`${players[turnIdx].name} pioche une carte`,players[turnIdx].name);
     setPlayers(ps);setDeck(nd);setDiscard(ndisc);setDrawn(true);
   }
 
