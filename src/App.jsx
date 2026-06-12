@@ -70,7 +70,7 @@ const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const TOTAL_QTY={accident:3,panne:3,crevaison:3,feu_rouge:5,limite:4,reparations:6,essence:6,roue_secours:6,feu_vert:14,fin_limite:6,as_volant:1,citerne:1,increvable:1,prioritaire:1,b25:10,b50:10,b75:10,b100:12,b200:4};
 const SCORE_CIBLE=5000;
-const VERSION="1.5.34";
+const VERSION="1.5.35";
 const GAME_NAME="Pit Cards";
 
 const OBJECTIFS=[
@@ -316,17 +316,16 @@ function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,user
                 🌐 Classement global — partagé entre tous les joueurs de cet artifact
               </div>
               <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"12px",overflow:"hidden"}}>
-                <div style={{display:"grid",gridTemplateColumns:"44px 1fr 90px 80px 60px",padding:"8px 14px",background:dark?"rgba(0,0,0,0.3)":"rgba(139,0,0,0.08)",fontSize:"9px",fontWeight:"bold",textTransform:"uppercase",letterSpacing:"1px",color:th.subtext}}>
-                  <span>#</span><span>Joueur</span><span style={{textAlign:"right"}}>Pts</span><span style={{textAlign:"right"}}>Courses</span><span style={{textAlign:"right"}}>Wins</span>
+                <div style={{display:"grid",gridTemplateColumns:"36px 1fr 70px 60px",padding:"8px 10px",background:dark?"rgba(0,0,0,0.3)":"rgba(139,0,0,0.08)",fontSize:"9px",fontWeight:"bold",textTransform:"uppercase",letterSpacing:"1px",color:th.subtext}}>
+                  <span>#</span><span>Joueur</span><span style={{textAlign:"right"}}>Pts</span><span style={{textAlign:"right"}}>Wins</span>
                 </div>
                 {loadingLB&&<div style={{padding:"20px",textAlign:"center",fontSize:"11px",color:th.subtext}}>⏳ Chargement...</div>}
                 {!loadingLB&&displayedScores.length===0&&<div style={{padding:"20px",textAlign:"center",fontSize:"11px",color:th.subtext,fontStyle:"italic"}}>Aucun score — soyez le premier !</div>}
                 {!loadingLB&&displayedScores.map((s,i)=>(
-                  <div key={i} style={{display:"grid",gridTemplateColumns:"44px 1fr 90px 80px 60px",padding:"10px 14px",borderTop:"1px solid "+th.border,alignItems:"center",background:i===0?(dark?"rgba(212,172,13,0.08)":"rgba(212,172,13,0.05)"):"transparent"}}>
+                  <div key={i} style={{display:"grid",gridTemplateColumns:"36px 1fr 70px 60px",padding:"10px 10px",borderTop:"1px solid "+th.border,alignItems:"center",background:i===0?(dark?"rgba(212,172,13,0.08)":"rgba(212,172,13,0.05)"):"transparent"}}>
                     <span style={{fontSize:"16px"}}>{medals[i]||i+1}</span>
-                    <span style={{fontSize:"12px",fontWeight:"bold",color:i===0?th.gold:th.text}}>{s.nom}</span>
+                    <span style={{fontSize:"12px",fontWeight:"bold",color:i===0?th.gold:th.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.nom}</span>
                     <span style={{fontSize:"12px",fontWeight:"bold",color:i===0?th.gold:th.accent,textAlign:"right"}}>{(s.objPts||0).toLocaleString()}</span>
-                    <span style={{fontSize:"11px",color:th.subtext,textAlign:"right"}}>{s.manchesPlayed||0}</span>
                     <span style={{fontSize:"11px",color:th.subtext,textAlign:"right"}}>{s.wins||0}</span>
                   </div>
                 ))}
