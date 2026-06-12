@@ -269,7 +269,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
   const [selected,setSelected]=useState(null);
   const [discardMode,setDiscardMode]=useState(false);
   const [targetIdx,setTargetIdx]=useState(null); // pour choisir la cible d'une attaque
-  const [log,setLog]=useState([{text:"Partie à 4 — Bonne chance !",who:"system"}]);
+  const [log,setLog]=useState([{text:"Championnat à 4 — Bonne chance !",who:"system"}]);
   const [totalScores,setTotalScores]=useState({});
   const [manche,setManche]=useState(1);
   const [mancheOver,setMancheOver]=useState(null);
@@ -681,10 +681,10 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
           {!players?"🎲 Tirage au sort...":
            phase==="ai_turn"?`⏳ ${players[turnIdx]?.name} réfléchit...`:
            mustDraw?"👆 Piochez une carte":
-           `🃏 Votre tour — M.${manche}`}
+           `🃏 Votre tour — C.${manche}`}
         </div>
         <div style={{fontSize:"11px",fontWeight:"bold",color:th.sub,background:dark?"rgba(255,255,255,0.08)":"rgba(255,255,255,0.7)",border:"2px solid "+th.border,borderRadius:"8px",padding:"4px 8px"}}>
-          M.{manche} — {SCORE_CIBLE-Math.max(0,...Object.values(totalScores))} restants
+          C.{manche} — {SCORE_CIBLE-Math.max(0,...Object.values(totalScores))} restants
         </div>
         <button onClick={()=>setSoundOn(v=>!v)} style={{...th.btn("#445566"),padding:"4px 8px",fontSize:"14px"}}>{soundOn?"🔊":"🔇"}</button>
         <button onClick={()=>setDark(v=>!v)} style={{...th.btn("#445566"),padding:"4px 8px",fontSize:"14px"}}>{dark?"☀️":"🌙"}</button>
@@ -886,12 +886,12 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
         </div>
       )}
 
-      {/* FIN DE MANCHE */}
+      {/* FIN DE COURSE */}
       {mancheOver&&!gameOver&&(
         <div style={mdlOverlay}>
           <div style={th.modal}>
             <div style={{fontSize:"28px",marginBottom:"8px"}}>🏁</div>
-            <h2 style={{color:th.title,fontSize:"15px",marginBottom:"12px"}}>{mancheOver.winner} remporte la manche {manche} !</h2>
+            <h2 style={{color:th.title,fontSize:"15px",marginBottom:"12px"}}>{mancheOver.winner} remporte la course {manche} !</h2>
             <div style={{marginBottom:"12px"}}>
               {Object.entries(mancheOver.scores).sort((a,b)=>b[1]-a[1]).map(([name,score])=>(
                 <div key={name} style={{display:"flex",justifyContent:"space-between",padding:"4px 8px",borderBottom:"1px solid "+th.border}}>
@@ -901,18 +901,18 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
               ))}
             </div>
             <div style={{fontSize:"11px",color:th.sub,marginBottom:"12px"}}>{SCORE_CIBLE-Math.max(...Object.values(mancheOver.total))} pts restants</div>
-            <button onClick={nextManche} style={{...th.btn("#27ae60"),fontSize:"13px"}}>▶️ Manche {manche+1} !</button>
+            <button onClick={nextManche} style={{...th.btn("#27ae60"),fontSize:"13px"}}>▶️ Course {manche+1} !</button>
           </div>
         </div>
       )}
 
-      {/* FIN DE PARTIE */}
+      {/* FIN DE CHAMPIONNAT */}
       {gameOver&&(
         <div style={mdlOverlay}>
           <div style={th.modal}>
             <div style={{fontSize:"36px",marginBottom:"8px"}}>{gameOver.winner===playerName?"🏆":"😢"}</div>
             <h2 style={{color:th.title,fontSize:"16px",marginBottom:"12px"}}>
-              {gameOver.winner===playerName?`Bravo ${playerName} !`:`${gameOver.winner} remporte la partie !`}
+              {gameOver.winner===playerName?`Bravo ${playerName} !`:`${gameOver.winner} remporte le championnat !`}
             </h2>
             <div style={{marginBottom:"16px"}}>
               {Object.entries(gameOver.total).sort((a,b)=>b[1]-a[1]).map(([name,score],i)=>(
