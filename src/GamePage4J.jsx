@@ -625,28 +625,54 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     const colors=["#8B0000","#1a5276","#1e8449","#7d6608"];
     const color=colors[idx%4];
     return(
-      <div key={p.name} style={{background:isCurrent?(dark?"rgba(255,255,100,0.1)":"rgba(255,255,0,0.15)"):th.cardBg,border:`2px solid ${isCurrent?color:th.border}`,borderRadius:"10px",padding:"8px",minWidth:"130px",flex:1}}>
-        <div style={{fontSize:"10px",fontWeight:"bold",color:isCurrent?color:th.sub,marginBottom:"4px",display:"flex",alignItems:"center",gap:"4px"}}>
-          {p.emoji||"🏎️"} {p.name} {isCurrent&&"◀"}
+      <div key={p.name} style={{background:isCurrent?(dark?"rgba(255,255,100,0.1)":"rgba(255,255,0,0.15)"):th.cardBg,border:`2px solid ${isCurrent?color:th.border}`,borderRadius:"10px",padding:"8px",flex:1,display:"flex",flexDirection:"column",gap:"4px"}}>
+        {/* Header nom */}
+        <div style={{fontSize:"11px",fontWeight:"bold",color:isCurrent?color:th.sub,display:"flex",alignItems:"center",gap:"4px"}}>
+          {p.emoji||"🏎️"} {p.name.toUpperCase()} {isCurrent&&"◀"}
         </div>
-        <div style={{fontSize:"18px",fontWeight:"bold",color:th.accent}}>{p.km} km</div>
-        <div style={{position:"relative",height:"8px",background:th.barBg,borderRadius:"4px",margin:"4px 0",overflow:"hidden"}}>
+        {/* Corps : mini-cartes + km */}
+        <div style={{display:"flex",alignItems:"center",gap:"6px"}}>
+          {/* Carte lastCard */}
+          <div style={{width:"38px",height:"52px",borderRadius:"6px",border:"2px solid rgba(255,255,255,0.3)",background:(p.lastCard&&p.lastCard!=="limite"&&p.lastCard!=="fin_limite")?cColor(p.lastCard,dark):"rgba(128,128,128,0.15)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flexShrink:0}}>
+            {(p.lastCard&&p.lastCard!=="limite"&&p.lastCard!=="fin_limite")
+              ?<><div style={{fontSize:"14px"}}>{cEmoji(p.lastCard)}</div><div style={{fontSize:"6px",color:"#fff",fontWeight:"bold",textAlign:"center",lineHeight:1.2}}>{getCard(p.lastCard)?.label}</div></>
+              :<div style={{fontSize:"8px",color:"#aaa"}}>—</div>}
+          </div>
+          {/* Carte lastLimite */}
+          <div style={{width:"30px",height:"44px",borderRadius:"5px",border:"2px solid rgba(255,255,255,0.2)",background:(p.lastLimite||(p.limitee?"limite":null))?cColor(p.lastLimite||"limite",dark):"rgba(128,128,128,0.08)",display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",flexShrink:0,opacity:(p.lastLimite||p.limitee)?1:0.3}}>
+            {(p.lastLimite||p.limitee)
+              ?<><div style={{fontSize:"10px"}}>{cEmoji(p.lastLimite||"limite")}</div><div style={{fontSize:"5px",color:"#fff",fontWeight:"bold",textAlign:"center",lineHeight:1.2}}>{getCard(p.lastLimite||"limite")?.label}</div></>
+              :<div style={{fontSize:"7px",color:"#aaa"}}>🐢</div>}
+          </div>
+          {/* km + statut */}
+          <div style={{flex:1}}>
+            <div style={{fontSize:"22px",fontWeight:"bold",color:th.accent,textAlign:"center"}}>{p.km} km</div>
+            <div style={{fontSize:"10px",textAlign:"center"}}>
+              {!p.started&&<span style={{color:"#c0392b",fontWeight:"bold"}}>🔴 Pas démarré</span>}
+              {p.started&&!p.attaque&&!p.limitee&&<span style={{color:"#27ae60",fontWeight:"bold"}}>🟢 En route</span>}
+              {p.attaque&&<span style={{color:"#c0392b",fontWeight:"bold"}}>⚠️ {getCard(p.attaque)?.label}</span>}
+              {p.limitee&&<span style={{color:"#e67e22",fontWeight:"bold"}}> 🐢</span>}
+            </div>
+          </div>
+        </div>
+        {/* Barre km */}
+        <div style={{position:"relative",height:"8px",background:th.barBg,borderRadius:"4px",overflow:"hidden"}}>
           <div style={{height:"100%",width:(p.km/1000*100)+"%",background:color,transition:"width 0.3s",borderRadius:"4px"}}/>
           {[200,400,600,800].map(v=>(
-            <div key={v} style={{position:"absolute",top:0,bottom:0,left:(v/1000*100)+"%",width:"1px",background:dark?"rgba(255,255,255,0.15)":"rgba(0,0,0,0.15)"}}/>
+            <div key={v} style={{position:"absolute",top:0,bottom:0,left:(v/1000*100)+"%",width:"1px",background:dark?"rgba(255,255,255,0.2)":"rgba(0,0,0,0.15)"}}/>
           ))}
         </div>
-        <div style={{display:"flex",justifyContent:"space-between",fontSize:"7px",color:th.sub,marginBottom:"2px"}}>
+        <div style={{display:"flex",justifyContent:"space-between",fontSize:"7px",color:th.sub}}>
           {[0,200,400,600,800,1000].map(v=><span key={v}>{v}</span>)}
         </div>
-        {p.attaque&&<div style={{fontSize:"9px",color:"#c0392b",fontWeight:"bold"}}>⚠️ {getCard(p.attaque)?.label}</div>}
-        {p.limitee&&!p.attaque&&<div style={{fontSize:"9px",color:"#e67e22",fontWeight:"bold"}}>🐢 Limité</div>}
-        {!p.started&&<div style={{fontSize:"9px",color:"#888"}}>🔴 Pas démarré</div>}
-        {p.started&&!p.attaque&&!p.limitee&&<div style={{fontSize:"9px",color:"#27ae60"}}>🟢 En route</div>}
-        {p.bottes.length>0&&<div style={{display:"flex",gap:"2px",flexWrap:"wrap",marginTop:"3px"}}>{p.bottes.map(b=><span key={b} style={{fontSize:"10px"}}>{cEmoji(b)}</span>)}</div>}
-        <div style={{fontSize:"9px",color:th.gold,marginTop:"2px"}}>
-          🏆 {(totalScores[p.name]||0)} pts
-        </div>
+        {/* Bottes */}
+        {p.bottes.length>0&&(
+          <div style={{display:"flex",gap:"4px",flexWrap:"wrap"}}>
+            {p.bottes.map(b=><div key={b} style={{background:cColor(b,dark),color:"#fff",borderRadius:"6px",padding:"2px 5px",fontSize:"9px",fontWeight:"bold",display:"flex",alignItems:"center",gap:"2px"}}><span>{cEmoji(b)}</span><span style={{lineHeight:1.2}}>{getCard(b)?.label}</span></div>)}
+          </div>
+        )}
+        {/* Score */}
+        <div style={{fontSize:"9px",color:th.gold}}>🏆 {(totalScores[p.name]||0)} pts</div>
       </div>
     );
   }
