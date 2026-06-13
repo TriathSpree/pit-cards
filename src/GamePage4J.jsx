@@ -23,7 +23,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.55";
+const VERSION="1.5.56";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -151,15 +151,15 @@ const DOTS={1:[[50,50]],2:[[25,25],[75,75]],3:[[25,25],[50,50],[75,75]],4:[[25,2
 function De({val,dark}){const dots=DOTS[val]||DOTS[1];return(<div style={{width:"50px",height:"50px",background:dark?"#2a2a3e":"#fff",borderRadius:"10px",border:"3px solid "+(dark?"#555":"#2c1810"),position:"relative",boxShadow:"2px 2px 6px rgba(0,0,0,0.4)"}}>{dots.map((p,i)=><div key={i} style={{position:"absolute",width:"9px",height:"9px",background:dark?"#e0e0e0":"#2c1810",borderRadius:"50%",left:"calc("+p[0]+"% - 4px)",top:"calc("+p[1]+"% - 4px)"}}/>)}</div>);}
 
 // ── TIRAGE AU SORT 4 JOUEURS ──────────────────────────────────────────────────
-function TirageModal({dark,playerName,difficulty,setDifficulty,hardcoreUnlocked,onStart}){
-  const [phase,setPhase]=useState("roll"); // roll | result | done
+function TirageModal({dark,playerName,difficulty,setDifficulty,hardcoreUnlocked,onStart,playerAvatar}){
+  const [phase,setPhase]=useState("roll");
   const [des,setDes]=useState([1,1,1,1]);
   const [anim,setAnim]=useState(false);
-  const [order,setOrder]=useState(null); // ordre final des joueurs
-  const [pending,setPending]=useState([0,1,2,3]); // indices qui doivent relancer
+  const [order,setOrder]=useState(null);
+  const [pending,setPending]=useState([0,1,2,3]);
 
   const names=[playerName,...AI_NAMES];
-  const emojis=["👤",...AI_EMOJIS];
+  const emojis=[playerAvatar||"🧑",...AI_EMOJIS];
 
   const th={
     bg:dark?"#1e2a3a":"#fdf6e3",border:dark?"4px double #4a6fa5":"4px double #8B0000",
@@ -766,7 +766,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
   return(
     <div style={{fontFamily:"Georgia,serif",background:th.bg,minHeight:"100vh",padding:"8px",color:th.text,boxSizing:"border-box"}}>
 
-      {showTirage&&<TirageModal dark={dark} playerName={playerName} difficulty={difficulty} setDifficulty={setDifficulty} hardcoreUnlocked={hardcoreUnlocked} onStart={initGame}/>}
+      {showTirage&&<TirageModal dark={dark} playerName={playerName} difficulty={difficulty} setDifficulty={setDifficulty} hardcoreUnlocked={hardcoreUnlocked} onStart={initGame} playerAvatar={progress?.avatar||"🧑"}/>}
 
       {/* HEADER */}
       <div style={{display:"flex",gap:"6px",marginBottom:"8px",alignItems:"center"}}>
