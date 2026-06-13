@@ -465,10 +465,10 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
       if(ps[defenderIdx].isHuman){
         nextAfterCFRef.current=nextAfterCF;
         cfBonusTurn.current=true;
-        // Carte bonus déjà piochée ligne 409 (d.shift())
         setTurnIdx(defenderIdx);
+        setTurnCount(c=>c+1); // force le re-render même si turnIdx inchangé
         setPhase("play");
-        setDrawn(true);
+        setDrawn(true); // carte bonus déjà piochée
       }else{
         nextAfterCFRef.current=nextAfterCF;
         cfBonusTurn.current=true;
@@ -550,6 +550,10 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
   },[players]);
 
   // turnCount change à chaque nextTurn — garantit drawn:false même si turnIdx inchangé
+  // Sauf si CF bonus en cours (le joueur a déjà sa carte bonus)
+  useEffect(()=>{
+    if(turnCount>0&&!cfBonusTurn.current) setDrawn(false);
+  },[turnCount]);
   useEffect(()=>{
     if(turnCount>0&&!cfBonusTurn.current) setDrawn(false);
   },[turnCount]);
