@@ -391,12 +391,12 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     if(gameWinner[1]>=SCORE_CIBLE){
       setGameOver({winner:gameWinner[0],total:newTotal});
     }
-    // Objectifs journaliers
+    // Objectifs journaliers — setTimeout pour sortir du cycle render
     if(onDailyProgress){
       const human=ps.find(p=>p.isHuman);
       const others=ps.filter(p=>!p.isHuman);
-      const kmLead=human?(human.km-Math.max(...others.map(o=>o.km))):0;
-      onDailyProgress({
+      const kmLead=human&&others.length>0?(human.km-Math.max(...others.map(o=>o.km||0))):0;
+      setTimeout(()=>onDailyProgress({
         winner:winnerName===human?.name,
         playerState:human,
         diff:difficulty,
@@ -406,7 +406,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
         attackTargets:[],
         kmLead,
         mancheCount:manche,
-      });
+      }),0);
     }
   }
 
