@@ -85,7 +85,7 @@ const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const TOTAL_QTY={accident:3,panne:3,crevaison:3,feu_rouge:5,limite:4,reparations:6,essence:6,roue_secours:6,feu_vert:14,fin_limite:6,as_volant:1,citerne:1,increvable:1,prioritaire:1,b25:10,b50:10,b75:10,b100:12,b200:4};
 const SCORE_CIBLE=5000;
-const VERSION="1.5.54";
+const VERSION="1.5.55";
 const GAME_NAME="Pit Cards";
 
 const OBJECTIFS=[
@@ -177,6 +177,78 @@ function playSound(type,on){if(!on)return;try{const ctx=new(window.AudioContext|
 
 
 // ── HOME PAGE ──────────────────────────────────────────────────────────────────
+function DailyPanel({progress,dark,th,dailyObjectifs,dailyKey,dailyDone,dailyLB,loadingDailyLB,medals}){
+  const [dailyMode,setDailyMode]=useState("solo");
+  const modeLabels={solo:"1 vs 1","4j":"1 vs 3",online:"En ligne"};
+  const modeIcons={solo:"🏎️","4j":"🚗",online:"🌐"};
+  const quetes=dailyMode==="online"?[]:(dailyObjectifs[dailyMode]||[]);
+  const done=(dailyDone[dailyKey]||[]);
+  const modePts=quetes.filter(o=>done.includes(o.id)).reduce((s,o)=>s+o.pts,0);
+  const maxPts=quetes.reduce((s,o)=>s+o.pts,0);
+  return(
+    <div>
+      <div style={{display:"flex",gap:"4px",marginBottom:"12px"}}>
+        {["solo","4j","online"].map(m=>(
+          <button key={m} onClick={()=>setDailyMode(m)} style={{flex:1,padding:"8px",border:"2px solid "+(dailyMode===m?th.title:th.border),borderRadius:"10px",background:dailyMode===m?(dark?"rgba(224,112,112,0.15)":"rgba(139,0,0,0.08)"):"transparent",color:dailyMode===m?th.title:th.subtext,fontFamily:"Georgia,serif",fontSize:"12px",fontWeight:"bold",cursor:"pointer"}}>
+            {modeIcons[m]} {modeLabels[m]}
+          </button>
+        ))}
+      </div>
+      {dailyMode==="online"?(
+        <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"12px",padding:"30px",textAlign:"center",fontSize:"11px",color:th.subtext,fontStyle:"italic"}}>🌐 Mode En ligne — Bientôt disponible</div>
+      ):(
+        <>
+          <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"12px",padding:"12px 16px",marginBottom:"12px"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px"}}>
+              <div style={{fontSize:"13px",fontWeight:"bold",color:th.title}}>📅 Défis du jour — {modeLabels[dailyMode]}</div>
+              <div style={{fontSize:"10px",color:th.subtext}}>Reset à minuit</div>
+            </div>
+            {quetes.map((o,i)=>{
+              const isDone=done.includes(o.id);
+              const diffColor=o.diff==="easy"?"#27ae60":o.diff==="medium"?"#e67e22":"#c0392b";
+              const diffLabel=o.diff==="easy"?"Facile":o.diff==="medium"?"Moyen":"Difficile";
+              return(
+                <div key={o.id} style={{display:"flex",alignItems:"center",gap:"10px",padding:"10px 0",borderTop:i>0?"1px solid "+th.border:"none"}}>
+                  <div style={{fontSize:"22px",flexShrink:0}}>{isDone?"✅":"🎯"}</div>
+                  <div style={{flex:1}}>
+                    <div style={{display:"flex",alignItems:"center",gap:"6px",marginBottom:"2px"}}>
+                      <span style={{fontSize:"12px",fontWeight:"bold",color:isDone?th.subtext:th.text,textDecoration:isDone?"line-through":"none"}}>{o.label}</span>
+                      <span style={{fontSize:"8px",background:diffColor,color:"#fff",borderRadius:"4px",padding:"1px 5px",fontWeight:"bold"}}>{diffLabel}</span>
+                    </div>
+                    <div style={{fontSize:"10px",color:th.subtext}}>{o.desc}</div>
+                  </div>
+                  <div style={{fontSize:"13px",fontWeight:"bold",color:isDone?th.subtext:th.gold,flexShrink:0}}>+{o.pts} pts</div>
+                </div>
+              );
+            })}
+            <div style={{borderTop:"1px solid "+th.border,marginTop:"10px",paddingTop:"8px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <span style={{fontSize:"11px",color:th.subtext}}>{quetes.filter(o=>done.includes(o.id)).length}/{quetes.length} complétés</span>
+              <span style={{fontSize:"13px",fontWeight:"bold",color:th.gold}}>🏆 {modePts} / {maxPts} pts</span>
+            </div>
+          </div>
+          <div style={{background:dark?"rgba(39,174,96,0.08)":"rgba(39,174,96,0.05)",border:"1px solid #27ae60",borderRadius:"10px",padding:"8px 14px",marginBottom:"10px",fontSize:"11px",color:"#27ae60"}}>
+            🌐 Classement du jour — reset à minuit
+          </div>
+          <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"12px",overflow:"hidden"}}>
+            <div style={{display:"grid",gridTemplateColumns:"36px 1fr 80px",padding:"8px 10px",background:dark?"rgba(0,0,0,0.3)":"rgba(139,0,0,0.08)",fontSize:"9px",fontWeight:"bold",textTransform:"uppercase",letterSpacing:"1px",color:th.subtext}}>
+              <span>#</span><span>Joueur</span><span style={{textAlign:"right"}}>Pts aujourd'hui</span>
+            </div>
+            {loadingDailyLB&&<div style={{padding:"20px",textAlign:"center",fontSize:"11px",color:th.subtext}}>⏳ Chargement...</div>}
+            {!loadingDailyLB&&dailyLB.length===0&&<div style={{padding:"20px",textAlign:"center",fontSize:"11px",color:th.subtext,fontStyle:"italic"}}>Aucun défi complété aujourd'hui — soyez le premier !</div>}
+            {!loadingDailyLB&&dailyLB.map((s,i)=>(
+              <div key={i} style={{display:"grid",gridTemplateColumns:"36px 1fr 80px",padding:"10px",borderTop:"1px solid "+th.border,alignItems:"center",background:i===0?(dark?"rgba(212,172,13,0.08)":"rgba(212,172,13,0.05)"):"transparent"}}>
+                <span style={{fontSize:"16px"}}>{medals[i]||i+1}</span>
+                <span style={{fontSize:"12px",fontWeight:"bold",color:i===0?th.gold:th.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.nom}</span>
+                <span style={{fontSize:"12px",fontWeight:"bold",color:i===0?th.gold:th.accent,textAlign:"right"}}>{s.dailyPts||0}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 function ObjectifsPanel({progress,dark,th}){
   const [objMode,setObjMode]=useState("solo");
   const modeLabels={solo:"1 vs 1","4j":"1 vs 3",online:"En ligne"};
@@ -284,10 +356,11 @@ function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,user
   const [loadingLB,setLoadingLB]=useState(false);
   const [dailyLB,setDailyLB]=useState([]);
   const [loadingDailyLB,setLoadingDailyLB]=useState(false);
-  const dailyObjectifs=getDailyObjectifs();
+  const dailyObjectifs=getDailyObjectifs(); // {solo:[...], "4j":[...]}
   const dailyKey=getDailyKey();
   const dailyDone=progress.dailyDone||{};
-  const dailyPts=dailyObjectifs.filter(o=>dailyDone[dailyKey]?.includes(o.id)).reduce((s,o)=>s+o.pts,0);
+  const allDailyIds=[...(dailyObjectifs.solo||[]),...(dailyObjectifs["4j"]||[])].map(o=>o.id);
+  const dailyPts=allDailyIds.filter(id=>(dailyDone[dailyKey]||[]).includes(id)).reduce((s,id)=>{const o=DAILY_POOL.find(x=>x.id===id);return s+(o?o.pts:0);},0);
   const th={
     bg:dark?"linear-gradient(135deg,#1a1a2e 0%,#16213e 100%)":"linear-gradient(135deg,#fdf6e3 0%,#fae8c0 100%)",
     text:dark?"#e8e0d0":"#2c1810",subtext:dark?"#a89880":"#5d4037",border:dark?"#445566":"#a0856a",
@@ -471,62 +544,7 @@ function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,user
             </div>
           )}
 
-          {tab==="daily"&&(
-            <div>
-              {/* Défis du jour */}
-              <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"12px",padding:"12px 16px",marginBottom:"12px"}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:"10px"}}>
-                  <div style={{fontSize:"13px",fontWeight:"bold",color:th.title}}>📅 Défis du jour</div>
-                  <div style={{fontSize:"10px",color:th.subtext}}>Reset à minuit</div>
-                </div>
-                {dailyObjectifs.map((o,i)=>{
-                  const done=(dailyDone[dailyKey]||[]).includes(o.id);
-                  const diffColor=o.diff==="easy"?"#27ae60":o.diff==="medium"?"#e67e22":"#c0392b";
-                  const diffLabel=o.diff==="easy"?"Facile":o.diff==="medium"?"Moyen":"Difficile";
-                  return(
-                    <div key={o.id} style={{display:"flex",alignItems:"center",gap:"10px",padding:"10px 0",borderTop:i>0?"1px solid "+th.border:"none"}}>
-                      <div style={{fontSize:"22px",flexShrink:0}}>{done?"✅":"🎯"}</div>
-                      <div style={{flex:1}}>
-                        <div style={{display:"flex",alignItems:"center",gap:"6px",marginBottom:"2px"}}>
-                          <span style={{fontSize:"12px",fontWeight:"bold",color:done?th.subtext:th.text,textDecoration:done?"line-through":"none"}}>{o.label}</span>
-                          <span style={{fontSize:"8px",background:diffColor,color:"#fff",borderRadius:"4px",padding:"1px 5px",fontWeight:"bold"}}>{diffLabel}</span>
-                        </div>
-                        <div style={{fontSize:"10px",color:th.subtext}}>{o.desc}</div>
-                      </div>
-                      <div style={{fontSize:"13px",fontWeight:"bold",color:done?th.subtext:th.gold,flexShrink:0}}>+{o.pts} pts</div>
-                    </div>
-                  );
-                })}
-                <div style={{borderTop:"1px solid "+th.border,marginTop:"10px",paddingTop:"8px",display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                  <span style={{fontSize:"11px",color:th.subtext}}>{(dailyDone[dailyKey]||[]).length}/3 complétés</span>
-                  <span style={{fontSize:"13px",fontWeight:"bold",color:th.gold}}>🏆 {dailyPts} / 350 pts</span>
-                </div>
-              </div>
-
-              {/* Classement journalier */}
-              <div style={{background:dark?"rgba(39,174,96,0.08)":"rgba(39,174,96,0.05)",border:"1px solid #27ae60",borderRadius:"10px",padding:"8px 14px",marginBottom:"10px",fontSize:"11px",color:"#27ae60"}}>
-                🌐 Classement du jour — reset à minuit
-              </div>
-              <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"12px",overflow:"hidden"}}>
-                <div style={{display:"grid",gridTemplateColumns:"36px 1fr 80px",padding:"8px 10px",background:dark?"rgba(0,0,0,0.3)":"rgba(139,0,0,0.08)",fontSize:"9px",fontWeight:"bold",textTransform:"uppercase",letterSpacing:"1px",color:th.subtext}}>
-                  <span>#</span><span>Joueur</span><span style={{textAlign:"right"}}>Pts aujourd'hui</span>
-                </div>
-                {loadingDailyLB&&<div style={{padding:"20px",textAlign:"center",fontSize:"11px",color:th.subtext}}>⏳ Chargement...</div>}
-                {!loadingDailyLB&&dailyLB.length===0&&(
-                  <div style={{padding:"20px",textAlign:"center",fontSize:"11px",color:th.subtext,fontStyle:"italic"}}>
-                    Aucun défi complété aujourd'hui — soyez le premier !
-                  </div>
-                )}
-                {!loadingDailyLB&&dailyLB.map((s,i)=>(
-                  <div key={i} style={{display:"grid",gridTemplateColumns:"36px 1fr 80px",padding:"10px",borderTop:"1px solid "+th.border,alignItems:"center",background:i===0?(dark?"rgba(212,172,13,0.08)":"rgba(212,172,13,0.05)"):"transparent"}}>
-                    <span style={{fontSize:"16px"}}>{medals[i]||i+1}</span>
-                    <span style={{fontSize:"12px",fontWeight:"bold",color:i===0?th.gold:th.text,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.nom}</span>
-                    <span style={{fontSize:"12px",fontWeight:"bold",color:i===0?th.gold:th.accent,textAlign:"right"}}>{s.dailyPts||0}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+          {tab==="daily"&&<DailyPanel progress={progress} dark={dark} th={th} dailyObjectifs={dailyObjectifs} dailyKey={dailyKey} dailyDone={dailyDone} dailyLB={dailyLB} loadingDailyLB={loadingDailyLB} medals={medals}/>}
           {tab==="objectifs"&&<ObjectifsPanel progress={progress} dark={dark} th={th}/>}
           {tab==="stats"&&<StatsPanel progress={progress} dark={dark} th={th}/>}
         </div>
@@ -812,36 +830,41 @@ function GamePage({dark,setDark,onBack,progress,setProgress,soundOn,setSoundOn})
 // ── PSEUDO MODAL ─────────────────────────────────────────────────────────────
 // ── OBJECTIFS JOURNALIERS ─────────────────────────────────────────────────────
 const DAILY_POOL=[
-  // Faciles (50 pts)
-  {id:"d_win",label:"Vainqueur du jour",desc:"Gagner une course aujourd'hui",pts:50,diff:"easy"},
-  {id:"d_cf",label:"Coup-Fourré !",desc:"Jouer un Coup-Fourré aujourd'hui",pts:50,diff:"easy"},
-  {id:"d_500km",label:"500 km parcourus",desc:"Parcourir 500 km au total aujourd'hui",pts:50,diff:"easy"},
-  {id:"d_200km",label:"Turbo !",desc:"Jouer une carte 200 km dans une course",pts:50,diff:"easy"},
-  {id:"d_2parades",label:"Bon défenseur",desc:"Jouer 2 parades dans une même course",pts:50,diff:"easy"},
-  {id:"d_discard5",label:"Sélectif",desc:"Défausser moins de 5 cartes dans une course gagnée",pts:50,diff:"easy"},
-  // Moyens (100 pts)
-  {id:"d_hard",label:"Mode difficile",desc:"Gagner en mode Difficile ou Hardcore",pts:100,diff:"medium"},
-  {id:"d_4bottes",label:"Arsenal",desc:"Jouer les 4 bottes dans une même course",pts:100,diff:"medium"},
-  {id:"d_attack3",label:"Harcèlement",desc:"Attaquer le même adversaire 3 fois dans une course",pts:100,diff:"medium"},
-  {id:"d_first_win",label:"Pole Position",desc:"Commencer une course en premier et la gagner",pts:100,diff:"medium"},
-  {id:"d_2targets",label:"Multi-cibles",desc:"Attaquer 2 adversaires différents dans une course (4J)",pts:100,diff:"medium"},
-  {id:"d_200lead",label:"Écrasant",desc:"Terminer une course avec 200+ km d'avance sur le 2ème",pts:100,diff:"medium"},
-  // Difficiles (200 pts)
-  {id:"d_2wins",label:"Doublé",desc:"Gagner 2 courses dans la journée",pts:200,diff:"hard"},
-  {id:"d_2cf_race",label:"Double Fourré",desc:"Réussir 2 CF dans la même course",pts:200,diff:"hard"},
-  {id:"d_no_block",label:"Route libre",desc:"Gagner une course sans jamais être bloqué",pts:200,diff:"hard"},
-  {id:"d_fast_champ",label:"Champion express",desc:"Terminer un championnat en moins de 4 courses",pts:200,diff:"hard"},
+  // 1 vs 1 (solo)
+  {id:"d_win_solo",label:"Vainqueur du jour",desc:"Gagner une course contre Victor",pts:50,diff:"easy",mode:"solo"},
+  {id:"d_cf_solo",label:"Coup-Fourré !",desc:"Jouer un Coup-Fourré contre Victor",pts:50,diff:"easy",mode:"solo"},
+  {id:"d_200km_solo",label:"Turbo !",desc:"Jouer une carte 200 km contre Victor",pts:50,diff:"easy",mode:"solo"},
+  {id:"d_hard_solo",label:"Mode difficile",desc:"Gagner contre Victor en mode Difficile ou Hardcore",pts:100,diff:"medium",mode:"solo"},
+  {id:"d_no_block_solo",label:"Route libre",desc:"Gagner une course sans jamais être bloqué",pts:100,diff:"medium",mode:"solo"},
+  {id:"d_2cf_solo",label:"Double Fourré",desc:"Réussir 2 CF dans la même course",pts:200,diff:"hard",mode:"solo"},
+  {id:"d_fast_solo",label:"Expéditif",desc:"Gagner en moins de 20 tours",pts:200,diff:"hard",mode:"solo"},
+  {id:"d_no_discard_solo",label:"Sélectif",desc:"Gagner sans défausser plus de 3 cartes",pts:200,diff:"hard",mode:"solo"},
+
+  // 1 vs 3 (4j)
+  {id:"d_win_4j",label:"Vainqueur du peloton",desc:"Gagner une course à 4",pts:50,diff:"easy",mode:"4j"},
+  {id:"d_cf_4j",label:"Coup-Fourré !",desc:"Jouer un Coup-Fourré en 1vs3",pts:50,diff:"easy",mode:"4j"},
+  {id:"d_200km_4j",label:"Turbo !",desc:"Jouer une carte 200 km en 1vs3",pts:50,diff:"easy",mode:"4j"},
+  {id:"d_2targets_4j",label:"Multi-cibles",desc:"Attaquer 2 adversaires différents dans une course",pts:100,diff:"medium",mode:"4j"},
+  {id:"d_200lead_4j",label:"Écrasant",desc:"Terminer une course avec 200+ km d'avance sur le 2ème",pts:100,diff:"medium",mode:"4j"},
+  {id:"d_2wins_4j",label:"Doublé",desc:"Gagner 2 courses à 4 dans la journée",pts:200,diff:"hard",mode:"4j"},
+  {id:"d_no_block_4j",label:"Route libre",desc:"Gagner une course à 4 sans jamais être bloqué",pts:200,diff:"hard",mode:"4j"},
+  {id:"d_fast_champ_4j",label:"Champion express",desc:"Terminer un championnat à 4 en moins de 4 courses",pts:200,diff:"hard",mode:"4j"},
 ];
 
 function getDailyObjectifs(){
-  // Seed basé sur le jour (minuit UTC) — même défis pour tous
   const day=Math.floor(Date.now()/86400000);
   const seeded=(n)=>{let x=Math.sin(day*9301+n*49297+233)*100003;return x-Math.floor(x);};
-  const easy=DAILY_POOL.filter(o=>o.diff==="easy");
-  const medium=DAILY_POOL.filter(o=>o.diff==="medium");
-  const hard=DAILY_POOL.filter(o=>o.diff==="hard");
-  const pick=(arr,seed)=>arr[Math.floor(seeded(seed)*arr.length)];
-  return[pick(easy,1),pick(medium,2),pick(hard,3)];
+  const soloPool=DAILY_POOL.filter(o=>o.mode==="solo");
+  const fjPool=DAILY_POOL.filter(o=>o.mode==="4j");
+  // 1 easy, 1 medium/hard par mode
+  const pickByDiff=(pool,diffs,seed)=>{
+    const arr=pool.filter(o=>diffs.includes(o.diff));
+    return arr[Math.floor(seeded(seed)*arr.length)];
+  };
+  return{
+    solo:[pickByDiff(soloPool,["easy"],1),pickByDiff(soloPool,["medium","hard"],2)].filter(Boolean),
+    "4j":[pickByDiff(fjPool,["easy"],3),pickByDiff(fjPool,["medium","hard"],4)].filter(Boolean),
+  };
 }
 
 function getDailyKey(){return`daily_${Math.floor(Date.now()/86400000)}`;}
