@@ -23,7 +23,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.48";
+const VERSION="1.5.49";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -276,7 +276,7 @@ function TirageModal({dark,playerName,difficulty,setDifficulty,hardcoreUnlocked,
 }
 
 // ── GAME PAGE 4 JOUEURS ───────────────────────────────────────────────────────
-export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:initDiff,soundOn,setSoundOn,hardcoreUnlocked,progress,onDailyProgress}){
+export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:initDiff,soundOn,setSoundOn,hardcoreUnlocked,progress,onDailyProgress,version}){
   const [difficulty,setDifficulty]=useState(initDiff||"normal");
   const [showTirage,setShowTirage]=useState(true);
   const [players,setPlayers]=useState(null); // array de joueurs dans l'ordre du tour
@@ -761,7 +761,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
       {/* HEADER */}
       <div style={{display:"flex",gap:"6px",marginBottom:"8px",alignItems:"center"}}>
         <button onClick={onBack} style={{...th.btn("#445566"),padding:"4px 10px",fontSize:"12px"}}>← Accueil</button>
-        {!isMobile&&<div style={{fontSize:"9px",color:th.sub,opacity:0.7,whiteSpace:"nowrap"}}>v{VERSION}</div>}
+        {!isMobile&&<div style={{fontSize:"9px",color:th.sub,opacity:0.7,whiteSpace:"nowrap"}}>v{version||VERSION}</div>}
         <div style={{flex:1,textAlign:"center",padding:"5px",background:mustDraw?(pulse?(dark?"rgba(139,0,0,0.4)":"rgba(139,0,0,0.2)"):(dark?"rgba(224,112,112,0.15)":"rgba(139,0,0,0.1)")):(dark?"rgba(224,112,112,0.15)":"rgba(139,0,0,0.1)"),borderRadius:"8px",fontWeight:"bold",fontSize:isMobile?"11px":"12px",transition:"background 0.3s"}}>
           {!players?"🎲 Tirage au sort...":
            phase==="ai_turn"?`⏳ ${players[turnIdx]?.name}...`:
