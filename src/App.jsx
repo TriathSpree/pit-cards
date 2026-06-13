@@ -85,7 +85,7 @@ const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const TOTAL_QTY={accident:3,panne:3,crevaison:3,feu_rouge:5,limite:4,reparations:6,essence:6,roue_secours:6,feu_vert:14,fin_limite:6,as_volant:1,citerne:1,increvable:1,prioritaire:1,b25:10,b50:10,b75:10,b100:12,b200:4};
 const SCORE_CIBLE=5000;
-const VERSION="1.5.56";
+const VERSION="1.5.57";
 const GAME_NAME="Pit Cards";
 
 const OBJECTIFS=[
@@ -856,14 +856,10 @@ function getDailyObjectifs(){
   const seeded=(n)=>{let x=Math.sin(day*9301+n*49297+233)*100003;return x-Math.floor(x);};
   const soloPool=DAILY_POOL.filter(o=>o.mode==="solo");
   const fjPool=DAILY_POOL.filter(o=>o.mode==="4j");
-  // 1 easy, 1 medium/hard par mode
-  const pickByDiff=(pool,diffs,seed)=>{
-    const arr=pool.filter(o=>diffs.includes(o.diff));
-    return arr[Math.floor(seeded(seed)*arr.length)];
-  };
+  const pick=(pool,diff,seed)=>{const arr=pool.filter(o=>o.diff===diff);return arr[Math.floor(seeded(seed)*arr.length)];};
   return{
-    solo:[pickByDiff(soloPool,["easy"],1),pickByDiff(soloPool,["medium","hard"],2)].filter(Boolean),
-    "4j":[pickByDiff(fjPool,["easy"],3),pickByDiff(fjPool,["medium","hard"],4)].filter(Boolean),
+    solo:[pick(soloPool,"easy",1),pick(soloPool,"medium",2),pick(soloPool,"hard",3)].filter(Boolean),
+    "4j":[pick(fjPool,"easy",4),pick(fjPool,"medium",5),pick(fjPool,"hard",6)].filter(Boolean),
   };
 }
 
