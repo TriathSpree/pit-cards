@@ -23,7 +23,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.52";
+const VERSION="1.5.53";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -277,7 +277,7 @@ function TirageModal({dark,playerName,difficulty,setDifficulty,hardcoreUnlocked,
 }
 
 // ── GAME PAGE 4 JOUEURS ───────────────────────────────────────────────────────
-export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:initDiff,soundOn,setSoundOn,hardcoreUnlocked,progress,onDailyProgress,version}){
+export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:initDiff,soundOn,setSoundOn,hardcoreUnlocked,progress,onDailyProgress,onProgress,version}){
   const [difficulty,setDifficulty]=useState(initDiff||"normal");
   const [showTirage,setShowTirage]=useState(true);
   const [players,setPlayers]=useState(null); // array de joueurs dans l'ordre du tour
@@ -391,6 +391,15 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     const gameWinner=Object.entries(newTotal).sort((a,b)=>b[1]-a[1])[0];
     if(gameWinner[1]>=SCORE_CIBLE){
       setGameOver({winner:gameWinner[0],total:newTotal});
+    }
+    // Stats 4J
+    if(onProgress){
+      const human=ps.find(p=>p.isHuman);
+      setTimeout(()=>onProgress({
+        winner:winnerName===human?.name,
+        playerKm:human?.km||0,
+        scores,
+      }),0);
     }
     // Objectifs journaliers — setTimeout pour sortir du cycle render
     if(onDailyProgress){
