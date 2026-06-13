@@ -23,7 +23,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.49";
+const VERSION="1.5.50";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -467,9 +467,9 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
         nextAfterCFRef.current=nextAfterCF;
         cfBonusTurn.current=true;
         setTurnIdx(defenderIdx);
-        setTurnCount(c=>c+1); // force le re-render même si turnIdx inchangé
+        setTurnCount(c=>c+1);
         setPhase("play");
-        setDrawn(true); // carte bonus déjà piochée
+        setDrawn(false); // le joueur doit piocher au tour bonus (carte bonus déjà reçue)
       }else{
         nextAfterCFRef.current=nextAfterCF;
         cfBonusTurn.current=true;
@@ -551,9 +551,8 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
   },[players]);
 
   // turnCount change à chaque nextTurn — garantit drawn:false même si turnIdx inchangé
-  // Sauf si CF bonus en cours (le joueur a déjà sa carte bonus)
   useEffect(()=>{
-    if(turnCount>0&&!cfBonusTurn.current) setDrawn(false);
+    if(turnCount>0) setDrawn(false);
   },[turnCount]);
   useEffect(()=>{
     if(turnCount>0&&!cfBonusTurn.current) setDrawn(false);
