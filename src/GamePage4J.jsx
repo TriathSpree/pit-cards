@@ -23,7 +23,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.51";
+const VERSION="1.5.52";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -101,6 +101,7 @@ function applyPlay(players,actorIdx,cardId,action,targetIdx){
   }else if(action==="botte"){
     const bo=getCard(cardId);
     actor.bottes.push(cardId);
+    actor.lastCard=cardId; // affiche la botte jouée
     const co=Array.isArray(bo.counters)?bo.counters:[bo.counters];
     if(actor.attaque&&co.includes(actor.attaque)){actor.attaque=null;}
     if(bo.id==="prioritaire"){actor.limitee=false;}
