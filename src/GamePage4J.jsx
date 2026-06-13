@@ -23,7 +23,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.59";
+const VERSION="1.5.60";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -101,7 +101,6 @@ function applyPlay(players,actorIdx,cardId,action,targetIdx){
   }else if(action==="botte"){
     const bo=getCard(cardId);
     actor.bottes.push(cardId);
-    actor.lastCard=cardId; // affiche la botte jouée
     const co=Array.isArray(bo.counters)?bo.counters:[bo.counters];
     if(actor.attaque&&co.includes(actor.attaque)){actor.attaque=null;}
     if(bo.id==="prioritaire"){actor.limitee=false;actor.lastLimite="fin_limite";}
@@ -461,9 +460,8 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
       const bo=getCard(botteId);
       const co=Array.isArray(bo.counters)?bo.counters:[bo.counters];
       if(def.attaque&&co.includes(def.attaque))def.attaque=null;
-      if(botteId==="prioritaire"){def.limitee=false;}
+      if(botteId==="prioritaire"){def.limitee=false;def.lastLimite="fin_limite";}
       def.coupsFourres=(def.coupsFourres||0)+1;
-      def.lastCard=botteId; // affiche la botte jouée en CF
       // Carte bonus
       if(d.length>0){def.hand=[...def.hand,d.shift()];}
       addLog(`⚡ COUP-FOURRÉ ! ${def.name} neutralise avec ${bo.label} !`,def.name);
