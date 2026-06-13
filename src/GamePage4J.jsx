@@ -23,7 +23,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.50";
+const VERSION="1.5.51";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -708,8 +708,9 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     return(
       <div key={p.name} style={{background:isCurrent?(dark?"rgba(255,255,100,0.1)":"rgba(255,255,0,0.15)"):th.cardBg,border:`2px solid ${isCurrent?color:th.border}`,borderRadius:"10px",padding:"8px",flex:1,display:"flex",flexDirection:"column",gap:"4px"}}>
         {/* Header nom */}
-        <div style={{fontSize:"11px",fontWeight:"bold",color:isCurrent?color:th.sub,display:"flex",alignItems:"center",gap:"4px"}}>
-          {p.emoji||"🏎️"} {p.name.toUpperCase()} {isCurrent&&"◀"}
+        <div style={{fontSize:"11px",fontWeight:"bold",color:isCurrent?color:th.sub,display:"flex",alignItems:"center",gap:"4px",justifyContent:"space-between"}}>
+          <span>{p.emoji||"🏎️"} {p.name.toUpperCase()} {isCurrent&&"◀"}</span>
+          <span style={{fontSize:"9px",opacity:0.6,fontWeight:"normal"}}>🃏{p.hand?.length||0}</span>
         </div>
         {/* Corps : mini-cartes + km */}
         <div style={{display:"flex",alignItems:"center",gap:"6px"}}>
