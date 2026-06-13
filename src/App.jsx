@@ -85,7 +85,7 @@ const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const TOTAL_QTY={accident:3,panne:3,crevaison:3,feu_rouge:5,limite:4,reparations:6,essence:6,roue_secours:6,feu_vert:14,fin_limite:6,as_volant:1,citerne:1,increvable:1,prioritaire:1,b25:10,b50:10,b75:10,b100:12,b200:4};
 const SCORE_CIBLE=5000;
-const VERSION="1.5.53";
+const VERSION="1.5.54";
 const GAME_NAME="Pit Cards";
 
 const OBJECTIFS=[
@@ -177,6 +177,62 @@ function playSound(type,on){if(!on)return;try{const ctx=new(window.AudioContext|
 
 
 // ── HOME PAGE ──────────────────────────────────────────────────────────────────
+function ObjectifsPanel({progress,dark,th}){
+  const [objMode,setObjMode]=useState("solo");
+  const modeLabels={solo:"1 vs 1","4j":"1 vs 3",online:"En ligne"};
+  const modeIcons={solo:"🏎️","4j":"🚗",online:"🌐"};
+
+  const filtered=OBJECTIFS.filter(o=>
+    objMode==="solo"?(o.mode==="solo"||o.mode===null):
+    objMode==="4j"?(o.mode==="4j"||o.mode===null):
+    false
+  );
+  const cats=[...new Set(filtered.map(o=>o.cat))];
+  const unlocked=progress.unlocked||[];
+  const doneCount=filtered.filter(o=>unlocked.includes(o.id)).length;
+
+  return(
+    <div>
+      <div style={{display:"flex",gap:"4px",marginBottom:"12px"}}>
+        {["solo","4j","online"].map(m=>(
+          <button key={m} onClick={()=>setObjMode(m)} style={{flex:1,padding:"8px",border:"2px solid "+(objMode===m?th.title:th.border),borderRadius:"10px",background:objMode===m?(dark?"rgba(224,112,112,0.15)":"rgba(139,0,0,0.08)"):"transparent",color:objMode===m?th.title:th.subtext,fontFamily:"Georgia,serif",fontSize:"12px",fontWeight:"bold",cursor:"pointer"}}>
+            {modeIcons[m]} {modeLabels[m]}
+          </button>
+        ))}
+      </div>
+      {objMode==="online"?(
+        <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"12px",padding:"30px",textAlign:"center",fontSize:"11px",color:th.subtext,fontStyle:"italic"}}>🌐 Mode En ligne — Bientôt disponible</div>
+      ):(
+        <>
+          <div style={{fontSize:"11px",color:th.subtext,marginBottom:"10px",textAlign:"right"}}>{doneCount}/{filtered.length} débloqués</div>
+          {cats.map(cat=>(
+            <div key={cat} style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"12px",overflow:"hidden",marginBottom:"10px"}}>
+              <div style={{padding:"8px 14px",background:dark?"rgba(0,0,0,0.3)":"rgba(139,0,0,0.06)",fontSize:"11px",fontWeight:"bold",color:th.title}}>{cat}</div>
+              {filtered.filter(o=>o.cat===cat).map(o=>{
+                const done=unlocked.includes(o.id);
+                const isCommon=o.mode===null;
+                return(
+                  <div key={o.id} style={{display:"flex",alignItems:"center",gap:"12px",padding:"10px 14px",borderTop:"1px solid "+th.border,opacity:done?1:0.55}}>
+                    <div style={{fontSize:"20px",flexShrink:0}}>{done?"✅":"🔒"}</div>
+                    <div style={{flex:1}}>
+                      <div style={{display:"flex",alignItems:"center",gap:"6px",marginBottom:"2px"}}>
+                        <span style={{fontSize:"12px",fontWeight:"bold",color:done?th.gold:th.text}}>{o.label}</span>
+                        {isCommon&&<span style={{fontSize:"8px",background:dark?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.08)",color:th.subtext,borderRadius:"4px",padding:"1px 5px"}}>Tous modes</span>}
+                      </div>
+                      <div style={{fontSize:"10px",color:th.subtext}}>{o.desc}</div>
+                    </div>
+                    <div style={{fontSize:"11px",fontWeight:"bold",color:done?th.gold:th.subtext,flexShrink:0}}>+{o.pts} pts</div>
+                  </div>
+                );
+              })}
+            </div>
+          ))}
+        </>
+      )}
+    </div>
+  );
+}
+
 function StatsPanel({progress,dark,th}){
   const [statMode,setStatMode]=useState("solo");
   const s=statMode==="solo"?(progress.stats_solo||{}):statMode==="4j"?(progress.stats_4j||{}):(progress.stats_online||{});
@@ -471,41 +527,7 @@ function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,user
               </div>
             </div>
           )}
-          {tab==="objectifs"&&(
-            <div>
-              <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"12px",padding:"12px 16px",marginBottom:"10px"}}>
-                <div style={{display:"flex",justifyContent:"space-between",marginBottom:"6px"}}>
-                  <span style={{fontSize:"11px",fontWeight:"bold",color:th.subtext}}>Progression globale</span>
-                  <span style={{fontSize:"11px",fontWeight:"bold",color:th.gold}}>{progress.objPts} / {TOTAL_OBJ_PTS} pts</span>
-                </div>
-                <div style={{height:"8px",background:th.barBg,borderRadius:"4px",overflow:"hidden"}}><div style={{height:"100%",width:(progress.objPts/TOTAL_OBJ_PTS*100)+"%",background:"linear-gradient(90deg,#d4ac0d,#f0c040)",borderRadius:"4px",transition:"width 0.6s ease"}}/></div>
-                <div style={{fontSize:"9px",color:th.subtext,marginTop:"4px",textAlign:"right"}}>{progress.unlocked.length} / {OBJECTIFS.length} débloqués</div>
-              </div>
-              {cats.map(cat=>(
-                <div key={cat} style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"12px",overflow:"hidden",marginBottom:"10px"}}>
-                  <div style={{padding:"8px 14px",background:dark?"rgba(0,0,0,0.3)":"rgba(139,0,0,0.06)",fontSize:"11px",fontWeight:"bold",color:th.subtext}}>{cat}</div>
-                  {OBJECTIFS.filter(o=>o.cat===cat).map(o=>{
-                    const done=progress.unlocked.includes(o.id);
-                    return(
-                      <div key={o.id} style={{display:"flex",alignItems:"center",gap:"10px",padding:"10px 14px",borderTop:"1px solid "+th.border,opacity:done?1:0.6}}>
-                        <div style={{fontSize:"20px",flexShrink:0}}>{done?"✅":"🔒"}</div>
-                        <div style={{flex:1}}>
-                          <div style={{display:"flex",alignItems:"center",gap:"5px"}}>
-                            <span style={{fontSize:"12px",fontWeight:"bold",color:done?th.title:th.text}}>{o.label}</span>
-                            {o.mode==="solo"&&<span style={{fontSize:"8px",background:dark?"rgba(139,0,0,0.3)":"rgba(139,0,0,0.1)",color:th.title,borderRadius:"4px",padding:"1px 4px",fontWeight:"bold"}}>🧍 Solo</span>}
-                            {o.mode==="4j"&&<span style={{fontSize:"8px",background:dark?"rgba(26,82,118,0.3)":"rgba(26,82,118,0.1)",color:dark?"#4a9eda":"#1a5276",borderRadius:"4px",padding:"1px 4px",fontWeight:"bold"}}>👥 4J</span>}
-                          </div>
-                          <div style={{fontSize:"10px",color:th.subtext}}>{o.desc}</div>
-                        </div>
-                        <div style={{textAlign:"right",flexShrink:0}}><div style={{fontSize:"12px",fontWeight:"bold",color:done?th.gold:th.subtext}}>+{o.pts}</div><div style={{fontSize:"9px",color:th.subtext}}>pts</div></div>
-                      </div>
-                    );
-                  })}
-                </div>
-              ))}
-            </div>
-          )}
-
+          {tab==="objectifs"&&<ObjectifsPanel progress={progress} dark={dark} th={th}/>}
           {tab==="stats"&&<StatsPanel progress={progress} dark={dark} th={th}/>}
         </div>
         <div style={{textAlign:"center",fontSize:"10px",color:th.subtext,opacity:0.6,paddingBottom:"20px"}}>🚗 {GAME_NAME} v{VERSION} — Multijoueur bientôt disponible</div>
