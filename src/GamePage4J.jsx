@@ -444,7 +444,8 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
       // Joue la botte
       const def=ps[defenderIdx];
       const hand=[...def.hand];
-      hand.splice(hand.indexOf(botteId),1);
+      const botteIdx=hand.indexOf(botteId);
+      if(botteIdx!==-1)hand.splice(botteIdx,1);
       def.hand=hand;
       def.bottes=[...def.bottes,botteId];
       const bo=getCard(botteId);
