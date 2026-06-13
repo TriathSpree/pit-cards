@@ -88,7 +88,7 @@ const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const TOTAL_QTY={accident:3,panne:3,crevaison:3,feu_rouge:5,limite:4,reparations:6,essence:6,roue_secours:6,feu_vert:14,fin_limite:6,as_volant:1,citerne:1,increvable:1,prioritaire:1,b25:10,b50:10,b75:10,b100:12,b200:4};
 const SCORE_CIBLE=5000;
-const VERSION="1.5.61";
+const VERSION="1.5.62";
 const GAME_NAME="Pit Cards";
 
 const OBJECTIFS=[
@@ -180,8 +180,8 @@ function playSound(type,on){if(!on)return;try{const ctx=new(window.AudioContext|
 
 
 // ── HOME PAGE ──────────────────────────────────────────────────────────────────
-function LeaderboardPanel({dark,th,medals,leaderboard,loadingLB}){
-  const [lbMode,setLbMode]=useState("solo");
+function LeaderboardPanel({dark,th,medals,leaderboard,loadingLB,initialMode}){
+  const [lbMode,setLbMode]=useState(initialMode||"solo");
   const modeLabels={solo:"1 vs 1","4j":"1 vs 3",online:"En ligne"};
   const modeIcons={solo:"🏎️","4j":"🚗",online:"🌐"};
 
@@ -239,8 +239,8 @@ function LeaderboardPanel({dark,th,medals,leaderboard,loadingLB}){
   );
 }
 
-function DailyPanel({progress,dark,th,dailyObjectifs,dailyKey,dailyDone,dailyLB,loadingDailyLB,medals}){
-  const [dailyMode,setDailyMode]=useState("solo");
+function DailyPanel({progress,dark,th,dailyObjectifs,dailyKey,dailyDone,dailyLB,loadingDailyLB,medals,initialMode}){
+  const [dailyMode,setDailyMode]=useState(initialMode||"solo");
   const modeLabels={solo:"1 vs 1","4j":"1 vs 3",online:"En ligne"};
   const modeIcons={solo:"🏎️","4j":"🚗",online:"🌐"};
   const quetes=dailyMode==="online"?[]:(dailyObjectifs[dailyMode]||[]);
@@ -311,8 +311,8 @@ function DailyPanel({progress,dark,th,dailyObjectifs,dailyKey,dailyDone,dailyLB,
   );
 }
 
-function ObjectifsPanel({progress,dark,th}){
-  const [objMode,setObjMode]=useState("solo");
+function ObjectifsPanel({progress,dark,th,initialMode}){
+  const [objMode,setObjMode]=useState(initialMode||"solo");
   const modeLabels={solo:"1 vs 1","4j":"1 vs 3",online:"En ligne"};
   const modeIcons={solo:"🏎️","4j":"🚗",online:"🌐"};
 
@@ -367,8 +367,8 @@ function ObjectifsPanel({progress,dark,th}){
   );
 }
 
-function StatsPanel({progress,dark,th}){
-  const [statMode,setStatMode]=useState("solo");
+function StatsPanel({progress,dark,th,initialMode}){
+  const [statMode,setStatMode]=useState(initialMode||"solo");
   const s=statMode==="solo"?(progress.stats_solo||{}):statMode==="4j"?(progress.stats_4j||{}):(progress.stats_online||{});
   const modeLabels={solo:"1 vs 1","4j":"1 vs 3",online:"En ligne"};
   const modeIcons={solo:"🏎️","4j":"🚗",online:"🌐"};
@@ -506,7 +506,7 @@ function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,user
         <div style={{marginBottom:"24px"}}>
           <div style={{display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))",gap:"10px"}}>
             {modes.map(m=>(
-              <div key={m.id} onClick={m.active?()=>setSelectedMode(m.id):undefined} style={{background:selectedMode===m.id?(dark?"rgba(139,0,0,0.2)":"rgba(139,0,0,0.08)"):th.cardBg,border:selectedMode===m.id?"3px solid "+(dark?"#e07070":"#8B0000"):"2px solid "+th.border,borderRadius:"12px",padding:"16px",textAlign:"center",opacity:m.active?1:0.45,position:"relative",cursor:m.active?"pointer":"not-allowed",transition:"all 0.2s"}}>
+              <div key={m.id} onClick={m.active?()=>{setSelectedMode(m.id);setTab("scores");setTimeout(()=>document.getElementById("pit-tabs")?.scrollIntoView({behavior:"smooth"}),50);}:undefined} style={{background:selectedMode===m.id?(dark?"rgba(139,0,0,0.2)":"rgba(139,0,0,0.08)"):th.cardBg,border:selectedMode===m.id?"3px solid "+(dark?"#e07070":"#8B0000"):"2px solid "+th.border,borderRadius:"12px",padding:"16px",textAlign:"center",opacity:m.active?1:0.45,position:"relative",cursor:m.active?"pointer":"not-allowed",transition:"all 0.2s"}}>
                 {!m.active&&<div style={{position:"absolute",top:"8px",right:"8px",background:dark?"rgba(255,255,255,0.1)":"rgba(0,0,0,0.08)",borderRadius:"6px",padding:"2px 6px",fontSize:"8px",fontWeight:"bold",color:th.subtext}}>BIENTÔT</div>}
                 {m.id==="solo"
                   ?<div style={{marginBottom:"6px",lineHeight:0}}><svg viewBox="0 0 680 180" style={{width:"100%",maxHeight:"80px"}} role="img"><title>Solo vs Victor</title>
@@ -576,17 +576,17 @@ function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,user
         </div>
 
         {/* ONGLETS */}
-        <div style={{marginBottom:"24px"}}>
+        <div id="pit-tabs" style={{marginBottom:"24px"}}>
           <div style={{display:"flex",gap:"4px",marginBottom:"12px",flexWrap:"wrap"}}>
             {[["scores","🏆 Classement"],["daily","📅 Journalier"],["objectifs","🎯 Objectifs"],["stats","📊 Stats"]].map(([id,lbl])=>(
               <button key={id} onClick={()=>setTab(id)} style={{flex:1,minWidth:"80px",padding:"8px",border:"2px solid "+(tab===id?th.title:th.border),borderRadius:"10px",background:tab===id?(dark?"rgba(224,112,112,0.15)":"rgba(139,0,0,0.08)"):"transparent",color:tab===id?th.title:th.subtext,fontFamily:"Georgia,serif",fontSize:"12px",fontWeight:"bold",cursor:"pointer"}}>{lbl}</button>
             ))}
           </div>
 
-          {tab==="scores"&&<LeaderboardPanel dark={dark} th={th} medals={medals} leaderboard={leaderboard} loadingLB={loadingLB}/>}
-          {tab==="daily"&&<DailyPanel progress={progress} dark={dark} th={th} dailyObjectifs={dailyObjectifs} dailyKey={dailyKey} dailyDone={dailyDone} dailyLB={dailyLB} loadingDailyLB={loadingDailyLB} medals={medals}/>}
-          {tab==="objectifs"&&<ObjectifsPanel progress={progress} dark={dark} th={th}/>}
-          {tab==="stats"&&<StatsPanel progress={progress} dark={dark} th={th}/>}
+          {tab==="scores"&&<LeaderboardPanel dark={dark} th={th} medals={medals} leaderboard={leaderboard} loadingLB={loadingLB} initialMode={selectedMode}/>}
+          {tab==="daily"&&<DailyPanel progress={progress} dark={dark} th={th} dailyObjectifs={dailyObjectifs} dailyKey={dailyKey} dailyDone={dailyDone} dailyLB={dailyLB} loadingDailyLB={loadingDailyLB} medals={medals} initialMode={selectedMode}/>}
+          {tab==="objectifs"&&<ObjectifsPanel progress={progress} dark={dark} th={th} initialMode={selectedMode}/>}
+          {tab==="stats"&&<StatsPanel progress={progress} dark={dark} th={th} initialMode={selectedMode}/>}
         </div>
         <div style={{textAlign:"center",fontSize:"10px",color:th.subtext,opacity:0.6,paddingBottom:"20px"}}>🚗 {GAME_NAME} v{VERSION} — Multijoueur bientôt disponible</div>
       </div>
