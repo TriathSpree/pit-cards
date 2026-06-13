@@ -19,7 +19,11 @@ async function storageGetPlayer(clerkId) {
       unlocked: JSON.parse(f.unlocked||"[]"),
       triedDifficulties: JSON.parse(f.triedDifficulties||"[]"),
       winStreak: f.winStreak||0, avatar: f.avatar||"🧑",
-      dailyDone: JSON.parse(f.dailyDone||"{}"), _recId: d.id
+      dailyDone: JSON.parse(f.dailyDone||"{}"),
+      stats_solo: JSON.parse(f.stats_solo||"{}"),
+      stats_4j: JSON.parse(f.stats_4j||"{}"),
+      stats_online: JSON.parse(f.stats_online||"{}"),
+      _recId: d.id
     };
   } catch { return null; }
 }
@@ -40,7 +44,10 @@ async function storageSavePlayer(clerkId, pseudo, progress) {
     dailyPts: Object.entries(progress.dailyDone||{})
       .filter(([k])=>k===getDailyKey())
       .flatMap(([,ids])=>ids)
-      .reduce((s,id)=>{const o=DAILY_POOL.find(x=>x.id===id);return s+(o?o.pts:0);},0)
+      .reduce((s,id)=>{const o=DAILY_POOL.find(x=>x.id===id);return s+(o?o.pts:0);},0),
+    stats_solo: JSON.stringify(progress.stats_solo||{}),
+    stats_4j: JSON.stringify(progress.stats_4j||{}),
+    stats_online: JSON.stringify(progress.stats_online||{}),
   };
   try {
     const r = await fetch("/api/savePlayer", {
@@ -78,7 +85,7 @@ const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const TOTAL_QTY={accident:3,panne:3,crevaison:3,feu_rouge:5,limite:4,reparations:6,essence:6,roue_secours:6,feu_vert:14,fin_limite:6,as_volant:1,citerne:1,increvable:1,prioritaire:1,b25:10,b50:10,b75:10,b100:12,b200:4};
 const SCORE_CIBLE=5000;
-const VERSION="1.5.52";
+const VERSION="1.5.53";
 const GAME_NAME="Pit Cards";
 
 const OBJECTIFS=[
@@ -140,7 +147,11 @@ const OBJECTIFS=[
   {id:"all_objectives",cat:"🌟 Prestige",label:"Perfectionniste",desc:"Débloquer tous les autres objectifs",pts:2000,mode:null},
 ];
 const TOTAL_OBJ_PTS=OBJECTIFS.reduce((s,o)=>s+o.pts,0);
-const INIT_PROGRESS={wins:0,manchesPlayed:0,unlocked:[],objPts:0,playerName:"",totalKm:0,bestMancheScore:0,winStreak:0,triedDifficulties:[],avatar:"🧑",dailyDone:{}};
+const INIT_PROGRESS={wins:0,manchesPlayed:0,unlocked:[],objPts:0,playerName:"",totalKm:0,bestMancheScore:0,winStreak:0,triedDifficulties:[],avatar:"🧑",dailyDone:{},
+  stats_solo:{wins:0,played:0,totalKm:0,bestScore:0,winStreak:0},
+  stats_4j:{wins:0,played:0,totalKm:0,bestScore:0,winStreak:0},
+  stats_online:{wins:0,played:0,totalKm:0,bestScore:0,winStreak:0},
+};
 
 function buildDeck(){const d=[];BORNES.forEach(c=>{const q={b25:10,b50:10,b75:10,b100:12,b200:4};for(let i=0;i<q[c.id];i++)d.push(c.id);});ATTAQUES.forEach(c=>{const q={accident:3,panne:3,crevaison:3,feu_rouge:5,limite:4};for(let i=0;i<q[c.id];i++)d.push(c.id);});PARADES.forEach(c=>{const q={reparations:6,essence:6,roue_secours:6,feu_vert:14,fin_limite:6};for(let i=0;i<q[c.id];i++)d.push(c.id);});BOTTES.forEach(c=>d.push(c.id));return shuffle(d);}
 function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
@@ -166,6 +177,49 @@ function playSound(type,on){if(!on)return;try{const ctx=new(window.AudioContext|
 
 
 // ── HOME PAGE ──────────────────────────────────────────────────────────────────
+function StatsPanel({progress,dark,th}){
+  const [statMode,setStatMode]=useState("solo");
+  const s=statMode==="solo"?(progress.stats_solo||{}):statMode==="4j"?(progress.stats_4j||{}):(progress.stats_online||{});
+  const modeLabels={solo:"1 vs 1","4j":"1 vs 3",online:"En ligne"};
+  const modeIcons={solo:"🏎️","4j":"🚗",online:"🌐"};
+  return(
+    <div>
+      <div style={{display:"flex",gap:"4px",marginBottom:"12px"}}>
+        {["solo","4j","online"].map(m=>(
+          <button key={m} onClick={()=>setStatMode(m)} style={{flex:1,padding:"8px",border:"2px solid "+(statMode===m?th.title:th.border),borderRadius:"10px",background:statMode===m?(dark?"rgba(224,112,112,0.15)":"rgba(139,0,0,0.08)"):"transparent",color:statMode===m?th.title:th.subtext,fontFamily:"Georgia,serif",fontSize:"12px",fontWeight:"bold",cursor:"pointer"}}>
+            {modeIcons[m]} {modeLabels[m]}
+          </button>
+        ))}
+      </div>
+      {statMode==="online"?(
+        <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"12px",padding:"30px",textAlign:"center",fontSize:"11px",color:th.subtext,fontStyle:"italic"}}>🌐 Mode En ligne — Bientôt disponible</div>
+      ):(s.played||0)===0?(
+        <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"12px",padding:"30px",textAlign:"center",fontSize:"11px",color:th.subtext,fontStyle:"italic"}}>Aucune stat — jouez votre première course en mode {modeLabels[statMode]} !</div>
+      ):(
+        <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"12px",overflow:"hidden"}}>
+          {[
+            {icon:"🏆",label:"Taux de victoire",value:(s.played>0?Math.round((s.wins||0)/s.played*100):0)+"%",sub:(s.wins||0)+" victoire"+((s.wins||0)>1?"s":"")+" sur "+(s.played||0)+" course"+((s.played||0)>1?"s":""),color:th.gold},
+            {icon:"🛣️",label:"Kilomètres totaux",value:((s.totalKm||0)).toLocaleString()+" km",sub:"Moyenne : "+Math.round((s.totalKm||0)/Math.max(1,s.played||1))+" km/course",color:th.accent},
+            {icon:"🃏",label:"Courses jouées",value:s.played||0,sub:"",color:th.subtext},
+            {icon:"⭐",label:"Meilleur score",value:((s.bestScore||0)).toLocaleString()+" pts",sub:"",color:dark?"#e07070":"#8B0000"},
+            {icon:"🔥",label:"Win streak max",value:s.winStreak||0,sub:"",color:"#e67e22"},
+            {icon:"🎯",label:"Objectifs débloqués",value:progress.unlocked.length+" / "+OBJECTIFS.length,sub:progress.objPts+" pts",color:"#27ae60"},
+          ].map(stat=>(
+            <div key={stat.label} style={{display:"flex",alignItems:"center",gap:"14px",padding:"12px 16px",borderBottom:"1px solid "+th.border}}>
+              <div style={{fontSize:"24px",flexShrink:0}}>{stat.icon}</div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:"11px",color:th.subtext,marginBottom:"2px"}}>{stat.label}</div>
+                <div style={{fontSize:"18px",fontWeight:"bold",color:stat.color}}>{stat.value}</div>
+                {stat.sub&&<div style={{fontSize:"10px",color:th.subtext,marginTop:"1px"}}>{stat.sub}</div>}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,userButton,pseudo,avatar,onChangePseudo}){
   const [tab,setTab]=useState("scores");
   const [selectedMode,setSelectedMode]=useState("solo");
@@ -452,30 +506,7 @@ function HomePage({dark,setDark,onPlay,onPlay4J,progress,soundOn,setSoundOn,user
             </div>
           )}
 
-          {tab==="stats"&&(
-            <div style={{background:th.cardBg,border:"2px solid "+th.border,borderRadius:"12px",overflow:"hidden"}}>
-              {progress.manchesPlayed===0
-                ?<div style={{padding:"30px",textAlign:"center",fontSize:"11px",color:th.subtext,fontStyle:"italic"}}>Aucune stat — jouez votre première course !</div>
-                :[
-                  {icon:"🏆",label:"Taux de victoire",value:progress.manchesPlayed>0?Math.round(progress.wins/progress.manchesPlayed*100)+"%":"—",sub:progress.wins+" victoire"+(progress.wins>1?"s":"")+" sur "+progress.manchesPlayed+" manche"+(progress.manchesPlayed>1?"s":""),color:th.gold},
-                  {icon:"🛣️",label:"Kilomètres totaux",value:((progress.totalKm||0)).toLocaleString()+" km",sub:"Moyenne : "+Math.round((progress.totalKm||0)/Math.max(1,progress.manchesPlayed))+" km/manche",color:th.accent},
-                  {icon:"🎯",label:"Objectifs",value:progress.unlocked.length+" / "+OBJECTIFS.length,sub:progress.objPts+" pts débloqués sur "+TOTAL_OBJ_PTS,color:"#27ae60"},
-                  {icon:"🃏",label:"Manches jouées",value:progress.manchesPlayed,sub:"",color:th.subtext},
-                  {icon:"⭐",label:"Meilleur score de manche",value:(progress.bestMancheScore||0).toLocaleString()+" pts",sub:"",color:dark?"#e07070":"#8B0000"},
-                  {icon:"🔥",label:"Win streak",value:progress.winStreak||0,sub:"",color:"#e67e22"},
-                ].map(s=>(
-                  <div key={s.label} style={{display:"flex",alignItems:"center",gap:"14px",padding:"12px 16px",borderBottom:"1px solid "+th.border}}>
-                    <div style={{fontSize:"24px",flexShrink:0}}>{s.icon}</div>
-                    <div style={{flex:1}}>
-                      <div style={{fontSize:"11px",color:th.subtext,marginBottom:"2px"}}>{s.label}</div>
-                      <div style={{fontSize:"18px",fontWeight:"bold",color:s.color}}>{s.value}</div>
-                      {s.sub&&<div style={{fontSize:"10px",color:th.subtext,marginTop:"1px"}}>{s.sub}</div>}
-                    </div>
-                  </div>
-                ))
-              }
-            </div>
-          )}
+          {tab==="stats"&&<StatsPanel progress={progress} dark={dark} th={th}/>}
         </div>
         <div style={{textAlign:"center",fontSize:"10px",color:th.subtext,opacity:0.6,paddingBottom:"20px"}}>🚗 {GAME_NAME} v{VERSION} — Multijoueur bientôt disponible</div>
       </div>
@@ -599,7 +630,14 @@ function GamePage({dark,setDark,onBack,progress,setProgress,soundOn,setSoundOn})
     const newBestManche=Math.max(progress.bestMancheScore||0,ps);
     const triedDiffs=new Set([...(progress.triedDifficulties||[]),difficulty]);
     setMancheResult({playerScore:ps,aiScore:as,winner:w,total:nt});
-    setProgress(p=>({...p,manchesPlayed:newManchesPlayed,wins:newWins,totalKm:newTotalKm,bestMancheScore:newBestManche,winStreak:newStreak,triedDifficulties:[...triedDiffs]}));
+    setProgress(p=>{
+      const prev=p.stats_solo||{};
+      const newStrk=w==="player"?(prev.winStreak||0)+1:0;
+      return{...p,
+        manchesPlayed:newManchesPlayed,wins:newWins,totalKm:newTotalKm,bestMancheScore:newBestManche,winStreak:newStreak,triedDifficulties:[...triedDiffs],
+        stats_solo:{wins:(prev.wins||0)+(w==="player"?1:0),played:(prev.played||0)+1,totalKm:(prev.totalKm||0)+s.player.km,bestScore:Math.max(prev.bestScore||0,ps),winStreak:Math.max(prev.winStreak||0,newStrk)}
+      };
+    });
     checkObjectifs({winner:w,playerState:{...s.player,startedLastMancheAtZero:lastMancheZero},aiState:s.ai,diff:difficulty,wins:newWins,manchesPlayed:newManchesPlayed,cfCount:mancheCFCount,streak:newStreak,mancheCount:manche,discardCount,attackCount,attackTypes,nbBottes200:partieNb200});
     // Objectifs journaliers
     setProgress(p=>{
@@ -994,6 +1032,24 @@ export default function App(){
     return <GamePage4J dark={dark} setDark={setDark} onBack={()=>setScreen("home")} playerName={pseudo||"Joueur"} difficulty="normal" soundOn={soundOn} setSoundOn={setSoundOn} hardcoreUnlocked={progress.unlocked.includes("win_hard")}
       version={VERSION}
       progress={progress}
+      onProgress={(params)=>{
+        setProgress(p=>{
+          const{winner,playerKm,scores}=params;
+          const newManchesPlayed=(p.manchesPlayed||0)+1;
+          const newWins=winner?(p.wins||0)+1:(p.wins||0);
+          const newTotalKm=(p.totalKm||0)+(playerKm||0);
+          const myScore=scores?.[pseudo]||scores?.player||0;
+          const newBest=Math.max(p.bestMancheScore||0,myScore);
+          const prev=p.stats_4j||{};
+          const newStrk=winner?(prev.winStreak||0)+1:0;
+          const np={...p,
+            manchesPlayed:newManchesPlayed,wins:newWins,totalKm:newTotalKm,bestMancheScore:newBest,
+            stats_4j:{wins:(prev.wins||0)+(winner?1:0),played:(prev.played||0)+1,totalKm:(prev.totalKm||0)+(playerKm||0),bestScore:Math.max(prev.bestScore||0,myScore),winStreak:Math.max(prev.winStreak||0,newStrk)}
+          };
+          if(user)storageSavePlayer(user.id,pseudo,np);
+          return np;
+        });
+      }}
       onDailyProgress={(params)=>{
         setProgress(p=>{
           const daily=checkDailyObjectifs(params,p);
