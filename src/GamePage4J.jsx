@@ -452,6 +452,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
       if(def.attaque&&co.includes(def.attaque))def.attaque=null;
       if(botteId==="prioritaire"){def.limitee=false;}
       def.coupsFourres=(def.coupsFourres||0)+1;
+      def.lastCard=botteId; // affiche la botte jouée en CF
       // Carte bonus
       if(d.length>0){def.hand=[...def.hand,d.shift()];}
       addLog(`⚡ COUP-FOURRÉ ! ${def.name} neutralise avec ${bo.label} !`,def.name);
