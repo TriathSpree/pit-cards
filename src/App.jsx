@@ -78,7 +78,7 @@ const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const TOTAL_QTY={accident:3,panne:3,crevaison:3,feu_rouge:5,limite:4,reparations:6,essence:6,roue_secours:6,feu_vert:14,fin_limite:6,as_volant:1,citerne:1,increvable:1,prioritaire:1,b25:10,b50:10,b75:10,b100:12,b200:4};
 const SCORE_CIBLE=5000;
-const VERSION="1.5.44";
+const VERSION="1.5.45";
 const GAME_NAME="Pit Cards";
 
 const OBJECTIFS=[
@@ -564,36 +564,6 @@ function GamePage({dark,setDark,onBack,progress,setProgress,soundOn,setSoundOn})
   function playAnim(id,from){setAnimCard({id,from});setTimeout(()=>setAnimCard(null),700);}
   function playDiscardAnim(id){setAnimDiscard(id);setTimeout(()=>setAnimDiscard(null),800);}
 
-  function checkDailyObjectifs(params,currentProgress){
-    const{winner,playerState,diff,cfCount,discardCount,raceIndex,attackTargets,kmLead,mancheCount}=params;
-    const key=getDailyKey();
-    const already=currentProgress.dailyDone?.[key]||[];
-    const newDone=[];
-    const check=(id,cond)=>{if(!already.includes(id)&&!newDone.includes(id)&&cond)newDone.push(id);};
-
-    check("d_win",winner==="player"||winner===true);
-    check("d_cf",cfCount>=1);
-    check("d_500km",(currentProgress.totalKm||0)+(playerState?.km||0)>=500);
-    check("d_200km",(playerState?.bornes||[]).includes("b200"));
-    check("d_2parades",(playerState?.paradesCount||0)>=2);
-    check("d_discard5",winner&&(discardCount||0)<5);
-    check("d_hard",(winner==="player"||winner===true)&&(diff==="hard"||diff==="hardcore"));
-    check("d_4bottes",(playerState?.bottes||[]).length>=4);
-    check("d_attack3",(attackTargets||[]).some(t=>(attackTargets.filter(x=>x===t).length)>=3));
-    check("d_first_win",(raceIndex===0||raceIndex===1)&&(winner==="player"||winner===true));
-    check("d_2targets",[...new Set(attackTargets||[])].length>=2);
-    check("d_200lead",(kmLead||0)>=200);
-    check("d_2wins",(currentProgress.dailyWins||0)+(winner==="player"||winner===true?1:0)>=2);
-    check("d_2cf_race",cfCount>=2);
-    check("d_no_block",(winner==="player"||winner===true)&&!(playerState?.wasAttacked));
-    check("d_fast_champ",(mancheCount||0)<=4&&(winner==="player"||winner===true));
-
-    if(newDone.length===0)return null;
-    const addedPts=newDone.reduce((s,id)=>{const o=DAILY_POOL.find(x=>x.id===id);return s+(o?o.pts:0);},0);
-    const updated={...currentProgress.dailyDone,[key]:[...already,...newDone]};
-    return{newDone,addedPts,dailyDone:updated};
-  }
-
   function checkObjectifs(params){
     const{winner,playerState,aiState,diff,wins,manchesPlayed,cfCount}=params;
     const newUnlocked=[];const cur=progress.unlocked;
@@ -816,6 +786,33 @@ function getDailyObjectifs(){
 
 function getDailyKey(){return`daily_${Math.floor(Date.now()/86400000)}`;}
 
+function checkDailyObjectifs(params,currentProgress){
+  const{winner,playerState,diff,cfCount,discardCount,raceIndex,attackTargets,kmLead,mancheCount}=params;
+  const key=getDailyKey();
+  const already=currentProgress.dailyDone?.[key]||[];
+  const newDone=[];
+  const check=(id,cond)=>{if(!already.includes(id)&&!newDone.includes(id)&&cond)newDone.push(id);};
+  check("d_win",winner==="player"||winner===true);
+  check("d_cf",cfCount>=1);
+  check("d_500km",(currentProgress.totalKm||0)+(playerState?.km||0)>=500);
+  check("d_200km",(playerState?.bornes||[]).includes("b200"));
+  check("d_2parades",(playerState?.paradesCount||0)>=2);
+  check("d_discard5",winner&&(discardCount||0)<5);
+  check("d_hard",(winner==="player"||winner===true)&&(diff==="hard"||diff==="hardcore"));
+  check("d_4bottes",(playerState?.bottes||[]).length>=4);
+  check("d_attack3",(attackTargets||[]).some(t=>(attackTargets.filter(x=>x===t).length)>=3));
+  check("d_first_win",(raceIndex===0||raceIndex===1)&&(winner==="player"||winner===true));
+  check("d_2targets",[...new Set(attackTargets||[])].length>=2);
+  check("d_200lead",(kmLead||0)>=200);
+  check("d_2wins",(currentProgress.dailyWins||0)+(winner==="player"||winner===true?1:0)>=2);
+  check("d_2cf_race",cfCount>=2);
+  check("d_no_block",(winner==="player"||winner===true)&&!(playerState?.wasAttacked));
+  check("d_fast_champ",(mancheCount||0)<=4&&(winner==="player"||winner===true));
+  if(newDone.length===0)return null;
+  const addedPts=newDone.reduce((s,id)=>{const o=DAILY_POOL.find(x=>x.id===id);return s+(o?o.pts:0);},0);
+  const updated={...currentProgress.dailyDone,[key]:[...already,...newDone]};
+  return{newDone,addedPts,dailyDone:updated};
+}
 const AVATARS=[
   {emoji:"🧑", label:"Pilote",       unlock:null},         // dès le début
   {emoji:"🏎️", label:"Première victoire", unlock:"first_win"},
