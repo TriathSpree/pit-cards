@@ -23,7 +23,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.64";
+const VERSION="1.5.65";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -401,10 +401,17 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
     // Stats 4J
     if(onProgress){
       const human=ps.find(p=>p.isHuman);
+      const others=ps.filter(p=>!p.isHuman);
+      const isWinner=winnerName===human?.name;
       setTimeout(()=>onProgress({
-        winner:winnerName===human?.name,
+        winner:isWinner,
         playerKm:human?.km||0,
         scores,
+        playerState:human,
+        cfCount:human?.coupsFourres||0,
+        streak:isWinner?(totalScores[human?.name]>0?1:0):0,
+        othersAtZero:others.every(o=>o.km===0),
+        startedAtZero:human?.km===0&&!isWinner,
       }),0);
     }
     // Objectifs journaliers — setTimeout pour sortir du cycle render
