@@ -23,7 +23,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.62";
+const VERSION="1.5.63";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -459,7 +459,7 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
       def.bottes=[...def.bottes,botteId];
       const bo=getCard(botteId);
       const co=Array.isArray(bo.counters)?bo.counters:[bo.counters];
-      if(def.attaque&&co.includes(def.attaque))def.attaque=null;
+      if(def.attaque&&co.includes(def.attaque)){def.attaque=null;def.lastCard=null;}
       if(botteId==="prioritaire"){def.limitee=false;def.lastLimite="fin_limite";}
       def.coupsFourres=(def.coupsFourres||0)+1;
       // Carte bonus
@@ -513,8 +513,8 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
         def.hand=hand;
         def.bottes=[...def.bottes,bo.id];
         const co=Array.isArray(bo.counters)?bo.counters:[bo.counters];
-        if(def.attaque&&co.includes(def.attaque))def.attaque=null;
-        if(bo.id==="prioritaire")def.limitee=false;
+        if(def.attaque&&co.includes(def.attaque)){def.attaque=null;def.lastCard=null;}
+        if(bo.id==="prioritaire"){def.limitee=false;def.lastLimite="fin_limite";}
         def.coupsFourres=(def.coupsFourres||0)+1;
         const d2=[...deckRef.current];
         const disc2=[...discardRef.current];
