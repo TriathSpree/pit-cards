@@ -23,7 +23,7 @@ const ALL=[...BORNES,...ATTAQUES,...PARADES,...BOTTES];
 const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const SCORE_CIBLE=5000;
-const VERSION="1.5.63";
+const VERSION="1.5.64";
 const AI_NAMES=["Victor","Salomé","Raquel"];
 const AI_EMOJIS=["🏎️","🚗","🚕"];
 
@@ -344,19 +344,26 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
 
   function drawForPlayer(idx,currentDeck,currentDiscard){
     let d=[...currentDeck],disc=[...currentDiscard];
+    if(d.length===0&&disc.length===0)return{card:null,deck:d,discard:disc,deckEmpty:true};
     if(d.length===0){
-      if(disc.length===0)return{card:null,deck:d,discard:disc};
       d=shuffle(disc);disc=[];
       addLog("🔄 Pioche reconstituée.","system");
     }
     const card=d.shift();
-    return{card,deck:d,discard:disc};
+    return{card,deck:d,discard:disc,deckEmpty:false};
   }
 
-  function checkMancheEnd(ps){
+  function checkMancheEnd(ps,deckEmpty){
     const winner=ps.find(p=>p.km===1000);
-    if(winner){
-      endManche(ps,winner.name);
+    if(winner){endManche(ps,winner.name);return true;}
+    // Fin de course si pioche épuisée — gagnant = plus de km
+    if(deckEmpty){
+      const sorted=[...ps].sort((a,b)=>b.km-a.km);
+      const topKm=sorted[0].km;
+      const winners=sorted.filter(p=>p.km===topKm);
+      const winnerName=winners[0].name;
+      addLog(`🏁 Pioche épuisée ! ${winnerName} gagne avec ${topKm} km !`,"system");
+      endManche(ps,winnerName);
       return true;
     }
     return false;
@@ -578,7 +585,15 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
       const idx=turnIdxRef.current;
 
       // Pioche
-      const{card,deck:nd,discard:ndisc}=drawForPlayer(idx,d,disc);
+      const{card,deck:nd,discard:ndisc,deckEmpty}=drawForPlayer(idx,d,disc);
+      if(deckEmpty){
+        // Pioche épuisée — fin de course immédiate
+        const sorted=[...ps].sort((a,b)=>b.km-a.km);
+        addLog(`🏁 Pioche épuisée ! ${sorted[0].name} gagne avec ${sorted[0].km} km !`,"system");
+        setPlayers(ps);setDeck(nd);setDiscard(ndisc);
+        endManche(ps,sorted[0].name);
+        return;
+      }
       if(card){ps[idx]={...ps[idx],hand:[...ps[idx].hand,card]};addLog(`${ps[idx].name} pioche une carte`,ps[idx].name);}
       d=nd;disc=ndisc;
 
@@ -621,7 +636,13 @@ export default function GamePage4J({dark,setDark,onBack,playerName,difficulty:in
 
   function handleDraw(){
     if(!mustDraw)return;
-    const{card,deck:nd,discard:ndisc}=drawForPlayer(turnIdx,deck,discard);
+    const{card,deck:nd,discard:ndisc,deckEmpty}=drawForPlayer(turnIdx,deck,discard);
+    if(deckEmpty){
+      const sorted=[...players].sort((a,b)=>b.km-a.km);
+      addLog(`🏁 Pioche épuisée ! ${sorted[0].name} gagne avec ${sorted[0].km} km !`,"system");
+      endManche(players,sorted[0].name);
+      return;
+    }
     if(!card){setDrawn(true);return;}
     const ps=players.map((p,i)=>i===turnIdx?{...p,hand:[...p.hand,card]}:p);
     addLog(`${players[turnIdx].name} pioche une carte`,players[turnIdx].name);
