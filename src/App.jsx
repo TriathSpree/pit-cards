@@ -1186,7 +1186,7 @@ export default function App(){
     return(
       <>
         {showPseudoModal&&<PseudoModal dark={dark} onSave={savePseudo} canClose={true} unlockedIds={progress.unlocked} currentAvatar={progress.avatar}/>}
-        <GamePage dark={dark} setDark={setDark} onBack={()=>setScreen("home")} progress={gameProgress} setProgress={handleSetProgress} soundOn={soundOn} setSoundOn={setSoundOn}/>
+        <GamePage dark={dark} setDark={setDark} onBack={()=>setScreen("home")} progress={gameProgress} setProgress={handleSetProgress} soundOn={soundOn} setSoundOn={setSoundOn} userId={user?.id}/>
       </>
     );
   }
