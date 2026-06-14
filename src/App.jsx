@@ -88,7 +88,7 @@ const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const TOTAL_QTY={accident:3,panne:3,crevaison:3,feu_rouge:5,limite:4,reparations:6,essence:6,roue_secours:6,feu_vert:14,fin_limite:6,as_volant:1,citerne:1,increvable:1,prioritaire:1,b25:10,b50:10,b75:10,b100:12,b200:4};
 const SCORE_CIBLE=5000;
-const VERSION="1.5.64";
+const VERSION="1.5.65";
 const GAME_NAME="Pit Cards";
 
 const OBJECTIFS=[
@@ -250,6 +250,27 @@ function LeaderboardPanel({dark,th,medals,leaderboard,loadingLB,initialMode}){
       )}
     </div>
   );
+}
+
+function checkObjectifs4J(params,currentProgress){
+  const{winner,playerState,cfCount,wins,manchesPlayed,streak,othersAtZero,startedAtZero}=params;
+  const cur=currentProgress.unlocked||[];
+  const newUnlocked=[];
+  const check=(id,cond)=>{if(!cur.includes(id)&&!newUnlocked.includes(id)&&cond)newUnlocked.push(id);};
+  check("first_win",winner);
+  check("win5",winner&&wins>=5);check("win10",winner&&wins>=10);
+  check("win50",winner&&wins>=50);check("win100",winner&&wins>=100);
+  check("cf1",(playerState?.coupsFourres||0)>=1);
+  check("cf3",cfCount>=3);
+  check("all_bottes",(playerState?.bottes||[]).length>=4);
+  check("play10",manchesPlayed>=10);check("play50",manchesPlayed>=50);check("play100",manchesPlayed>=100);
+  check("capot_4j",winner&&othersAtZero);
+  check("win3_streak",streak>=3);
+  check("win_from_zero",winner&&startedAtZero);
+  check("played_both",(currentProgress.stats_solo?.played||0)>0&&(currentProgress.stats_4j?.played||0)>0);
+  if(newUnlocked.length===0)return null;
+  const addedPts=newUnlocked.reduce((s,id)=>{const o=OBJECTIFS.find(x=>x.id===id);return s+(o?o.pts:0);},0);
+  return{newUnlocked,addedPts};
 }
 
 function DailyPanel({progress,dark,th,dailyObjectifs,dailyKey,dailyDone,dailyLB,loadingDailyLB,medals,initialMode}){
@@ -726,10 +747,12 @@ function GamePage({dark,setDark,onBack,progress,setProgress,soundOn,setSoundOn})
     setProgress(p=>{
       const prev=p.stats_solo||{};
       const newStrk=w==="player"?(prev.winStreak||0)+1:0;
-      return{...p,
+      const np={...p,
         manchesPlayed:newManchesPlayed,wins:newWins,totalKm:newTotalKm,bestMancheScore:newBestManche,winStreak:newStreak,triedDifficulties:[...triedDiffs],
         stats_solo:{wins:(prev.wins||0)+(w==="player"?1:0),played:(prev.played||0)+1,totalKm:(prev.totalKm||0)+s.player.km,bestScore:Math.max(prev.bestScore||0,ps),winStreak:Math.max(prev.winStreak||0,newStrk)}
       };
+      if(user)storageSavePlayer(user.id,pseudo,np);
+      return np;
     });
     checkObjectifs({winner:w,playerState:{...s.player,startedLastMancheAtZero:lastMancheZero},aiState:s.ai,diff:difficulty,wins:newWins,manchesPlayed:newManchesPlayed,cfCount:mancheCFCount,streak:newStreak,mancheCount:manche,discardCount,attackCount,attackTypes,nbBottes200:partieNb200});
     // Objectifs journaliers
@@ -737,7 +760,7 @@ function GamePage({dark,setDark,onBack,progress,setProgress,soundOn,setSoundOn})
       const daily=checkDailyObjectifs({winner:w,playerState:{...s.player},diff:difficulty,cfCount:mancheCFCount,discardCount,raceIndex:manche,attackTargets:[],kmLead:s.player.km-(s.ai?.km||0),mancheCount:manche},p);
       if(!daily)return p;
       const np={...p,dailyDone:daily.dailyDone,objPts:(p.objPts||0)+daily.addedPts,dailyWins:(p.dailyWins||0)+(w==="player"?1:0)};
-      if(user)storageSavePlayer(user.id,pseudo,np);
+      if(user)storageSavePlayer(user.id,pseudo,np); // sauvegarde les daily pts
       return np;
     });
     setLastMancheZero(s.player.km===0);
@@ -1128,7 +1151,7 @@ export default function App(){
       progress={progress}
       onProgress={(params)=>{
         setProgress(p=>{
-          const{winner,playerKm,scores}=params;
+          const{winner,playerKm,scores,playerState,cfCount,streak,othersAtZero,startedAtZero}=params;
           const newManchesPlayed=(p.manchesPlayed||0)+1;
           const newWins=winner?(p.wins||0)+1:(p.wins||0);
           const newTotalKm=(p.totalKm||0)+(playerKm||0);
@@ -1136,10 +1159,13 @@ export default function App(){
           const newBest=Math.max(p.bestMancheScore||0,myScore);
           const prev=p.stats_4j||{};
           const newStrk=winner?(prev.winStreak||0)+1:0;
-          const np={...p,
+          let np={...p,
             manchesPlayed:newManchesPlayed,wins:newWins,totalKm:newTotalKm,bestMancheScore:newBest,
             stats_4j:{wins:(prev.wins||0)+(winner?1:0),played:(prev.played||0)+1,totalKm:(prev.totalKm||0)+(playerKm||0),bestScore:Math.max(prev.bestScore||0,myScore),winStreak:Math.max(prev.winStreak||0,newStrk)}
           };
+          // Vérifier objectifs 4J
+          const obj=checkObjectifs4J({winner,playerState,cfCount:cfCount||0,wins:newWins,manchesPlayed:newManchesPlayed,streak:newStrk,othersAtZero,startedAtZero},np);
+          if(obj){np={...np,unlocked:[...np.unlocked,...obj.newUnlocked],objPts:(np.objPts||0)+obj.addedPts};}
           if(user)storageSavePlayer(user.id,pseudo,np);
           return np;
         });
