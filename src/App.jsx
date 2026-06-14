@@ -88,7 +88,7 @@ const getCard=id=>ALL.find(c=>c.id===id);
 const botteFor=id=>BOTTES.find(b=>Array.isArray(b.counters)?b.counters.includes(id):b.counters===id);
 const TOTAL_QTY={accident:3,panne:3,crevaison:3,feu_rouge:5,limite:4,reparations:6,essence:6,roue_secours:6,feu_vert:14,fin_limite:6,as_volant:1,citerne:1,increvable:1,prioritaire:1,b25:10,b50:10,b75:10,b100:12,b200:4};
 const SCORE_CIBLE=5000;
-const VERSION="1.5.63";
+const VERSION="1.5.64";
 const GAME_NAME="Pit Cards";
 
 const OBJECTIFS=[
@@ -166,7 +166,20 @@ function canParade(p,id){const c=getCard(id);if(c.id==="feu_vert"){if(!p.started
 function canAttaque(t,id){const b=botteFor(id);if(b&&t.bottes.includes(b.id))return false;if(!t.started&&id!=="limite")return false;if(id==="limite")return!t.limitee;return!t.attaque;}
 function getPlays(s,who){const a=s[who],t=who==="player"?s.ai:s.player,v=[];a.hand.forEach(id=>{const c=getCard(id);if(c.type==="borne"&&canBorne(a,id))v.push({cardId:id,action:"borne"});if(c.type==="parade"&&canParade(a,id))v.push({cardId:id,action:"parade"});if(c.type==="attaque"&&canAttaque(t,id))v.push({cardId:id,action:"attaque"});if(c.type==="botte")v.push({cardId:id,action:"botte"});});return v;}
 function applyPlay(state,who,cardId,action,plbl){const s=JSON.parse(JSON.stringify(state));const actor=s[who],target=who==="player"?s.ai:s.player;const idx=actor.hand.indexOf(cardId);if(idx!==-1)actor.hand.splice(idx,1);const L=who==="player"?plbl:"Victor";if(action==="borne"){actor.bornes=(actor.bornes||[]).concat(cardId);actor.km+=getCard(cardId).km;s.log.unshift({text:L+" avance de "+getCard(cardId).km+" km (total: "+actor.km+" km)",who});}else if(action==="parade"){const c=getCard(cardId);if(c.id==="fin_limite"){actor.limitee=false;actor.lastLimite=cardId;s.log.unshift({text:L+" retire la limitation.",who});}else if(c.id==="feu_vert"){if(actor.attaque==="feu_rouge")actor.attaque=null;actor.started=true;actor.lastCard=cardId;s.log.unshift({text:L+" passe au feu vert !",who});}else{actor.attaque=null;actor.lastCard=cardId;s.log.unshift({text:L+" répare : "+c.label,who});}}else if(action==="attaque"){const c=getCard(cardId);if(c.id==="limite"){target.limitee=true;target.lastLimite=cardId;}else{target.attaque=cardId;target.lastCard=cardId;target.wasAttacked=true;}s.log.unshift({text:L+" joue : "+c.label+" sur l'adversaire !",who});}else if(action==="botte"){const bo=getCard(cardId);actor.bottes.push(cardId);const co=Array.isArray(bo.counters)?bo.counters:[bo.counters];if(actor.attaque&&co.includes(actor.attaque)){actor.attaque=null;actor.lastCard=actor.started?"feu_vert":null;}if(bo.id==="prioritaire"){actor.limitee=false;actor.lastLimite="fin_limite";}s.log.unshift({text:L+" joue la botte : "+bo.label+" !",who});}return s;}
-function drawCard(s,who){s=JSON.parse(JSON.stringify(s));if(s.deck.length===0){if(s.discard.length===0)return s;s.deck=[...s.discard];s.discard=[];s.log.unshift({text:"🔄 Pioche reconstituée.",who:"system"});}s[who].hand.push(s.deck.shift());return s;}
+function drawCard(s,who){
+  s=JSON.parse(JSON.stringify(s));
+  if(s.deck.length===0&&s.discard.length===0){
+    // Pioche épuisée — fin de course, gagnant = plus de km
+    s.deckEmpty=true;
+    return s;
+  }
+  if(s.deck.length===0){
+    s.deck=[...s.discard];s.discard=[];
+    s.log.unshift({text:"🔄 Pioche reconstituée.",who:"system"});
+  }
+  s[who].hand.push(s.deck.shift());
+  return s;
+}
 function discardCard(s,who,id,plbl){s=JSON.parse(JSON.stringify(s));const i=s[who].hand.indexOf(id);if(i!==-1)s[who].hand.splice(i,1);s.discard.push(id);s.log.unshift({text:(who==="player"?plbl:"Victor")+" défausse : "+getCard(id)?.label+".",who});return s;}
 function checkWin(s){if(s.player.km===1000)return"player";if(s.ai.km===1000)return"ai";if(s.deck.length===0&&s.discard.length===0)return s.player.km>=s.ai.km?"player":"ai";return null;}
 function aiChoosePlay(plays,s,diff){if(plays.length===0)return null;if(diff==="easy")return plays[Math.floor(Math.random()*plays.length)];const hand=s.ai.hand;const nb=hand.filter(c=>getCard(c).type==="botte").length;const seuil=nb>=2?700:800;const botte=plays.find(p=>{if(p.action!=="botte")return false;const bo=getCard(p.cardId);const co=Array.isArray(bo.counters)?bo.counters:[bo.counters];const urgent=co.some(c=>s.ai.attaque===c||(c==="limite"&&s.ai.limitee));return urgent||s.player.km>=seuil||(s.deck.length===0&&s.discard.length===0);});const parade=plays.find(p=>p.action==="parade");const bornes=plays.filter(p=>p.action==="borne").sort((a,b)=>getCard(b.cardId).km-getCard(a.cardId).km);let atqList=plays.filter(p=>p.action==="attaque");if(diff==="hard"){const seen=[...s.discard,...s.ai.bottes,...s.player.bottes,...(s.ai.bornes||[]),...(s.player.bornes||[])];atqList=atqList.filter(p=>{const bo=botteFor(p.cardId);if(!bo)return true;if(s.player.bottes.includes(bo.id))return false;const sc=seen.filter(c=>c===bo.id).length+hand.filter(c=>c===bo.id).length;return(TOTAL_QTY[bo.id]||0)-sc>0;});}if(diff==="hardcore"){const botteUrgent=plays.find(p=>{if(p.action!=="botte")return false;const bo=getCard(p.cardId);const co=Array.isArray(bo.counters)?bo.counters:[bo.counters];return co.some(c=>s.ai.attaque===c||(c==="limite"&&s.ai.limitee));});const botteAny=plays.find(p=>p.action==="botte");return botteUrgent||atqList[0]||parade||botteAny||bornes[0]||null;}return botte||parade||atqList[0]||bornes[0]||null;}
